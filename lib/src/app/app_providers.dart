@@ -1,35 +1,63 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/database/app_database.dart';
+import '../data/database/database_module.dart';
 import '../data/repositories/entries_repository.dart';
+import '../data/repositories/people_repository.dart';
+import '../data/repositories/events_repository.dart';
+import '../data/repositories/families_repository.dart';
+import '../data/repositories/settings_repository.dart';
 import '../domain/entities/entities.dart';
 import '../domain/enums/transaction_enums.dart';
 
-/// Database instance provider
-final databaseProvider = Provider<AppDatabase>((ref) {
-  final db = AppDatabase();
-  ref.onDispose(() => db.close());
-  return db;
+/// Database provider alias
+final databaseProvider = appDatabaseProvider;
+
+/// Repository providers
+final entriesRepositoryProvider = Provider<EntriesRepository>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return DriftEntriesRepository(db);
 });
 
-/// Active household ID provider (default: household_primary_01)
-final activeHouseholdIdProvider = StateProvider<String>((ref) => 'household_primary_01');
+final peopleRepositoryProvider = Provider<PeopleRepository>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return DriftPeopleRepository(db);
+});
 
-/// Entries repository provider
-final entriesRepositoryProvider = Provider<EntriesRepository>((ref) {
-  final db = ref.watch(databaseProvider);
-  return DriftEntriesRepository(db);
+final eventsRepositoryProvider = Provider<EventsRepository>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return DriftEventsRepository(db);
+});
+
+final familiesRepositoryProvider = Provider<FamiliesRepository>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return DriftFamiliesRepository(db);
+});
+
+final settingsRepositoryProvider = Provider<SettingsRepository>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return DriftSettingsRepository(db);
 });
 
 /// Dashboard summary async provider
 final dashboardSummaryProvider = FutureProvider<DashboardSummary>((ref) async {
   final repo = ref.watch(entriesRepositoryProvider);
-  final householdId = ref.watch(activeHouseholdIdProvider);
-  return repo.getDashboardSummary(householdId: householdId);
+  return repo.getDashboardSummary();
 });
 
 /// Filtered entries stream provider
 final entriesListProvider = StreamProvider.family<List<TransactionEntry>, TransactionDirection?>((ref, direction) {
   final repo = ref.watch(entriesRepositoryProvider);
-  final householdId = ref.watch(activeHouseholdIdProvider);
-  return repo.watchEntries(direction: direction, householdId: householdId);
+  return repo.watchEntries(direction: direction);
+});
+
+/// Active people stream provider
+final activePeopleListProvider = StreamProvider<List<Person>>((ref) {
+  final repo = ref.watch(peopleRepositoryProvider);
+  return repo.watchActivePeople();
+});
+
+/// Active events stream provider
+final activeEventsListProvider = StreamProvider<List<Event>>((ref) {
+  final repo = ref.watch(eventsRepositoryProvider);
+  return repo.watchActiveEvents();
 });

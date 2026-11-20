@@ -1,88 +1,111 @@
 import '../enums/transaction_enums.dart';
 
-/// Household Entity (हमारा परिवार)
-class Household {
+/// Family Entity (परिवार / कुल)
+class Family {
   final String id;
   final String name;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-
-  const Household({
-    required this.id,
-    required this.name,
-    required this.createdAt,
-    required this.updatedAt,
-  });
-}
-
-/// Person Entity (रिश्तेदार या मित्र)
-class Person {
-  final String id;
-  final String householdId;
-  final String? familyId;
-  final String name;
-  final String? village;
-  final String? relationship;
-  final String? phone;
+  final String? description;
   final String? notes;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? archivedAt;
 
-  const Person({
+  const Family({
     required this.id,
-    required this.householdId,
-    this.familyId,
     required this.name,
-    this.village,
-    this.relationship,
-    this.phone,
+    this.description,
     this.notes,
     required this.createdAt,
     required this.updatedAt,
+    this.archivedAt,
   });
+
+  bool get isArchived => archivedAt != null;
 }
 
-/// Ceremonial Event Entity (शादी, मुंडन आदि)
-class Event {
+/// Person Entity (व्यक्ति / रिश्तेदार / परिचित)
+class Person {
   final String id;
-  final String householdId;
-  final String title;
-  final EventType eventType;
-  final String eventDate; // YYYY-MM-DD
-  final String? personId;
+  final String? familyId;
+  final String fullName;
+  final String? phoneNumber;
+  final String? relationshipLabel;
+  final String? address;
   final String? notes;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final int? totalMilaPaise;
-  final int? totalDiyaPaise;
+  final DateTime? archivedAt;
+
+  const Person({
+    required this.id,
+    this.familyId,
+    required this.fullName,
+    this.phoneNumber,
+    this.relationshipLabel,
+    this.address,
+    this.notes,
+    required this.createdAt,
+    required this.updatedAt,
+    this.archivedAt,
+  });
+
+  bool get isArchived => archivedAt != null;
+
+  // Backward compatibility getters
+  String get name => fullName;
+  String? get phone => phoneNumber;
+  String? get village => address;
+  String? get relationship => relationshipLabel;
+}
+
+/// Ceremonial Event Entity (सामाजिक व पारिवारिक कार्यक्रम)
+class Event {
+  final String id;
+  final String title;
+  final EventType eventType;
+  final String eventDate; // ISO Date YYYY-MM-DD
+  final String? venue;
+  final String? notes;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? archivedAt;
+  final int? totalReceivedPaise;
+  final int? totalGivenPaise;
   final int? totalEntriesCount;
 
   const Event({
     required this.id,
-    required this.householdId,
     required this.title,
     required this.eventType,
     required this.eventDate,
-    this.personId,
+    this.venue,
     this.notes,
     required this.createdAt,
     required this.updatedAt,
-    this.totalMilaPaise,
-    this.totalDiyaPaise,
+    this.archivedAt,
+    this.totalReceivedPaise,
+    this.totalGivenPaise,
     this.totalEntriesCount,
   });
+
+  bool get isArchived => archivedAt != null;
+
+  // Backward compatibility aliases
+  int? get totalMilaPaise => totalReceivedPaise;
+  int? get totalDiyaPaise => totalGivenPaise;
 }
 
-/// Physical Gift Item (भेंट / सामान)
+/// Physical Gift Item Entity (भेंट / सामान)
 class EntryItem {
   final String id;
   final String entryId;
   final String itemName;
   final double quantity;
-  final String unit;
+  final String? unit;
   final int? estimatedValuePaise; // Strictly separate from cash totals!
-  final String? condition;
+  final String? notes;
   final DateTime createdAt;
+  final DateTime updatedAt;
 
   const EntryItem({
     required this.id,
@@ -91,27 +114,35 @@ class EntryItem {
     this.quantity = 1.0,
     this.unit = 'संख्या',
     this.estimatedValuePaise,
-    this.condition,
+    this.notes,
     required this.createdAt,
+    required this.updatedAt,
   });
+
+  // Backward compatibility alias
+  String? get condition => notes;
 }
 
 /// Transaction Entry Entity (व्यवहार प्रविष्टि)
 class TransactionEntry {
   final String id;
-  final String householdId;
-  final String eventId;
   final String personId;
-  final TransactionDirection direction;
-  final int cashAmountPaise; // Integer Paise (1 Rupee = 100 Paise)
+  final String? eventId;
+  final TransactionDirection direction; // 'given' | 'received'
+  final TransactionType transactionType; // 'cash' | 'item' | 'cash_and_item'
   final TransactionStatus status; // 'planned' | 'recorded' | 'cancelled'
-  final String? expectedDate;
+  final int? amountPaise; // Integer Paise (nullable for item-only entries)
+  final String transactionDate; // ISO Date YYYY-MM-DD
   final String? notes;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final DateTime? deletedAt;
+  final DateTime? recordedAt;
+  final DateTime? cancelledAt;
+  final DateTime? archivedAt;
+
+  // Hydrated helper fields
   final String? personName;
-  final String? personVillage;
+  final String? personAddress;
   final String? personRelationship;
   final String? eventTitle;
   final String? eventDate;
@@ -119,19 +150,21 @@ class TransactionEntry {
 
   const TransactionEntry({
     required this.id,
-    required this.householdId,
-    required this.eventId,
     required this.personId,
+    this.eventId,
     required this.direction,
-    required this.cashAmountPaise,
+    this.transactionType = TransactionType.cash,
     this.status = TransactionStatus.recorded,
-    this.expectedDate,
+    this.amountPaise,
+    required this.transactionDate,
     this.notes,
     required this.createdAt,
     required this.updatedAt,
-    this.deletedAt,
+    this.recordedAt,
+    this.cancelledAt,
+    this.archivedAt,
     this.personName,
-    this.personVillage,
+    this.personAddress,
     this.personRelationship,
     this.eventTitle,
     this.eventDate,
@@ -141,12 +174,56 @@ class TransactionEntry {
   bool get isCompleted => status == TransactionStatus.recorded;
   bool get isPlanned => status == TransactionStatus.planned;
   bool get isCancelled => status == TransactionStatus.cancelled;
+  bool get isArchived => archivedAt != null;
+
+  // Backward compatibility aliases
+  int get cashAmountPaise => amountPaise ?? 0;
+  String? get expectedDate => isPlanned ? transactionDate : null;
+  DateTime? get deletedAt => archivedAt;
+  String? get householdId => null;
+  String? get personVillage => personAddress;
+}
+
+/// Reminder Entity (आगामी व्यवहार अनुस्मारक)
+class Reminder {
+  final String id;
+  final String? entryId;
+  final String reminderDate; // ISO Date YYYY-MM-DD
+  final String title;
+  final String? notes;
+  final bool isCompleted;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  const Reminder({
+    required this.id,
+    this.entryId,
+    required this.reminderDate,
+    required this.title,
+    this.notes,
+    this.isCompleted = false,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+}
+
+/// App Setting Entity (अनुप्रयोग प्राथमिकताएं)
+class AppSetting {
+  final String key;
+  final String value;
+  final DateTime updatedAt;
+
+  const AppSetting({
+    required this.key,
+    required this.value,
+    required this.updatedAt,
+  });
 }
 
 /// Dashboard Financial & Statistics Summary
 class DashboardSummary {
-  final int totalMilaPaise;
-  final int totalDiyaPaise;
+  final int totalReceivedPaise;
+  final int totalGivenPaise;
   final int totalEntries;
   final int totalPlannedEntries;
   final int totalEvents;
@@ -156,8 +233,8 @@ class DashboardSummary {
   final String? recentEventDate;
 
   const DashboardSummary({
-    required this.totalMilaPaise,
-    required this.totalDiyaPaise,
+    required this.totalReceivedPaise,
+    required this.totalGivenPaise,
     required this.totalEntries,
     required this.totalPlannedEntries,
     required this.totalEvents,
@@ -167,9 +244,13 @@ class DashboardSummary {
     this.recentEventDate,
   });
 
+  // Backward compatibility aliases
+  int get totalMilaPaise => totalReceivedPaise;
+  int get totalDiyaPaise => totalGivenPaise;
+
   factory DashboardSummary.empty() => const DashboardSummary(
-        totalMilaPaise: 0,
-        totalDiyaPaise: 0,
+        totalReceivedPaise: 0,
+        totalGivenPaise: 0,
         totalEntries: 0,
         totalPlannedEntries: 0,
         totalEvents: 0,

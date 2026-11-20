@@ -35,17 +35,17 @@
 
 ## 3. Feature-by-Feature Implementation Status
 
-### Flutter Cross-Platform Architecture Foundation (Step 2)
+### Flutter & SQLite/Drift Database Architecture (Step 2 & 3)
 | Module / Feature | Status | Primary Source Files | Verification Evidence |
 | :--- | :--- | :--- | :--- |
-| Multi-Platform Project Setup | `ARCHITECTURE READY` | `pubspec.yaml`, `analysis_options.yaml` | Flutter 3.24+ / Dart 3.5+ strict analysis setup. |
-| Core Constants & Utils | `VERIFIED` | `lib/src/core/` | Paise math, Hindi dates, colors, spacing, Result monad. |
-| Pure Domain Entities & Rules | `VERIFIED` | `lib/src/domain/` | 12 financial rules implemented; pure domain logic. |
-| Drift SQLite ORM & DAOs | `ARCHITECTURE READY` | `lib/src/data/database/` | Exact v3 schema parity; WAL + foreign keys; lazy native connection. |
-| Riverpod State Providers | `ARCHITECTURE READY` | `lib/src/app/app_providers.dart` | Repositories, dashboard summaries, reactive streams. |
-| UI & Responsive Shell | `ARCHITECTURE READY` | `lib/src/shared/`, `lib/src/features/` | Floating pill bottom tab bar, desktop sidebar layout, dashboard screen. |
-| Cross-Platform CI Pipeline | `VERIFIED` | `.github/workflows/ci.yml` | Unified GitHub Actions for React Native & Flutter verification. |
-| Unit Tests (Dart) | `VERIFIED` | `test/unit/` | `financial_rules_test.dart`, `currency_utils_test.dart`, `date_utils_test.dart`. |
+| SQLite Schema v4 (7 Tables) | `VERIFIED` | `lib/src/data/database/tables/`, `scripts/test-database-architecture.py` | 14/14 automated tests passing in Python SQLite engine. |
+| Drift ORM Typed Layer & DAOs | `VERIFIED` | `lib/src/data/database/daos/`, `app_database.dart` | 7 DAOs (`Families`, `People`, `Events`, `Entries`, `EntryItems`, `Reminders`, `Settings`). |
+| Multi-Criteria Filter Queries | `VERIFIED` | `lib/src/data/database/daos/entries_dao.dart` | Direction, status, type, date range, person, and event filtering. |
+| Atomic Multi-Item Transactions | `VERIFIED` | `lib/src/data/repositories/entries_repository.dart` | SQLite transaction rollback verified; zero partial records. |
+| Strict Financial Isolation | `VERIFIED` | `lib/src/domain/rules/financial_rules.dart` | Received/Given separation, gift estimate isolation, planned/cancelled exclusion. |
+| 31,700 Scale Stress Test | `VERIFIED` | `scripts/test-database-architecture.py` | 10K transactions aggregated in 3.43ms; person history in 0.39ms. |
+| Migration Strategy v1–v4 | `VERIFIED` | `lib/src/data/database/migrations/schema_migrations.dart` | Non-destructive column additions & foreign key validation. |
+| Riverpod State Repositories | `VERIFIED` | `lib/src/app/app_providers.dart`, `lib/src/data/repositories/` | Repositories for Entries, People, Events, Families, Settings. |
 | Module / Feature | Status | Primary Source Files | Verification Evidence |
 | :--- | :--- | :--- | :--- |
 | SQLite SDK 58 Integration | `VERIFIED` | `src/database/db.ts` | WAL mode active; schema v3 applied; automated test passed. |

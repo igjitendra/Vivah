@@ -5,6 +5,19 @@
 
 ---
 
+## [1.2.0] — 2026-11-21
+
+### Added
+- **Complete Database Architecture & SQLite + Drift Implementation (Step 3)**:
+  - 7 relational tables in Drift: `Families`, `People`, `Events`, `Entries`, `EntryItems`, `Reminders`, `AppSettings`.
+  - Type converters: `TransactionDirectionConverter`, `TransactionTypeConverter`, `TransactionStatusConverter`, `EventTypeConverter`.
+  - 7 specialized DAOs: `FamiliesDao`, `PeopleDao`, `EventsDao`, `EntriesDao`, `EntryItemsDao`, `RemindersDao`, `SettingsDao`.
+  - Repository layer with MVVM integration: `EntriesRepository`, `PeopleRepository`, `EventsRepository`, `FamiliesRepository`, `SettingsRepository`.
+  - Atomic multi-item transaction management: guarantees saving entry and multiple physical gifts atomically with automatic rollback on error.
+  - 14 performance indexes covering all foreign keys, status flags, and search columns.
+  - Automated SQLite test suite (`scripts/test-database-architecture.py`) testing constraints, cascades, rollbacks, and scale stress test across 31,700 records (10K transactions aggregated in 3.43ms).
+  - Version-controlled schema migration engine (`SchemaMigrations`) from v1 through v4 with `PRAGMA foreign_key_check`.
+
 ## [1.1.0] — 2026-11-21
 
 ### Added

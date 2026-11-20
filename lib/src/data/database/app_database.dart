@@ -4,74 +4,73 @@ import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
-import 'tables/households_table.dart';
 import 'tables/families_table.dart';
 import 'tables/people_table.dart';
 import 'tables/events_table.dart';
 import 'tables/entries_table.dart';
 import 'tables/entry_items_table.dart';
 import 'tables/reminders_table.dart';
-import 'tables/attachments_table.dart';
+import 'tables/app_settings_table.dart';
+
+import 'daos/families_dao.dart';
+import 'daos/people_dao.dart';
+import 'daos/events_dao.dart';
 import 'daos/entries_dao.dart';
+import 'daos/entry_items_dao.dart';
+import 'daos/reminders_dao.dart';
+import 'daos/settings_dao.dart';
+
+import 'migrations/schema_migrations.dart';
 
 part 'app_database.g.dart';
 
-/// Primary Local Database for Vyavahaar.
+/// Primary Local Typed Database for Vyavahaar.
 /// Works 100% offline across Android, iOS, Linux, macOS, and Windows.
-/// Binary-compatible with SQLite database schema version 3.
+/// Preserves years of family व्यवहार records with zero data loss.
 @DriftDatabase(
   tables: [
-    Households,
     Families,
     People,
     Events,
     Entries,
     EntryItems,
     Reminders,
-    Attachments,
+    AppSettings,
   ],
-  daos: [EntriesDao],
+  daos: [
+    FamiliesDao,
+    PeopleDao,
+    EventsDao,
+    EntriesDao,
+    EntryItemsDao,
+    RemindersDao,
+    SettingsDao,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
+  /// In-memory constructor for unit & integration testing
+  AppDatabase.inMemory() : super(NativeDatabase.memory());
+
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => SchemaMigrations.currentSchemaVersion;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
         await m.createAll();
-        // Create performance indexes matching DATABASE_SCHEMA.md
-        await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_entries_event ON entries(event_id);');
-        await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_entries_person ON entries(person_id);');
-        await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_entries_direction ON entries(direction);');
-        await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_entries_status ON entries(status);');
-        await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_people_name ON people(name);');
-        await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_people_village ON people(village);');
-        await customStatement(
-            'CREATE INDEX IF NOT EXISTS idx_entry_items_entry ON entry_items(entry_id);');
+        await SchemaMigrations.createAllIndexes(this);
       },
       onUpgrade: (Migrator m, int from, int to) async {
-        if (from < 3) {
-          // Schema v3: Add status and expected_date
-          await m.addColumn(entries, entries.status);
-          await m.addColumn(entries, entries.expectedDate);
-          await customStatement(
-              'CREATE INDEX IF NOT EXISTS idx_entries_status ON entries(status);');
-        }
+        await SchemaMigrations.migrate(m, this, from, to);
       },
       beforeOpen: (details) async {
-        // Enforce Foreign Keys and WAL mode for all 5 platforms
+        // Enforce Foreign Keys and WAL mode for maximum data integrity across all 5 platforms
         await customStatement('PRAGMA foreign_keys = ON;');
         await customStatement('PRAGMA journal_mode = WAL;');
+        await customStatement('PRAGMA busy_timeout = 5000;');
       },
     );
   }

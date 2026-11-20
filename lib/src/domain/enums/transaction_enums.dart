@@ -1,21 +1,50 @@
-/// Direction of transaction
+/// Direction of transaction from the app owner's family perspective.
+/// - given: money or items given by the user's family to the person (दिया)
+/// - received: money or items received by the user's family from the person (मिला)
 enum TransactionDirection {
-  mila('mila', 'मिला'),
-  diya('diya', 'दिया');
+  received('received', 'मिला'),
+  given('given', 'दिया');
 
   final String value;
   final String labelHindi;
   const TransactionDirection(this.value, this.labelHindi);
 
+  /// Convenient aliases for Hindi cultural terms
+  static const TransactionDirection mila = TransactionDirection.received;
+  static const TransactionDirection diya = TransactionDirection.given;
+
   static TransactionDirection fromString(String val) {
-    return val == 'diya' ? TransactionDirection.diya : TransactionDirection.mila;
+    val = val.trim().toLowerCase();
+    if (val == 'given' || val == 'diya') {
+      return TransactionDirection.given;
+    }
+    return TransactionDirection.received;
+  }
+}
+
+/// Transaction type: cash only, physical gift item only, or both
+enum TransactionType {
+  cash('cash', 'नकद'),
+  item('item', 'भेंट/सामान'),
+  cashAndItem('cash_and_item', 'नकद और भेंट');
+
+  final String value;
+  final String labelHindi;
+  const TransactionType(this.value, this.labelHindi);
+
+  static TransactionType fromString(String val) {
+    return switch (val.trim().toLowerCase()) {
+      'item' => TransactionType.item,
+      'cash_and_item' => TransactionType.cashAndItem,
+      _ => TransactionType.cash,
+    };
   }
 }
 
 /// Status of transaction
 enum TransactionStatus {
-  recorded('recorded', 'दर्ज किया गया'),
   planned('planned', 'योजना'),
+  recorded('recorded', 'दर्ज'),
   cancelled('cancelled', 'रद्द');
 
   final String value;
@@ -23,7 +52,7 @@ enum TransactionStatus {
   const TransactionStatus(this.value, this.labelHindi);
 
   static TransactionStatus fromString(String val) {
-    return switch (val) {
+    return switch (val.trim().toLowerCase()) {
       'planned' => TransactionStatus.planned,
       'cancelled' => TransactionStatus.cancelled,
       _ => TransactionStatus.recorded,
@@ -47,7 +76,7 @@ enum EventType {
 
   static EventType fromString(String val) {
     for (final e in EventType.values) {
-      if (e.labelHindi == val) return e;
+      if (e.labelHindi == val || e.name.toLowerCase() == val.toLowerCase()) return e;
     }
     return EventType.other;
   }

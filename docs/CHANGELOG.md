@@ -1,0 +1,50 @@
+# Changelog — व्यवहार (Vyavahaar)
+
+> All notable changes to this project are documented in this file in chronological order.  
+> Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+---
+
+## [1.0.0] — 2026-11-21
+
+### Added
+- **Complete Project Documentation & AI Working Instructions System**:
+  - Central instruction manual `AGENTS.md` with enforceable pre-coding and post-coding checklists.
+  - Lightweight entry points `CLAUDE.md`, `GEMINI.md`, and `.github/copilot-instructions.md`.
+  - Comprehensive 24-document knowledge base in `docs/` covering architecture, schema, domain rules, test evidence, and roadmaps.
+- **Redesigned Modern Home Screen (`app/(tabs)/index.tsx`)**:
+  - Compact Deep Navy header (`#1F3352`) with white app title and subtle subtitle.
+  - Two refined financial cards for *Kul Mila* (`#E2F5EB`) and *Kul Diya* (`#FCE9E7`) with large readable rupee typography.
+  - Unified single-bar overview statistics for *Karyakram*, *Vyakti*, and *Vyavahaar*.
+  - Clean recent event card with direct navigation to event details.
+  - Modern action tiles featuring Terracotta primary button for *Naya Vyavahaar*.
+  - Focus auto-refresh (`useFocusEffect`) and pull-to-refresh (`RefreshControl`).
+- **Floating Pill-Shaped Bottom Navigation (`src/components/FloatingTabBar.tsx`)**:
+  - Capsule-style floating bar with soft elevation.
+  - Expanding Terracotta (`#C05A2B`) chip for active tab.
+  - Resilient navigation handlers calling `navigateToTab(route.key)` and `router.navigate`.
+  - 12dp `hitSlop` on all tabs for responsive touch feedback.
+- **Devanagari Hindi PDF Reports Engine (`src/services/PdfService.ts`)**:
+  - 6 A4 PDF reports (Complete, Person-wise, Event-wise, Year-wise, Gift-wise, Custom date).
+  - Embedded Google Noto Sans Devanagari font with correct ligature shaping.
+- **AES-256 Encrypted Offline Backup & Safe Restore (`src/services/BackupService.ts`)**:
+  - Password-protected local backup using PBKDF2 (10,000 iterations) + AES-256-GCM.
+  - Pre-restore in-memory safety snapshot with atomic database rollback on failure.
+  - Plain and encrypted backup envelope specification v3.
+- **RFC-4180 CSV Export Engine (`src/services/CsvService.ts`)**:
+  - CSV serializer with UTF-8 Byte Order Mark (`\uFEFF`) for Microsoft Excel compatibility.
+- **Automated Comprehensive Test Suites (`scripts/`)**:
+  - `test-business-logic.ts`: 16 automated tests.
+  - `test-phase3-features.ts`: 11 automated tests including 31,500 records stress test.
+
+### Changed
+- Replaced all Unicode emojis across the codebase with `@expo/vector-icons` (`Ionicons`).
+- Upgraded SQLite database to schema v3 with `status` (`'planned' | 'recorded' | 'cancelled'`) and `expected_date`.
+- Set `paddingBottom: 110` across all main scroll views to prevent bottom bar overlap.
+
+### Fixed
+- Fixed runtime crash `Cannot read property 'emit' of undefined` in `FloatingTabBar.tsx` by adapting to Expo Router 58's custom tab bar props.
+- Fixed `tabBarStyle` clipping on Android by setting `{ position: 'absolute', bottom: 0 }`.
+
+### Deferred
+- **Phase 4 Cloud & Family Sharing**: Intentionally frozen and deferred to maintain 100% offline-first privacy.

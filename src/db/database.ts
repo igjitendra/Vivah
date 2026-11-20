@@ -116,6 +116,7 @@ class LocalVyavahaarDB {
       person_id: p1.id,
       direction: 'mila',
       cash_amount_paise: 110000, // ₹1,100
+      status: 'recorded',
       notes: 'चाचा जी का व्यवहार',
       created_at: '2026-02-18T10:00:00Z',
       updated_at: '2026-02-18T10:00:00Z',
@@ -149,6 +150,7 @@ class LocalVyavahaarDB {
       person_id: p2.id,
       direction: 'mila',
       cash_amount_paise: 210000, // ₹2,100
+      status: 'recorded',
       notes: 'मामा जी द्वारा शगुन',
       created_at: '2026-02-18T11:30:00Z',
       updated_at: '2026-02-18T11:30:00Z',
@@ -171,6 +173,7 @@ class LocalVyavahaarDB {
       person_id: p3.id,
       direction: 'diya',
       cash_amount_paise: 50100, // ₹501
+      status: 'recorded',
       notes: 'तिलक पर न्योता दिया',
       created_at: '2026-03-05T14:00:00Z',
       updated_at: '2026-03-05T14:00:00Z',
@@ -327,6 +330,7 @@ class LocalVyavahaarDB {
 
     const newEntry: Entry = {
       ...entry,
+      status: (entry as any).status || 'recorded',
       id,
       household_id: DEFAULT_HOUSEHOLD_ID,
       created_at: new Date().toISOString(),

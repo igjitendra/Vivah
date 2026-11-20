@@ -2,6 +2,8 @@ export type Direction = 'mila' | 'diya'; // मिला (Received) or दिय
 
 export type EventType = 'शादी' | 'तिलक' | 'मुंडन' | 'बरात' | 'सगाई' | 'वर्षगांठ' | 'गृह प्रवेश' | 'अन्य';
 
+export type EntryStatus = 'planned' | 'recorded' | 'cancelled';
+
 export interface Household {
   id: string;
   name: string;
@@ -64,6 +66,8 @@ export interface Entry {
   person_id: string;
   direction: Direction;
   cash_amount_paise: number; // e.g. 110000 = ₹1100
+  status: EntryStatus; // 'planned' | 'recorded' | 'cancelled'
+  expected_date?: string; // YYYY-MM-DD for planned vyavahaar
   notes?: string;
   created_at: string;
   updated_at: string;

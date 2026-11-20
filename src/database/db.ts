@@ -75,6 +75,8 @@ CREATE TABLE IF NOT EXISTS entries (
     person_id TEXT NOT NULL,
     direction TEXT NOT NULL CHECK (direction IN ('mila', 'diya')),
     cash_amount_paise INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'recorded' CHECK (status IN ('planned', 'recorded', 'cancelled')),
+    expected_date TEXT,
     notes TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -122,6 +124,7 @@ CREATE TABLE IF NOT EXISTS attachments (
 CREATE INDEX IF NOT EXISTS idx_entries_event ON entries(event_id);
 CREATE INDEX IF NOT EXISTS idx_entries_person ON entries(person_id);
 CREATE INDEX IF NOT EXISTS idx_entries_direction ON entries(direction);
+CREATE INDEX IF NOT EXISTS idx_entries_status ON entries(status);
 CREATE INDEX IF NOT EXISTS idx_people_name ON people(name);
 CREATE INDEX IF NOT EXISTS idx_people_village ON people(village);
 CREATE INDEX IF NOT EXISTS idx_entry_items_entry ON entry_items(entry_id);
@@ -134,6 +137,23 @@ export function initDatabase(): void {
   db.execSync('PRAGMA foreign_keys=ON;');
   // Create all tables
   db.execSync(CREATE_TABLES_SQL);
+
+  // Migration v3: Ensure status and expected_date exist in entries table
+  try {
+    const tableInfo = db.getAllSync<{ name: string }>('PRAGMA table_info(entries)');
+    const columnNames = tableInfo.map(c => c.name);
+
+    if (!columnNames.includes('status')) {
+      db.execSync("ALTER TABLE entries ADD COLUMN status TEXT NOT NULL DEFAULT 'recorded'");
+      db.execSync("UPDATE entries SET status = 'recorded' WHERE status IS NULL OR status = ''");
+    }
+
+    if (!columnNames.includes('expected_date')) {
+      db.execSync('ALTER TABLE entries ADD COLUMN expected_date TEXT');
+    }
+  } catch (e) {
+    console.warn('Migration v3 check note:', e);
+  }
 }
 
 export function ensureDefaultHousehold(): void {
@@ -154,17 +174,21 @@ export function ensureDefaultHousehold(): void {
   }
 }
 
-export function getDatabaseStats(): { tableCount: number; entryCount: number } {
+export function getDatabaseStats(): { tableCount: number; entryCount: number; plannedCount: number } {
   const db = getDb();
   const tables = db.getAllSync<{ name: string }>(
     "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
   );
   const entries = db.getFirstSync<{ count: number }>(
-    'SELECT COUNT(*) as count FROM entries WHERE deleted_at IS NULL'
+    "SELECT COUNT(*) as count FROM entries WHERE deleted_at IS NULL AND status = 'recorded'"
+  );
+  const planned = db.getFirstSync<{ count: number }>(
+    "SELECT COUNT(*) as count FROM entries WHERE deleted_at IS NULL AND status = 'planned'"
   );
   return {
     tableCount: tables.length,
     entryCount: entries?.count ?? 0,
+    plannedCount: planned?.count ?? 0,
   };
 }
 

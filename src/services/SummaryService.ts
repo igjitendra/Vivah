@@ -1,9 +1,10 @@
 import { getDb, DEFAULT_HOUSEHOLD_ID } from '../database/db';
 
 export interface DashboardSummary {
-  totalMilaPaise: number;      // Total received (all time)
-  totalDiyaPaise: number;      // Total given (all time)
-  totalEntries: number;        // Total non-deleted entries
+  totalMilaPaise: number;      // Total received (recorded only)
+  totalDiyaPaise: number;      // Total given (recorded only)
+  totalEntries: number;        // Total non-deleted recorded entries
+  totalPlannedEntries: number; // Total planned entries
   totalEvents: number;         // Total events
   totalPeople: number;         // Total people
   recentEventTitle: string | null;
@@ -24,20 +25,27 @@ export interface PersonSummary {
   totalMilaPaise: number;
   totalDiyaPaise: number;
   entryCount: number;
+  plannedCount: number;
 }
 
 export class SummaryService {
   static getDashboardSummary(): DashboardSummary {
     const db = getDb();
 
+    // Financial totals ONLY include 'recorded' entries
     const milaStat = db.getFirstSync<{ total: number; count: number }>(
       `SELECT COALESCE(SUM(cash_amount_paise), 0) as total, COUNT(*) as count
-       FROM entries WHERE household_id = ? AND direction = 'mila' AND deleted_at IS NULL`,
+       FROM entries WHERE household_id = ? AND direction = 'mila' AND status = 'recorded' AND deleted_at IS NULL`,
       DEFAULT_HOUSEHOLD_ID
     );
     const diyaStat = db.getFirstSync<{ total: number }>(
       `SELECT COALESCE(SUM(cash_amount_paise), 0) as total
-       FROM entries WHERE household_id = ? AND direction = 'diya' AND deleted_at IS NULL`,
+       FROM entries WHERE household_id = ? AND direction = 'diya' AND status = 'recorded' AND deleted_at IS NULL`,
+      DEFAULT_HOUSEHOLD_ID
+    );
+    const plannedStat = db.getFirstSync<{ count: number }>(
+      `SELECT COUNT(*) as count
+       FROM entries WHERE household_id = ? AND status = 'planned' AND deleted_at IS NULL`,
       DEFAULT_HOUSEHOLD_ID
     );
     const eventStat = db.getFirstSync<{ count: number }>(
@@ -57,6 +65,7 @@ export class SummaryService {
       totalMilaPaise: milaStat?.total ?? 0,
       totalDiyaPaise: diyaStat?.total ?? 0,
       totalEntries: milaStat?.count ?? 0,
+      totalPlannedEntries: plannedStat?.count ?? 0,
       totalEvents: eventStat?.count ?? 0,
       totalPeople: peopleStat?.count ?? 0,
       recentEventTitle: recentEvent?.title ?? null,
@@ -74,12 +83,12 @@ export class SummaryService {
 
     const milaStat = db.getFirstSync<{ total: number; count: number }>(
       `SELECT COALESCE(SUM(cash_amount_paise), 0) as total, COUNT(*) as count
-       FROM entries WHERE event_id = ? AND direction = 'mila' AND deleted_at IS NULL`,
+       FROM entries WHERE event_id = ? AND direction = 'mila' AND status = 'recorded' AND deleted_at IS NULL`,
       eventId
     );
     const diyaStat = db.getFirstSync<{ total: number }>(
       `SELECT COALESCE(SUM(cash_amount_paise), 0) as total
-       FROM entries WHERE event_id = ? AND direction = 'diya' AND deleted_at IS NULL`,
+       FROM entries WHERE event_id = ? AND direction = 'diya' AND status = 'recorded' AND deleted_at IS NULL`,
       eventId
     );
 
@@ -98,9 +107,10 @@ export class SummaryService {
       `SELECT
         p.id as personId,
         p.name as personName,
-        COALESCE(SUM(CASE WHEN e.direction = 'mila' THEN e.cash_amount_paise ELSE 0 END), 0) as totalMilaPaise,
-        COALESCE(SUM(CASE WHEN e.direction = 'diya' THEN e.cash_amount_paise ELSE 0 END), 0) as totalDiyaPaise,
-        COUNT(e.id) as entryCount
+        COALESCE(SUM(CASE WHEN e.direction = 'mila' AND e.status = 'recorded' THEN e.cash_amount_paise ELSE 0 END), 0) as totalMilaPaise,
+        COALESCE(SUM(CASE WHEN e.direction = 'diya' AND e.status = 'recorded' THEN e.cash_amount_paise ELSE 0 END), 0) as totalDiyaPaise,
+        COUNT(CASE WHEN e.status = 'recorded' THEN e.id ELSE NULL END) as entryCount,
+        COUNT(CASE WHEN e.status = 'planned' THEN e.id ELSE NULL END) as plannedCount
        FROM people p
        LEFT JOIN entries e ON p.id = e.person_id AND e.deleted_at IS NULL
        WHERE p.household_id = ?

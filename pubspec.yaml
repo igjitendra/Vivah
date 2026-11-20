@@ -1,0 +1,87 @@
+name: vyavahaar
+description: "व्यवहार (Vyavahaar) — Digital Family Ledger. रिश्तों का हिसाब, हमेशा याद।"
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+  flutter: ">=3.24.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State Management & Dependency Injection
+  flutter_riverpod: ^2.6.1
+
+  # Declarative Routing
+  go_router: ^14.6.2
+
+  # Type-Safe SQLite Persistence
+  drift: ^2.20.3
+  sqlite3: ^2.4.6
+  path_provider: ^2.1.5
+  path: ^1.9.0
+
+  # Models & Immutability
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # Cryptography & Security (100% Offline AES-256-GCM + PBKDF2)
+  cryptography: ^2.7.2
+  flutter_secure_storage: ^9.2.2
+
+  # Document Generation & File Handling
+  pdf: ^3.11.1
+  printing: ^5.13.1
+  csv: ^6.0.0
+  file_picker: ^8.1.4
+  share_plus: ^10.1.2
+
+  # Formatting & Localization
+  intl: ^0.19.0
+
+  # UUID generation for primary keys
+  uuid: ^4.5.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+
+  # Code Generation
+  build_runner: ^2.4.13
+  drift_dev: ^2.20.3
+  freezed: ^2.5.7
+  json_serializable: ^6.9.0
+
+  # Testing & Mocking
+  mocktail: ^1.0.4
+
+  # Static Analysis
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/fonts/
+    - assets/icons/
+    - assets/images/
+    - assets/brand/
+
+  fonts:
+    - family: NotoSansDevanagari
+      fonts:
+        - asset: assets/fonts/NotoSansDevanagari-Regular.ttf
+        - asset: assets/fonts/NotoSansDevanagari-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/NotoSansDevanagari-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/NotoSansDevanagari-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/NotoSansDevanagari-ExtraBold.ttf
+          weight: 800

@@ -5,6 +5,20 @@
 
 ---
 
+## [1.1.0] — 2026-11-21
+
+### Added
+- **Flutter Cross-Platform Architecture Foundation (Step 2)**:
+  - Multi-platform setup in `pubspec.yaml` and `analysis_options.yaml` targeting Android, iOS, Linux, macOS, and Windows.
+  - Core layer (`lib/src/core/`) including brand colors (`AppColors`), spacing system (`AppSpacing`), strings (`AppStrings`), integer paise utilities (`CurrencyUtils`), Hindi Devanagari calendar formatting (`AppDateUtils`), `Result<T>` monad, and platform detection flags (`PlatformInfo`).
+  - Domain layer (`lib/src/domain/`) with strict transaction enums, entities, and pure implementation of the 12 financial rules (`FinancialRules`).
+  - Data layer with Drift ORM schemas (`lib/src/data/database/tables/`) mirroring SQLite v3 schema byte-for-byte (`Households`, `Families`, `People`, `Events`, `Entries`, `EntryItems`, `Reminders`, `Attachments`).
+  - Reactive DAOs (`EntriesDao`) enforcing strict Mila/Diya separation and cash/gift isolation in SQL queries.
+  - Riverpod state management providers (`lib/src/app/app_providers.dart`) for database, repositories, and reactive streams.
+  - Presentation layer including Material 3 theme (`AppTheme`), `DirectionBadge`, `FloatingPillTabBar` (expanding terracotta chip), `ResponsiveLayout` (mobile touch / desktop split-screen & sidebar), and redesigned modern `DashboardScreen`.
+  - Comprehensive Flutter unit test suite: `currency_utils_test.dart`, `financial_rules_test.dart`, and `date_utils_test.dart`.
+  - Unified CI pipeline (`.github/workflows/ci.yml`) automating both React Native and Flutter verification checks.
+
 ## [1.0.0] — 2026-11-21
 
 ### Added

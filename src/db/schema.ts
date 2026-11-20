@@ -1,0 +1,104 @@
+export const CREATE_TABLES_SQL = `
+CREATE TABLE IF NOT EXISTS households (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS families (
+    id TEXT PRIMARY KEY NOT NULL,
+    household_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    village TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (household_id) REFERENCES households(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS people (
+    id TEXT PRIMARY KEY NOT NULL,
+    household_id TEXT NOT NULL,
+    family_id TEXT,
+    name TEXT NOT NULL,
+    village TEXT,
+    relationship TEXT,
+    phone TEXT,
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (household_id) REFERENCES households(id) ON DELETE CASCADE,
+    FOREIGN KEY (family_id) REFERENCES families(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS events (
+    id TEXT PRIMARY KEY NOT NULL,
+    household_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    event_type TEXT NOT NULL,
+    event_date TEXT NOT NULL,
+    person_id TEXT,
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (household_id) REFERENCES households(id) ON DELETE CASCADE,
+    FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS entries (
+    id TEXT PRIMARY KEY NOT NULL,
+    household_id TEXT NOT NULL,
+    event_id TEXT NOT NULL,
+    person_id TEXT NOT NULL,
+    direction TEXT NOT NULL CHECK (direction IN ('mila', 'diya')),
+    cash_amount_paise INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    deleted_at TEXT,
+    sync_status TEXT NOT NULL DEFAULT 'local',
+    FOREIGN KEY (household_id) REFERENCES households(id) ON DELETE CASCADE,
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+    FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS entry_items (
+    id TEXT PRIMARY KEY NOT NULL,
+    entry_id TEXT NOT NULL,
+    item_name TEXT NOT NULL,
+    quantity REAL NOT NULL DEFAULT 1.0,
+    unit TEXT DEFAULT 'संख्या',
+    estimated_value_paise INTEGER DEFAULT NULL,
+    condition TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (entry_id) REFERENCES entries(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS reminders (
+    id TEXT PRIMARY KEY NOT NULL,
+    household_id TEXT NOT NULL,
+    person_id TEXT NOT NULL,
+    event_title TEXT NOT NULL,
+    target_date TEXT NOT NULL,
+    note TEXT,
+    is_completed INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (household_id) REFERENCES households(id) ON DELETE CASCADE,
+    FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS attachments (
+    id TEXT PRIMARY KEY NOT NULL,
+    entry_id TEXT NOT NULL,
+    local_path TEXT NOT NULL,
+    remote_path TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (entry_id) REFERENCES entries(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_entries_event ON entries(event_id);
+CREATE INDEX IF NOT EXISTS idx_entries_person ON entries(person_id);
+CREATE INDEX IF NOT EXISTS idx_entries_direction ON entries(direction);
+CREATE INDEX IF NOT EXISTS idx_people_name ON people(name);
+CREATE INDEX IF NOT EXISTS idx_people_village ON people(village);
+CREATE INDEX IF NOT EXISTS idx_entry_items_entry ON entry_items(entry_id);
+`;

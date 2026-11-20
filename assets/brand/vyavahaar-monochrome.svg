@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <g id="vyavahaar-symbol-monochrome" fill="none" fill-rule="evenodd">
+    <path id="left-page" d="M 252 165 C 215 152, 168 152, 126 172 C 118 176, 112 184, 112 194 C 112 238, 116 284, 122 316 C 124 326, 132 332, 142 332 C 178 330, 218 340, 252 358 Z" fill="#000000" />
+    <path id="left-page-accent" d="M 252 196 C 222 186, 185 186, 150 202 C 144 205, 140 211, 140 218 C 140 248, 144 282, 148 304 C 150 311, 156 316, 163 316 C 192 314, 224 322, 252 336 Z" fill="#FFFFFF" />
+    <path id="right-page" d="M 260 165 C 297 152, 344 152, 386 172 C 394 176, 400 184, 400 194 C 400 238, 396 284, 390 316 C 388 326, 380 332, 370 332 C 334 330, 294 340, 260 358 Z" fill="#000000" />
+    <path id="checkmark" d="M 198 254 L 242 298 C 248 304, 258 304, 264 298 L 374 188 C 380 182, 380 172, 374 166 L 360 152 C 354 146, 344 146, 338 152 L 253 237 L 224 208 C 218 202, 208 202, 202 208 L 198 212 C 192 218, 192 228, 198 234 Z" fill="#000000" stroke="#FFFFFF" stroke-width="8" stroke-linejoin="round" />
+  </g>
+</svg>

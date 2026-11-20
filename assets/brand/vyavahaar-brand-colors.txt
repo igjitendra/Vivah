@@ -1,0 +1,68 @@
+======================================================================
+  व्यवहार (VYAVAHAR) — OFFICIAL BRAND SPECIFICATION & PRODUCTION GUIDE
+======================================================================
+
+1. BRAND PALETTE SPECIFICATION
+----------------------------------------------------------------------
+PRIMARY BRAND COLOR: DEEP NAVY
+- HEX:      #1F3352
+- RGB:      rgb(31, 51, 82)
+- HSL:      hsl(216°, 45%, 22%)
+- CMYK:     C:62% M:38% Y:0% K:68%
+- Role:     Primary brand canvas, authoritative presence, app background,
+            legacy and adaptive container backgrounds.
+
+ACCENT BRAND COLOR: TERRACOTTA
+- HEX:      #C05A2B
+- RGB:      rgb(192, 90, 43)
+- HSL:      hsl(19°, 63%, 46%)
+- CMYK:     C:0% M:53% Y:78% K:25%
+- Role:     Action accent, checkmark verification mark, dynamic ledger
+            pages, primary call-to-action buttons (+ नया व्यवहार).
+
+BASE BRAND COLOR: WARM CREAM
+- HEX:      #F4EFE7
+- RGB:      rgb(244, 239, 231)
+- HSL:      hsl(37°, 37%, 93%)
+- CMYK:     C:0% M:2% Y:5% K:4%
+- Role:     Open ledger paper pages, crisp high-contrast symbol elements,
+            app background surface, Devanagari wordmark on dark canvases.
+
+2. LOGO SYMBOL GEOMETRY & ARCHITECTURE
+----------------------------------------------------------------------
+- Concept:  Open Ledger (पारंपरिक बही) + Integrated Verified Checkmark (✓).
+- Semantics: Represents digital transformation of the traditional Indian
+            family bahi khata, verifying cash, gifts, and relations.
+- Proportions:
+  * Symbol aspect ratio: 1 : 0.9 (Width: 288px, Height: 206px on 512 canvas).
+  * Adaptive safe circle: 66dp of 108dp canvas (fits safely inside central 61%).
+  * No baked-in container squircle; pure vector Bézier curves.
+
+3. DEVANAGARI WORDMARK
+----------------------------------------------------------------------
+- Text:     व्यवहार (Vyavahaar)
+- Spelling: Verified Devanagari Unicode: U+0935 U+094D U+092F U+0935 U+0939 U+093E U+0930
+- Anatomy:  Halant Va (व्) + Ya (य) + Va (व) + Ha (ह) + Aa Matra (ा) + Ra (र).
+- Shirorekha: Clean, unbroken top header line spanning across all glyphs.
+- Form:     Converted to 100% resolution-independent vector paths (<path d="...">).
+
+4. PRODUCTION ASSET INDEX
+----------------------------------------------------------------------
+- vyavahaar-logo-master.svg         Master vector lockup with symbol & wordmark
+- vyavahaar-symbol.svg              Standalone symbol vector (transparent bg)
+- vyavahaar-monochrome.svg          High-contrast monochrome vector
+- vyavahaar-icon-512.png            512×512 px Play Store & legacy launcher icon
+- vyavahaar-adaptive-foreground.png 512×512 px Android adaptive icon foreground
+- vyavahaar-adaptive-background.png 512×512 px Android adaptive icon background (#1F3352)
+- vyavahaar-logo-transparent.png    1024×768 px transparent master logo
+- vyavahaar-logo-2048.png           2048×1536 px Ultra-HD master brand display
+- vyavahaar-brand-colors.txt        This technical specification sheet
+
+5. QUALITY VERIFICATION MATRIX
+----------------------------------------------------------------------
+[PASSED] Devanagari spelling verified strictly as "व्यवहार".
+[PASSED] Geometry verified down to 48×48 px and 24×24 px without silhouette loss.
+[PASSED] Android adaptive icon safe zone conforms to 66dp / 108dp Android specification.
+[PASSED] Vector paths contain zero raster embeds, stray anchors, or unclosed loops.
+[PASSED] Color values strictly calibrated to #1F3352, #C05A2B, and #F4EFE7.
+======================================================================

@@ -22,6 +22,8 @@ export function formatHindiDate(isoDateString?: string): string {
   }
 }
 
+export const formatDate = formatHindiDate;
+
 export function getTodayDateString(): string {
   const d = new Date();
   const year = d.getFullYear();

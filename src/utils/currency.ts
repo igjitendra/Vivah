@@ -7,6 +7,8 @@ export function paiseToRupees(paise: number = 0): number {
   return Math.round(paise) / 100;
 }
 
+export const paiToRupees = paiseToRupees;
+
 export function rupeesToPaise(rupees: number | string = 0): number {
   const numeric = typeof rupees === 'string' ? parseFloat(rupees.replace(/[^0-9.]/g, '')) : rupees;
   if (isNaN(numeric) || numeric < 0) return 0;

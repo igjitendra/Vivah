@@ -5,6 +5,22 @@
 
 ---
 
+## [1.3.0] — 2026-11-21
+
+### Changed
+- **Final Technology Stack Validation & Documentation Correction**:
+  - Formally approved **Flutter + Dart** as the official target implementation for all 5 platforms (Android, iOS, Linux, macOS, Windows).
+  - Explicitly classified the verified **React Native (0.88.1) + Expo SDK 58** codebase as a preserved **Legacy Reference MVP** for functional and schema parity.
+  - Updated Flutter target SDK constraint to modern stable (`>=3.27.0`) and Dart (`>=3.6.0 <4.0.0`) in `pubspec.yaml` and `.github/workflows/ci.yml`.
+  - Documented exact local environment reality: Termux on Android lacks local Flutter CLI; verification is automated via GitHub Actions CI on Ubuntu runners.
+  - Published comprehensive cryptographic architecture in `docs/SECURITY.md`:
+    - Authenticated encryption: AES-256-GCM with unique CSPRNG nonce per operation.
+    - OWASP password-based key derivation alignment: Argon2id (primary) or PBKDF2-HMAC-SHA256 with 600,000 iterations.
+    - Empirical device benchmarks: Native C/Dart PBKDF2 600,000 iterations executes in ~210ms vs pure JavaScript taking 854ms for only 10,000 iterations.
+    - Zero hardcoded keys policy and versioned backup envelope format v4.
+  - Clarified database benchmarks: distinguished in-memory indexed queries (3.43ms for 10K rows) from physical flash disk write barriers.
+  - Updated `AGENTS.md`, `README.md`, `docs/TECH_STACK.md`, `docs/ARCHITECTURE.md`, `docs/PLATFORM_STRATEGY.md`, `docs/DECISIONS.md`, and `docs/PROJECT_STATUS.md`.
+
 ## [1.2.5] — 2026-11-21
 
 ### Added

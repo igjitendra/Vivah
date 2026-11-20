@@ -21,13 +21,17 @@
 
 ## 2. Platform Support Matrix
 
-| Platform | Family | Interface Type | Target Priority | Current Status | Verification Method |
+| Platform | Family | Interface Type | Target Priority | Current Status | Official Implementation & Verification |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Android** | Mobile | Touch-First | Tier 1 (Primary) | **VERIFIED** | Physical Android Device (Expo Go) + 27 Automated Tests |
-| **iOS** | Mobile | Touch-First | Tier 1 (Primary) | **ARCHITECTURE READY** | Expo SDK 58 cross-compatible; awaiting macOS build host |
-| **Linux** | Desktop | Keyboard & Mouse | Tier 2 | **PLANNED** | Desktop Strategy Evaluated; Node/WASM or Tauri target |
-| **macOS** | Desktop | Keyboard, Mouse, Trackpad | Tier 2 | **PLANNED** | React Native macOS / Electron / Tauri target |
-| **Windows** | Desktop | Keyboard, Mouse, Touch | Tier 2 | **PLANNED** | React Native Windows / Tauri target |
+| **Android** | Mobile | Touch-First | Tier 1 (Primary) | **VERIFIED** | Physical Android Device (Expo Go) + 27 Automated Tests. Flutter scaffolded. |
+| **iOS** | Mobile | Touch-First | Tier 1 (Primary) | **ARCHITECTURE READY** | Expo SDK 58 cross-compatible; Flutter cross-platform architecture foundation ready. |
+| **Linux** | Desktop | Keyboard & Mouse | Tier 2 | **ARCHITECTURE READY** | Flutter + Drift ORM native SQLite desktop engine ready (`lib/src/data/database/`). |
+| **macOS** | Desktop | Keyboard, Mouse, Trackpad | Tier 2 | **ARCHITECTURE READY** | Flutter + Drift ORM native SQLite desktop engine ready (`lib/src/data/database/`). |
+| **Windows** | Desktop | Keyboard, Mouse, Touch | Tier 2 | **ARCHITECTURE READY** | Flutter + Drift ORM native SQLite desktop engine ready (`lib/src/data/database/`). |
+
+### Official Implementation Mandate:
+- **Official Target Implementation**: **Flutter + Dart** (Single unified `lib/` codebase targeting Android, iOS, Linux, macOS, Windows).
+- **Legacy / Reference Implementation**: **React Native 0.88.1 + Expo SDK 58** (Preserved in full as functional baseline).
 
 ### Status Definitions:
 - **`VERIFIED`**: Full application compiles, renders, executes all business logic, passes automated tests, and has been verified on target hardware/runtime.

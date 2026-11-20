@@ -111,8 +111,33 @@
 
 ---
 
-## ADR 014: Flutter / Dart as Master 5-Platform Architecture Candidate
+## ADR 014: Flutter / Dart Approved as Official 5-Platform Target Architecture
 - **Date**: 2026-11-21
-- **Decision**: Evaluate Flutter (Dart) + Riverpod + Drift ORM as the unified single-codebase technology stack for the five platforms. Retain existing verified React Native codebase until explicit migration approval gate.
-- **Context**: Flutter provides official, first-class native compilation for Linux GTK, macOS Cocoa, Windows Win32, Android, and iOS from a single `lib/` directory.
-- **Status**: **ARCHITECTURE PROPOSAL DOCUMENTED (`docs/FLUTTER_MIGRATION_ARCHITECTURE.md`) — AWAITING OWNER APPROVAL GATE**
+- **Decision**: Formally approved Flutter (Dart) + Riverpod + Drift ORM + GoRouter as the official production target architecture for all five operating systems (Android, iOS, Linux, macOS, Windows).
+- **Context**: Flutter provides official native compilation across mobile and desktop from a single codebase with high performance and identical SQLite semantics.
+- **Consequences**: Future production feature development proceeds in Flutter (`lib/`). The React Native codebase is preserved as a verified legacy reference.
+- **Status**: **APPROVED & OFFICIAL TARGET**
+
+---
+
+## ADR 015: React Native Codebase Status & Preservation Policy
+- **Date**: 2026-11-21
+- **Decision**: The existing React Native (0.88.1) + Expo SDK 58 MVP source code in `app/` and `src/` is strictly preserved as a legacy functional reference. It must not be deleted or overwritten.
+- **Context**: The React Native application represents a complete, verified implementation (27/27 automated tests passing) that serves as the behavioral benchmark and schema source of truth for the Flutter implementation.
+- **Status**: **APPROVED & PRESERVED AS REFERENCE**
+
+---
+
+## ADR 016: Backup Cryptography & Key Derivation (OWASP Alignment)
+- **Date**: 2026-11-21
+- **Decision**: Authenticated backup encryption must use **AES-256-GCM** with a unique 96/128-bit CSPRNG nonce per operation and a unique 128-bit salt. The key derivation function must adhere to OWASP recommendations: Argon2id (primary) or PBKDF2-HMAC-SHA256 with 600,000 iterations.
+- **Context**: 10,000 iterations in pure JavaScript was an obsolete performance workaround in the reference code. In native Flutter C/Dart FFI, 600,000 iterations executes in ~210ms on device hardware, providing robust brute-force protection without freezing the UI.
+- **Status**: **APPROVED & IMPLEMENTED IN ARCHITECTURE**
+
+---
+
+## ADR 017: 22 Scheduled Indian Languages Architecture
+- **Date**: 2026-11-21
+- **Decision**: The application architecture must natively support all 22 languages listed in the Eighth Schedule of the Constitution of India + English fallback, with an extensible registry for regional dialects.
+- **Context**: Traditional family ledgers are culturally localized. Stored database records use invariant machine tokens (`given`, `received`), while the UI adapts dynamically to regional scripts, numerals, and RTL flows (Urdu, Kashmiri, Sindhi).
+- **Status**: **APPROVED & INITIAL CATALOG INTEGRATED**

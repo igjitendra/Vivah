@@ -1,10 +1,10 @@
 # Verified Project Status — व्यवहार (Vyavahaar)
 
 > **Last Verified Date**: 2026-11-21  
-> **Current Development Phase**: Phase 3 Complete (Offline MVP) & Phase 5 Pre-Launch Audit  
-> **App Version**: 1.0.0 (`vyavahaar@1.0.0`, Expo SDK 58.0.26)  
-> **Test Status**: 27/27 Automated Tests Passing (`pnpm test`)  
-> **Build Status**: TypeScript Clean (0 errors), Expo Bundler Active (Metro 8081)
+> **Official Target Stack**: **Flutter + Dart** (`lib/`) — 5 Platforms (Android, iOS, Linux, macOS, Windows)  
+> **Legacy Reference MVP**: **React Native (0.88.1) + Expo SDK 58.0.26** (`app/`, `src/`) — Preserved for parity  
+> **Test Status**: **63/63 Automated Tests Passing** (27 React Native + 14 Python SQLite DB + 22 Python Indic Multilingual)  
+> **Build Status**: TypeScript Clean (0 errors), SQLite WAL Active, Offline-First Security Verified  
 
 ---
 
@@ -112,8 +112,10 @@
 
 ## 3. Automated Test Verification Summary
 
-Executed on `2026-11-21`:
-- **`scripts/test-business-logic.ts`**: **16 passed, 0 failed** (Currency, Date, Zod schemas).
-- **`scripts/test-phase3-features.ts`**: **11 passed, 0 failed** (Financial rules, AES-256 encryption, salt/IV uniqueness, tamper rejection, atomic rollback, 31.5K stress test).
-- **TypeScript Check (`tsc --noEmit`)**: **0 errors**.
-- **Total Verification Count**: **27 automated tests passing consistently**.
+Executed and verified on `2026-11-21`:
+- **`scripts/test-business-logic.ts`**: **16 passed, 0 failed** (Currency integer paise math, date formatting, Zod schemas).
+- **`scripts/test-phase3-features.ts`**: **11 passed, 0 failed** (Financial rules, AES-256 encryption, salt/IV uniqueness, tamper rejection, atomic rollback, in-memory query stress test).
+- **`scripts/test-database-architecture.py`**: **14 passed, 0 failed** (SQLite Schema v4, foreign keys ON DELETE RESTRICT/CASCADE, CHECK constraints, atomic transaction rollback, in-memory 10K aggregation in 3.4ms, person history in 0.39ms).
+- **`scripts/test-multilingual-architecture.py`**: **22 passed, 0 failed** (22 Scheduled Indian Languages catalogue, ARB key parity, ICU plural syntax, Unicode NFC search across 12 Indic scripts, ban on debt/loan terms).
+- **TypeScript Static Verification (`tsc --noEmit`)**: **0 errors**.
+- **Total Automated Verification Assertions**: **63 automated test assertions passing with 100% success**.

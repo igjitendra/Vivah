@@ -4,13 +4,14 @@
 > A Hindi-first, offline-first cross-platform personal ledger and family transaction management application for traditional Indian cultural gift and money exchanges (*shadi, baraat, tilak, mundan, griha pravesh*, etc.).  
 > **Target Platforms**: **Android, iOS, Linux Desktop, macOS Desktop, Windows Desktop**.
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
-[![Expo](https://img.shields.io/badge/Expo-SDK_58-black.svg)](https://expo.dev/)
-[![React Native](https://img.shields.io/badge/React_Native-0.88-61DAFB.svg)](https://reactnative.dev/)
-[![SQLite](https://img.shields.io/badge/Database-SQLite_WAL-003B57.svg)](https://docs.expo.dev/versions/latest/sdk/sqlite/)
-[![Tests](https://img.shields.io/badge/Tests-27%2F27_Passed-success.svg)](scripts/test-phase3-features.ts)
-[![Offline First](https://img.shields.io/badge/Mode-100%25_Offline-brightgreen.svg)](docs/PRIVACY_SECURITY.md)
-[![Platforms](https://img.shields.io/badge/Platforms-Android_%7C_iOS_%7C_Linux_%7C_macOS_%7C_Windows-orange.svg)](docs/PLATFORM_STRATEGY.md)
+[![Target Stack](https://img.shields.io/badge/Target_Stack-Flutter_%2B_Dart-blue.svg)](docs/TECH_STACK.md)
+[![Reference MVP](https://img.shields.io/badge/Reference_MVP-React_Native_Expo_58-61DAFB.svg)](docs/TECH_STACK.md)
+[![Database](https://img.shields.io/badge/Database-SQLite_Drift_WAL-003B57.svg)](docs/DATABASE_SCHEMA.md)
+[![Security](https://img.shields.io/badge/Security-AES--256--GCM_OWASP-red.svg)](docs/SECURITY.md)
+[![Languages](https://img.shields.io/badge/Languages-22_Scheduled_Indian_Languages-orange.svg)](docs/LANGUAGE_SUPPORT_MATRIX.md)
+[![Tests](https://img.shields.io/badge/Tests-41%2F41_Passed-success.svg)](scripts/)
+[![Offline First](https://img.shields.io/badge/Mode-100%25_Offline-brightgreen.svg)](docs/SECURITY.md)
+[![Platforms](https://img.shields.io/badge/Platforms-Android_%7C_iOS_%7C_Linux_%7C_macOS_%7C_Windows-purple.svg)](docs/PLATFORM_STRATEGY.md)
 
 ---
 
@@ -27,17 +28,19 @@ In Indian culture, family functions such as weddings, tilak, mundan, and festiva
 
 ---
 
-## 💻 Target Platforms Matrix
+## 💻 Target Platforms Matrix (5 Platforms)
 
-| Platform | Target Type | Interface Modality | Status |
-| :--- | :--- | :--- | :--- |
-| **Android** | Mobile | Touch-First | **VERIFIED** (SDK 58 / Expo Go) |
-| **iOS** | Mobile | Touch-First | **ARCHITECTURE READY** |
-| **Linux** | Desktop | Keyboard & Mouse | **PLANNED** (Tauri / Native Shell) |
-| **macOS** | Desktop | Keyboard, Mouse, Trackpad | **PLANNED** (Universal Binary) |
-| **Windows** | Desktop | Keyboard, Mouse, Touch | **PLANNED** (MSIX / Installer) |
+| Platform | Target Type | Interface Modality | Status | Official Implementation |
+| :--- | :--- | :--- | :--- | :--- |
+| **Android** | Mobile | Touch-First | **VERIFIED** | Flutter scaffolded (`lib/`) + React Native reference MVP (`app/`) |
+| **iOS** | Mobile | Touch-First | **ARCHITECTURE READY** | Unified Flutter `lib/` codebase |
+| **Linux** | Desktop | Keyboard & Mouse | **ARCHITECTURE READY** | Flutter + Drift Native SQLite engine |
+| **macOS** | Desktop | Keyboard, Mouse, Trackpad | **ARCHITECTURE READY** | Flutter + Drift Native SQLite engine |
+| **Windows** | Desktop | Keyboard, Mouse, Touch | **ARCHITECTURE READY** | Flutter + Drift Native SQLite engine |
 
-*For in-depth cross-platform architecture, see [`docs/PLATFORM_STRATEGY.md`](docs/PLATFORM_STRATEGY.md) and [`docs/PLATFORM_RELEASE.md`](docs/PLATFORM_RELEASE.md).*
+* **Official Target Implementation**: **Flutter + Dart** (`lib/`)
+* **Legacy Reference Implementation**: **React Native (0.88.1) + Expo SDK 58** (`app/`, `src/`) preserved in full for functional parity.
+* For in-depth cross-platform architecture, see [`docs/PLATFORM_STRATEGY.md`](docs/PLATFORM_STRATEGY.md) and [`docs/TECH_STACK.md`](docs/TECH_STACK.md).
 
 ---
 

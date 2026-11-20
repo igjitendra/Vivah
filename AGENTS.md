@@ -11,11 +11,13 @@
 - **App Name**: व्यवहार (Vyavahaar)
 - **Tagline**: रिश्तों का हिसाब, हमेशा याद।
 - **Scope**: **Cross-Platform Application for Five Target Platforms**:
-  1. **Android** (Mobile — Verified in Phase 3/5)
+  1. **Android** (Mobile — Verified in Phase 3/5; Flutter scaffolded)
   2. **iOS** (Mobile — Architecture Ready)
-  3. **Linux Desktop** (Desktop — Planned)
-  4. **macOS Desktop** (Desktop — Planned)
-  5. **Windows Desktop** (Desktop — Planned)
+  3. **Linux Desktop** (Desktop — Architecture Ready)
+  4. **macOS Desktop** (Desktop — Architecture Ready)
+  5. **Windows Desktop** (Desktop — Architecture Ready)
+- **Official Target Implementation**: **Flutter + Dart** (`lib/`).
+- **Legacy Reference Implementation**: **React Native (0.88.1) + Expo SDK 58** (`app/`, `src/`). Strictly preserved for behavioral and schema parity. Do NOT delete or overwrite without explicit approval.
 - **Nature**: 100% Offline-First Digital Family Ledger for Indian cultural gift & money exchanges (*shadi, baraat, tilak, mundan, griha pravesh*, etc.).
 - **Storage**: Autonomous local SQLite database engine on every supported platform.
 

@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 
 interface RouteInfo {
@@ -20,6 +21,10 @@ interface TabDescriptor {
     title?: string;
     href?: any;
     tabBarLabel?: any;
+    tabBarStyle?: any;
+  };
+  navigation?: {
+    navigate: (name: string, params?: any) => void;
   };
 }
 
@@ -29,7 +34,11 @@ interface CustomTabBarProps {
     routes: RouteInfo[];
   };
   descriptors: Record<string, TabDescriptor>;
-  navigation: {
+  emitter?: {
+    emit: (event: any) => { defaultPrevented: boolean };
+  };
+  navigateToTab?: (routeKey: string) => void;
+  navigation?: {
     navigate: (name: string, params?: any) => void;
     emit: (event: any) => { defaultPrevented: boolean };
   };
@@ -70,7 +79,14 @@ const TAB_CONFIG: Record<
   },
 };
 
-export function FloatingPillTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
+export function FloatingPillTabBar({
+  state,
+  descriptors,
+  emitter,
+  navigateToTab,
+  navigation,
+}: CustomTabBarProps) {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const bottomPosition = Math.max(insets.bottom, 12) + 6;
 
@@ -88,37 +104,91 @@ export function FloatingPillTabBar({ state, descriptors, navigation }: CustomTab
       style={[
         styles.floatingContainer,
         {
-          bottom: bottomPosition,
+          paddingBottom: bottomPosition,
         },
       ]}
       pointerEvents="box-none"
     >
-      <View style={styles.pillBar}>
+      <View style={styles.pillBar} pointerEvents="auto">
         {visibleRoutes.map((route) => {
-          const isFocused = state.routes[state.index]?.name === route.name;
+          const isFocused = state.routes[state.index]?.key === route.key;
           const config = TAB_CONFIG[route.name] || {
             label: route.name,
             activeIcon: 'ellipse',
             inactiveIcon: 'ellipse-outline',
           };
 
-          const onPress = () => {
+          const handlePress = () => {
+            // Haptic vibration feedback on tap
             try {
               if (Platform.OS !== 'web') {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               }
             } catch {
-              // ignore haptic error
+              // Ignore haptic errors if not supported
             }
 
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
+            // 1. Emit tabPress event
+            let defaultPrevented = false;
+            try {
+              if (emitter?.emit) {
+                const event = emitter.emit({
+                  type: 'tabPress',
+                  target: route.key,
+                  canPreventDefault: true,
+                });
+                defaultPrevented = !!event?.defaultPrevented;
+              } else if (navigation?.emit) {
+                const event = navigation.emit({
+                  type: 'tabPress',
+                  target: route.key,
+                  canPreventDefault: true,
+                });
+                defaultPrevented = !!event?.defaultPrevented;
+              }
+            } catch (err) {
+              // Continue navigation even if emit fails
+            }
 
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
+            // 2. Perform navigation if not already focused and not cancelled
+            if (!isFocused && !defaultPrevented) {
+              let navigated = false;
+
+              // Official React Navigation Bottom Tabs method
+              if (typeof navigateToTab === 'function') {
+                try {
+                  navigateToTab(route.key);
+                  navigated = true;
+                } catch {
+                  navigated = false;
+                }
+              }
+
+              // Route descriptor navigation
+              if (!navigated && descriptors[route.key]?.navigation?.navigate) {
+                try {
+                  descriptors[route.key].navigation!.navigate(route.name);
+                  navigated = true;
+                } catch {
+                  navigated = false;
+                }
+              }
+
+              // Standard navigation prop
+              if (!navigated && navigation?.navigate) {
+                try {
+                  navigation.navigate(route.name);
+                  navigated = true;
+                } catch {
+                  navigated = false;
+                }
+              }
+
+              // Expo Router direct imperative navigation fallback
+              if (!navigated) {
+                const targetPath = route.name === 'index' ? '/(tabs)' : `/(tabs)/${route.name}`;
+                router.navigate(targetPath as any);
+              }
             }
           };
 
@@ -127,10 +197,11 @@ export function FloatingPillTabBar({ state, descriptors, navigation }: CustomTab
             return (
               <TouchableOpacity
                 key={route.key}
-                onPress={onPress}
+                onPress={handlePress}
                 activeOpacity={0.88}
                 style={styles.activeChip}
-                accessibilityRole="button"
+                hitSlop={{ top: 12, bottom: 12, left: 10, right: 10 }}
+                accessibilityRole="tab"
                 accessibilityState={{ selected: true }}
                 accessibilityLabel={config.label}
               >
@@ -151,10 +222,11 @@ export function FloatingPillTabBar({ state, descriptors, navigation }: CustomTab
           return (
             <TouchableOpacity
               key={route.key}
-              onPress={onPress}
+              onPress={handlePress}
               activeOpacity={0.7}
               style={styles.inactiveTab}
-              accessibilityRole="button"
+              hitSlop={{ top: 12, bottom: 12, left: 10, right: 10 }}
+              accessibilityRole="tab"
               accessibilityState={{ selected: false }}
               accessibilityLabel={config.label}
             >
@@ -176,10 +248,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
+    bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
-    zIndex: 999,
+    zIndex: 9999,
+    elevation: 9999,
   },
   pillBar: {
     flexDirection: 'row',

@@ -7,6 +7,7 @@ export interface DashboardSummary {
   totalPlannedEntries: number; // Total planned entries
   totalEvents: number;         // Total events
   totalPeople: number;         // Total people
+  recentEventId: string | null;
   recentEventTitle: string | null;
   recentEventDate: string | null;
 }
@@ -56,8 +57,8 @@ export class SummaryService {
       'SELECT COUNT(*) as count FROM people WHERE household_id = ?',
       DEFAULT_HOUSEHOLD_ID
     );
-    const recentEvent = db.getFirstSync<{ title: string; event_date: string }>(
-      `SELECT title, event_date FROM events WHERE household_id = ? ORDER BY event_date DESC LIMIT 1`,
+    const recentEvent = db.getFirstSync<{ id: string; title: string; event_date: string }>(
+      `SELECT id, title, event_date FROM events WHERE household_id = ? ORDER BY event_date DESC LIMIT 1`,
       DEFAULT_HOUSEHOLD_ID
     );
 
@@ -68,6 +69,7 @@ export class SummaryService {
       totalPlannedEntries: plannedStat?.count ?? 0,
       totalEvents: eventStat?.count ?? 0,
       totalPeople: peopleStat?.count ?? 0,
+      recentEventId: recentEvent?.id ?? null,
       recentEventTitle: recentEvent?.title ?? null,
       recentEventDate: recentEvent?.event_date ?? null,
     };

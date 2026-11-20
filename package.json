@@ -41,7 +41,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "test:logic": "tsx scripts/test-business-logic.ts"
+    "test:logic": "pnpm dlx tsx scripts/test-business-logic.ts"
   },
   "private": true
 }

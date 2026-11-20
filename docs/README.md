@@ -19,6 +19,9 @@ Welcome to the comprehensive, authoritative technical and product documentation 
 - **[USER_FLOWS.md](USER_FLOWS.md)**: Mermaid sequence and state diagrams of end-to-end user journeys.
 
 ### 2. Architecture & Technical Foundations
+- **[FLUTTER_MIGRATION_ARCHITECTURE.md](FLUTTER_MIGRATION_ARCHITECTURE.md)**: **Master 5-Platform Architecture Specification** — Flutter 3.24+, Riverpod, Drift ORM, Drift DAOs, folder tree, and migration feasibility.
+- **[PLATFORM_STRATEGY.md](PLATFORM_STRATEGY.md)**: Five-platform strategy (Android, iOS, Linux, macOS, Windows), framework audit, and desktop feasibility.
+- **[PLATFORM_RELEASE.md](PLATFORM_RELEASE.md)**: Multi-platform packaging, signing, and distribution (APK, AAB, IPA, AppImage, Flatpak, DMG, MSIX).
 - **[ARCHITECTURE.md](ARCHITECTURE.md)**: High-level architectural patterns, module layering, and offline data flow.
 - **[TECH_STACK.md](TECH_STACK.md)**: Exact installed packages, verified SDK versions, and dependency rationale.
 - **[DATABASE_SCHEMA.md](DATABASE_SCHEMA.md)**: SQLite schema v3, tables, indexes, integer paise conventions, and migration system.
@@ -57,7 +60,8 @@ When undertaking specific tasks, AI agents and developers must consult the follo
 | **UI / Styling / Screen Redesign** | [`UI_UX_GUIDELINES.md`](UI_UX_GUIDELINES.md), [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md), [`NAVIGATION.md`](NAVIGATION.md) |
 | **Financial / Ledger Calculations** | [`DOMAIN_RULES.md`](DOMAIN_RULES.md), [`REPORTS_AND_EXPORTS.md`](REPORTS_AND_EXPORTS.md) |
 | **Backup, Encryption, or Security** | [`BACKUP_RESTORE.md`](BACKUP_RESTORE.md), [`PRIVACY_SECURITY.md`](PRIVACY_SECURITY.md) |
-| **Android Release / Store Build** | [`ANDROID_BUILD_RELEASE.md`](ANDROID_BUILD_RELEASE.md), [`ROADMAP.md`](ROADMAP.md) |
+| **Cross-Platform / Desktop Tasks** | [`PLATFORM_STRATEGY.md`](PLATFORM_STRATEGY.md), [`ARCHITECTURE.md`](ARCHITECTURE.md) |
+| **Android & Multi-Platform Release** | [`ANDROID_BUILD_RELEASE.md`](ANDROID_BUILD_RELEASE.md), [`PLATFORM_RELEASE.md`](PLATFORM_RELEASE.md), [`ROADMAP.md`](ROADMAP.md) |
 
 ---
 

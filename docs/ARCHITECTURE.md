@@ -1,7 +1,8 @@
 # System Architecture — व्यवहार (Vyavahaar)
 
-> **Architectural Pattern**: Offline-First Layered Architecture  
-> **Primary Runtime**: React Native / Expo (Android)  
+> **Architectural Pattern**: Offline-First Cross-Platform Layered Architecture  
+> **Target Platforms**: Android, iOS, Linux Desktop, macOS Desktop, Windows Desktop (5 Platforms)  
+> **Master Cross-Platform Blueprint**: [`docs/FLUTTER_MIGRATION_ARCHITECTURE.md`](FLUTTER_MIGRATION_ARCHITECTURE.md)  
 > **Last Updated**: 2026-11-21
 
 ---
@@ -126,3 +127,24 @@ sequenceDiagram
 - **SQLite Transactions**: Multi-table insertions (such as an entry with multiple gifts) are executed inside `withTransactionSync`. If any sub-item insertion fails, the entire transaction is rolled back immediately.
 - **Safe Area Insets**: Handled natively via `react-native-safe-area-context` so elements never overlap system notches, camera cutouts, or bottom gesture navigation bars.
 - **Graceful Fallbacks**: If haptics or sharing sheets are unavailable on older Android versions, the operations fail gracefully without interrupting user workflows.
+
+---
+
+## 5. Cross-Platform Layering & Desktop Separation
+
+The cross-platform architecture enforces a strict boundary between shared logic and platform-specific UI:
+
+1. **Shared Core (100% Platform-Agnostic)**:
+   - Pure domain models (`Household`, `Person`, `Event`, `Entry`, `EntryItem`).
+   - Currency calculations in integer paise (`rupeesToPaise`, `formatCurrency`).
+   - Business rules (Mila/Diya separation, exclusion of planned/cancelled entries, exclusion of gift estimates).
+   - Validation logic (Zod / Dart equivalent schemas).
+   - Cryptographic backup envelope v3 (AES-256-GCM, PBKDF2, HMAC).
+
+2. **Platform-Adaptive UI Layer**:
+   - **Mobile (Android & iOS)**: Touch-first, swipe dismissals, floating pill bottom navigation, compact vertical cards.
+   - **Desktop (Linux, macOS, Windows)**: Collapsible sidebar navigation, wide data tables, resizable windows (min 960x600), keyboard shortcuts (`Ctrl+N` / `Cmd+N`, `Ctrl+F`), and mouse hover states.
+
+3. **Platform Services & Adapters**:
+   - File system persistence, native file pickers, secure hardware keystores, and sharing sheets are abstracted behind unified platform adapter interfaces.
+   - For complete Flutter & Drift architectural blueprints, see [`docs/FLUTTER_MIGRATION_ARCHITECTURE.md`](FLUTTER_MIGRATION_ARCHITECTURE.md).

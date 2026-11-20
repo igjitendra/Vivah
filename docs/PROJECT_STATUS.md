@@ -11,6 +11,7 @@
 ## 1. Status Evaluation Legend
 
 - `VERIFIED`: Implementation verified through automated test suites or physical device execution.
+- `ARCHITECTURE READY`: Code structure and libraries are compatible, awaiting platform-specific build and packaging verification.
 - `IMPLEMENTED`: Code exists and compiles, awaiting full end-to-end testing.
 - `PARTIAL`: Some functionality exists; specific sub-features remain incomplete.
 - `UI ONLY`: Component renders visually, but backing logic is mocked or incomplete.
@@ -20,7 +21,19 @@
 
 ---
 
-## 2. Feature-by-Feature Implementation Status
+## 2. Platform Support Matrix
+
+| Platform | Target Type | Interface Modality | Target Phase | Status | Verification Evidence / Roadmap |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Android** | Mobile | Touch-First | Phase 2–3 | **VERIFIED** | Physical Android Phone (Expo Go) + 27 Automated Tests Passing. |
+| **iOS** | Mobile | Touch-First | Phase 5 | **ARCHITECTURE READY** | Expo SDK 58 cross-compatible; zero Android-only native dependencies. |
+| **Linux** | Desktop | Keyboard & Mouse | Desktop Post-MVP | **PLANNED** | Desktop Strategy Documented (`docs/PLATFORM_STRATEGY.md`). |
+| **macOS** | Desktop | Keyboard, Mouse, Trackpad | Desktop Post-MVP | **PLANNED** | Universal Binary packaging planned (`docs/PLATFORM_RELEASE.md`). |
+| **Windows** | Desktop | Keyboard, Mouse, Touch | Desktop Post-MVP | **PLANNED** | MSIX / Win32 installer planned (`docs/PLATFORM_RELEASE.md`). |
+
+---
+
+## 3. Feature-by-Feature Implementation Status
 
 ### Core Foundation & Architecture
 | Module / Feature | Status | Primary Source Files | Verification Evidence |

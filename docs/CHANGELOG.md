@@ -8,6 +8,14 @@
 ## [1.0.0] — 2026-11-21
 
 ### Added
+- **Master Multi-Platform Architecture Specification (`docs/FLUTTER_MIGRATION_ARCHITECTURE.md`)**:
+  - Detailed 5-platform blueprint (Android, iOS, Linux, macOS, Windows) with Flutter 3.24+, Riverpod 2.6, and Drift ORM 2.20.
+  - Complete feature-first folder organization and Drift table definitions.
+  - Migration risk analysis and step-by-step roadmap with zero data loss guarantee.
+- **Cross-Platform Strategy & Release Guides**:
+  - `docs/PLATFORM_STRATEGY.md`: 5-platform support matrix, desktop keyboard/mouse vs mobile touch UX, and technical feasibility report.
+  - `docs/PLATFORM_RELEASE.md`: Packaging specifications for APK, AAB, IPA, AppImage, Flatpak, DMG, and MSIX.
+  - ADR 013 and ADR 014 recorded in `docs/DECISIONS.md`.
 - **Complete Project Documentation & AI Working Instructions System**:
   - Central instruction manual `AGENTS.md` with enforceable pre-coding and post-coding checklists.
   - Lightweight entry points `CLAUDE.md`, `GEMINI.md`, and `.github/copilot-instructions.md`.

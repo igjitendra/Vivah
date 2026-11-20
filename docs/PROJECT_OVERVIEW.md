@@ -3,6 +3,7 @@
 > **Official Name**: व्यवहार  
 > **English Name**: Vyavahaar  
 > **Tagline**: रिश्तों का हिसाब, हमेशा याद।  
+> **Target Platforms**: Android, iOS, Linux Desktop, macOS Desktop, Windows Desktop  
 > **Target Audience**: Indian families, heads of households, event organizers, community elders.
 
 ---
@@ -30,9 +31,10 @@ Traditionally, these exchanges were recorded by a trusted family member or elder
 **व्यवहार (Vyavahaar)** provides a modern, dignified, and culturally respectful digital ledger designed specifically for Indian families:
 
 1. **Dignity Over Debt**: The app **NEVER** computes a "net balance" or "who owes what". Commercial concepts like "you owe ₹5,000" violate Indian social etiquette. The app simply presents historical facts clearly: *"उन्होंने यह दिया था, हमने यह दिया था।"*
-2. **100% Offline-First & Private**: Family relationships and monetary transactions are deeply personal. The app requires **no internet connection**, **no user accounts**, and **no cloud servers**. All data stays on the user's phone in a secure SQLite database.
-3. **Hindi-First Accessibility**: Built from the ground up in authentic Devanagari Hindi so that parents, elders, and family members across Bharat can use it without language barriers.
-4. **Long-Term Preservation**: Supports encrypted offline backups that can be preserved across devices without trusting third-party servers.
+2. **100% Offline-First & Private**: Family relationships and monetary transactions are deeply personal. The app requires **no internet connection**, **no user accounts**, and **no cloud servers**. All data stays on the user's phone or desktop in an autonomous local SQLite database.
+3. **Cross-Platform Accessibility**: Available on mobile devices (Android, iOS) for recording on-the-go at functions, and on desktop computers (Linux, macOS, Windows) for comfortable ledger review, data entry, and printing at home.
+4. **Hindi-First Accessibility**: Built from the ground up in authentic Devanagari Hindi so that parents, elders, and family members across Bharat can use it without language barriers.
+5. **Long-Term Preservation**: Supports encrypted offline backups that can be preserved and transferred across platforms without trusting third-party servers.
 
 ---
 

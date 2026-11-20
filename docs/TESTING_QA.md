@@ -97,3 +97,19 @@ Before every release build:
 4. [x] **PDF Generation**: Export a full PDF report and verify Devanagari Hindi text renders without broken characters.
 5. [x] **CSV Export**: Export CSV and open in Excel to verify UTF-8 BOM encoding.
 6. [x] **Backup & Restore**: Create an encrypted backup with password, restore it, and verify count matches.
+
+---
+
+## 5. Five-Platform Cross-Platform QA Matrix
+
+| Test Category | Android | iOS | Linux Desktop | macOS Desktop | Windows Desktop |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Pure Business Logic (Paise math, dates)** | **VERIFIED** | Ready | Planned | Planned | Planned |
+| **Zod / Drift Schema Constraints** | **VERIFIED** | Ready | Planned | Planned | Planned |
+| **AES-256 Encryption & PBKDF2** | **VERIFIED** | Ready | Planned | Planned | Planned |
+| **Devanagari PDF Rendering (Noto Sans)** | **VERIFIED** | Ready | Planned | Planned | Planned |
+| **RFC-4180 CSV UTF-8 BOM Export** | **VERIFIED** | Ready | Planned | Planned | Planned |
+| **Touch Interaction & Safe Area Insets** | **VERIFIED** | Ready | N/A | N/A | N/A |
+| **Mouse Hover & Keyboard Shortcuts** | N/A | N/A | Planned | Planned | Planned |
+| **Window Resizing & Desktop Sidebars** | N/A | N/A | Planned | Planned | Planned |
+| **Offline Autonomy (Airplane Mode)** | **VERIFIED** | Ready | Planned | Planned | Planned |

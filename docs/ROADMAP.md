@@ -73,3 +73,11 @@ flowchart TD
 - [ ] Production Android App Bundle (`.aab`) generation via EAS or local Gradle.
 - [ ] Google Play Store privacy policy and Data Safety declaration.
 - [ ] Closed internal testing track rollout.
+
+### Phase 6: Multi-Platform Desktop & iOS Expansion (`APPROVED ARCHITECTURE`)
+- [x] 5-Platform Architecture Blueprint documented (`docs/FLUTTER_MIGRATION_ARCHITECTURE.md`).
+- [x] Packaging and release specifications documented (`docs/PLATFORM_RELEASE.md`).
+- [ ] iOS target verification and App Store configuration.
+- [ ] Linux Desktop packaging (AppImage / Flatpak).
+- [ ] macOS Desktop packaging (DMG / Universal Binary).
+- [ ] Windows Desktop packaging (MSIX / Win32 installer).

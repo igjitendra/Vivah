@@ -1,8 +1,9 @@
 # Android Build, Packaging & Release Guide — व्यवहार (Vyavahaar)
 
-> **Platform**: Android Mobile  
+> **Platform**: Android Mobile (Tier 1 Target)  
 > **Package Identifier**: `com.vyavahaar.app` (Target Play Store ID)  
 > **Runtime**: React Native 0.88.1 / Expo SDK 58  
+> **Master Multi-Platform Release Guide**: [`docs/PLATFORM_RELEASE.md`](PLATFORM_RELEASE.md) (Covers Android, iOS, Linux, macOS, and Windows)  
 > **Last Updated**: 2026-11-21
 
 ---

@@ -99,3 +99,20 @@
 - **Decision**: Implement offline Devanagari PDF export using `expo-print` and encrypted backup using AES-256-GCM + PBKDF2 with atomic rollback safety.
 - **Context**: Concludes Phase 3 MVP deliverables with verified automated test coverage.
 - **Status**: **APPROVED & VERIFIED**
+
+---
+
+## ADR 013: Five-Platform Cross-Platform Target
+- **Date**: 2026-11-21
+- **Decision**: व्यवहार is formally approved as a cross-platform product targeting five operating system families: **Android, iOS, Linux Desktop, macOS Desktop, and Windows Desktop**.
+- **Context**: Users manage family ledgers on mobile phones during events and on desktop PCs/Macs for long-term review and printing.
+- **Consequences**: Architecture, testing, and file persistence must support all 5 operating systems without forcing mobile-only conventions onto desktop or vice versa.
+- **Status**: **APPROVED & PERMANENT**
+
+---
+
+## ADR 014: Flutter / Dart as Master 5-Platform Architecture Candidate
+- **Date**: 2026-11-21
+- **Decision**: Evaluate Flutter (Dart) + Riverpod + Drift ORM as the unified single-codebase technology stack for the five platforms. Retain existing verified React Native codebase until explicit migration approval gate.
+- **Context**: Flutter provides official, first-class native compilation for Linux GTK, macOS Cocoa, Windows Win32, Android, and iOS from a single `lib/` directory.
+- **Status**: **ARCHITECTURE PROPOSAL DOCUMENTED (`docs/FLUTTER_MIGRATION_ARCHITECTURE.md`) — AWAITING OWNER APPROVAL GATE**

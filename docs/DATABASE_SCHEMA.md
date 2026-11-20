@@ -217,3 +217,12 @@ Migrations are executed automatically in `initDatabase()` on application startup
 2. If `status` column is absent, it is added via `ALTER TABLE entries ADD COLUMN status TEXT NOT NULL DEFAULT 'recorded'`.
 3. If `expected_date` is absent, it is added via `ALTER TABLE entries ADD COLUMN expected_date TEXT`.
 4. Schema version is maintained in `BackupMetadata.vyavahaar_backup_version = 3`.
+
+---
+
+## 6. Cross-Platform SQLite & Drift ORM Parity
+
+To ensure that the database file `vyavahaar.db` is 100% binary-portable across **Android, iOS, Linux, macOS, and Windows**:
+1. All table schemas, foreign key definitions, and constraints are mirrored directly in Drift ORM (`docs/FLUTTER_MIGRATION_ARCHITECTURE.md`).
+2. An existing `vyavahaar.db` file created on Android can be opened, read, and modified directly by desktop runners using standard SQLite WAL mode.
+3. Integer paise representation ensures that 64-bit integer amounts match across all platforms and CPU architectures (`arm64`, `x86_64`).

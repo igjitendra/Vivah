@@ -33,7 +33,8 @@
 ## 3. MoSCoW Feature Categorization
 
 ### Must Have (P0 — Core MVP)
-- [x] **Strict Offline SQLite Storage**: 100% operational without network connection.
+- [x] **Cross-Platform Target Architecture**: Architecture planned for Android, iOS, Linux, macOS, and Windows.
+- [x] **Strict Offline SQLite Storage**: 100% operational without network connection across all platforms.
 - [x] **Integer Currency Storage**: All monetary values stored in integer paise (`paise = rupees * 100`).
 - [x] **Separate Mila & Diya**: Zero net debt calculation.
 - [x] **Person & Family Directory**: Name, village/city, relationship, phone, notes.
@@ -44,7 +45,7 @@
 - [x] **Devanagari Hindi PDF Export**: 6 printable A4 reports generated entirely offline.
 - [x] **Excel-Compatible CSV Export**: RFC-4180 CSV with UTF-8 BOM encoding.
 - [x] **Encrypted Offline Backup & Safe Restore**: AES-256-GCM + PBKDF2 local backup with automatic rollback.
-- [x] **Floating Pill Bottom Navigation**: Modern expanding-chip floating navigation bar.
+- [x] **Adaptive Platform UI**: Floating pill bottom navigation on mobile; responsive layout for desktop screens.
 
 ### Should Have (P1 — Production Polish)
 - [x] **Soft-Delete Architecture**: Records preserve `deleted_at` timestamp rather than hard deletion.

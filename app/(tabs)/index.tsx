@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useDashboard } from '../../src/hooks';
 import { formatCurrency } from '../../src/utils/currency';
 import { formatDate } from '../../src/utils/date';
@@ -58,7 +59,10 @@ export default function HomeScreen() {
         {/* Recent event */}
         {summary?.recentEventTitle && (
           <View style={styles.recentCard}>
-            <Text style={styles.recentLabel}>📅 हाल का कार्यक्रम</Text>
+            <View style={styles.recentLabelRow}>
+              <Ionicons name="calendar-outline" size={13} color="#6B7280" style={{ marginRight: 4 }} />
+              <Text style={styles.recentLabel}>हाल का कार्यक्रम</Text>
+            </View>
             <Text style={styles.recentTitle}>{summary.recentEventTitle}</Text>
             {summary.recentEventDate && (
               <Text style={styles.recentDate}>{formatDate(summary.recentEventDate)}</Text>
@@ -69,19 +73,19 @@ export default function HomeScreen() {
         {/* Quick actions */}
         <Text style={styles.sectionTitle}>त्वरित कार्य</Text>
         <TouchableOpacity style={styles.actionBtn} onPress={() => router.push('/entry/new')}>
-          <Text style={styles.actionIcon}>💰</Text>
+          <View style={styles.iconCircle}><Ionicons name="wallet-outline" size={20} color="#1F3352" /></View>
           <Text style={styles.actionText}>नया व्यवहार दर्ज करें</Text>
-          <Text style={styles.actionArrow}>›</Text>
+          <Ionicons name="chevron-forward" size={18} color="#C05A2B" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionBtn} onPress={() => router.push('/event/new')}>
-          <Text style={styles.actionIcon}>🎉</Text>
+          <View style={styles.iconCircle}><Ionicons name="calendar-outline" size={20} color="#1F3352" /></View>
           <Text style={styles.actionText}>नया कार्यक्रम बनाएं</Text>
-          <Text style={styles.actionArrow}>›</Text>
+          <Ionicons name="chevron-forward" size={18} color="#C05A2B" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionBtn} onPress={() => router.push('/person/new')}>
-          <Text style={styles.actionIcon}>👤</Text>
+          <View style={styles.iconCircle}><Ionicons name="person-add-outline" size={20} color="#1F3352" /></View>
           <Text style={styles.actionText}>नया व्यक्ति जोड़ें</Text>
-          <Text style={styles.actionArrow}>›</Text>
+          <Ionicons name="chevron-forward" size={18} color="#C05A2B" />
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -105,12 +109,12 @@ const styles = StyleSheet.create({
   miniNum: { fontSize: 24, fontWeight: '800', color: '#1F3352' },
   miniLabel: { fontSize: 12, color: '#6B7280', marginTop: 4 },
   recentCard: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16, marginBottom: 12, elevation: 1 },
-  recentLabel: { fontSize: 12, color: '#6B7280', marginBottom: 4 },
+  recentLabelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+  recentLabel: { fontSize: 12, color: '#6B7280' },
   recentTitle: { fontSize: 17, fontWeight: '700', color: '#1F3352' },
   recentDate: { fontSize: 13, color: '#6B7280', marginTop: 2 },
   sectionTitle: { fontSize: 15, fontWeight: '700', color: '#1F3352', marginBottom: 10, marginTop: 8 },
-  actionBtn: { backgroundColor: '#FFFFFF', borderRadius: 10, padding: 16, flexDirection: 'row', alignItems: 'center', marginBottom: 8, elevation: 1 },
-  actionIcon: { fontSize: 20, marginRight: 12 },
-  actionText: { flex: 1, fontSize: 15, fontWeight: '500', color: '#1F2937' },
-  actionArrow: { fontSize: 20, color: '#C05A2B' },
+  actionBtn: { backgroundColor: '#FFFFFF', borderRadius: 10, padding: 14, flexDirection: 'row', alignItems: 'center', marginBottom: 8, elevation: 1 },
+  iconCircle: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F4EFE7', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  actionText: { flex: 1, fontSize: 15, fontWeight: '600', color: '#1F2937' },
 });

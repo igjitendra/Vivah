@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { usePersonDetail } from '../../src/hooks';
 import { formatCurrency } from '../../src/utils/currency';
 import { formatDate } from '../../src/utils/date';
@@ -40,7 +41,12 @@ export default function PersonDetailScreen() {
         <Text style={styles.name}>{person.name}</Text>
         {person.village && <Text style={styles.meta}>{person.village}</Text>}
         {person.relationship && <Text style={styles.rel}>{person.relationship}</Text>}
-        {person.phone && <Text style={styles.phone}>📞 {person.phone}</Text>}
+        {person.phone && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+            <Ionicons name="call-outline" size={13} color="#A8B8CF" style={{ marginRight: 6 }} />
+            <Text style={{ fontSize: 13, color: '#A8B8CF' }}>{person.phone}</Text>
+          </View>
+        )}
         <View style={styles.stats}>
           <View style={styles.stat}>
             <Text style={styles.statAmount}>{formatCurrency(totalMilaPaise)}</Text>
@@ -64,7 +70,7 @@ export default function PersonDetailScreen() {
       <Text style={styles.sectionTitle}>व्यवहार का इतिहास</Text>
 
       {entries.length === 0 ? (
-        <EmptyState icon="📒" title="कोई व्यवहार नहीं" subtitle="इस व्यक्ति के साथ अभी कोई रिकॉर्ड नहीं है" />
+        <EmptyState iconName="book-outline" title="कोई व्यवहार नहीं" subtitle="इस व्यक्ति के साथ अभी कोई रिकॉर्ड नहीं है" />
       ) : (
         <FlatList
           data={entries}

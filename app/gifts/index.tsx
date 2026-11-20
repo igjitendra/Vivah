@@ -9,6 +9,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../src/constants/Colors';
 import { db } from '../../src/db/database';
 import { Entry, Direction } from '../../src/types';
@@ -101,9 +102,12 @@ export default function GiftsScreen() {
           <VyavahaarCard key={g.id} style={styles.card}>
             <View style={styles.rowBetween}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.itemName}>
-                  🎁 {g.item_name} × {g.quantity} {g.unit}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Ionicons name="gift-outline" size={16} color="#C05A2B" style={{ marginRight: 6 }} />
+                  <Text style={styles.itemName}>
+                    {g.item_name} × {g.quantity} {g.unit}
+                  </Text>
+                </View>
                 <Text style={styles.subtext}>
                   {g.person_name} ({g.person_village || '—'}) • {g.event_title}
                 </Text>

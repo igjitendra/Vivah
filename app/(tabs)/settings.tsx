@@ -12,15 +12,15 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { getDatabaseStats } from '../../src/database/db';
-import { BackupService, type BackupMetadata } from '../../src/services/BackupService';
+import { BackupService } from '../../src/services/BackupService';
 
 export default function SettingsScreen() {
   const [stats, setStats] = useState<{ tableCount: number; entryCount: number; plannedCount: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [password, setPassword] = useState('');
-  const [isCreatingEncrypted, setIsCreatingEncrypted] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [restoreJson, setRestoreJson] = useState('');
   const [restorePassword, setRestorePassword] = useState('');
@@ -68,7 +68,7 @@ export default function SettingsScreen() {
     setShowPasswordModal(false);
     setLoading(true);
     try {
-      const { uri, filename, metadata } = await BackupService.createBackup(password);
+      const { uri, filename } = await BackupService.createBackup(password);
       setPassword('');
       Alert.alert(
         'सुरक्षित एन्क्रिप्टेड बैकअप तैयार!',
@@ -106,7 +106,7 @@ export default function SettingsScreen() {
 
     const meta = validation.metadata!;
     Alert.alert(
-      '⚠️ डेटा रिस्टोर की पुष्टि करें',
+      'डेटा रिस्टोर की पुष्टि करें',
       `बैकअप विवरण:\n• लोग: ${meta.people_count}\n• कार्यक्रम: ${meta.events_count}\n• व्यवहार: ${meta.entries_count}\n\nसावधानी: रिस्टोर करने पर फोन का मौजूदा डेटा बदल जाएगा। क्या आप आगे बढ़ना चाहते हैं?`,
       [
         { text: 'रद्द करें', style: 'cancel' },
@@ -123,7 +123,7 @@ export default function SettingsScreen() {
               setRestorePassword('');
               setNeedsPasswordForRestore(false);
               Alert.alert(
-                'रिस्टोर सफल! 🎉',
+                'रिस्टोर सफल!',
                 `डेटा सफलतापूर्वक लोड हो गया है:\n• ${result.summary?.people} लोग\n• ${result.summary?.events} कार्यक्रम\n• ${result.summary?.entries} व्यवहार\n• ${result.summary?.items} सामान/उपहार`,
                 [{ text: 'ठीक है' }]
               );
@@ -162,15 +162,15 @@ export default function SettingsScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>स्थानीय डेटाबेस स्थिति</Text>
             <View style={styles.row}>
-              <Text style={styles.rowIcon}>📊</Text>
+              <Ionicons name="bar-chart-outline" size={20} color="#1F3352" style={styles.rowIcon} />
               <Text style={styles.rowLabel}>{stats.entryCount} पूर्ण व्यवहार दर्ज हैं</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.rowIcon}>⏳</Text>
-              <Text style={styles.rowLabel}>{stats.plannedCount} नियोजित (Planned) व्यवहार</Text>
+              <Ionicons name="time-outline" size={20} color="#1F3352" style={styles.rowIcon} />
+              <Text style={styles.rowLabel}>{stats.plannedCount} नियोजित व्यवहार</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.rowIcon}>💾</Text>
+              <Ionicons name="server-outline" size={20} color="#1F3352" style={styles.rowIcon} />
               <Text style={styles.rowLabel}>{stats.tableCount} तालिकाएँ (SQLite WAL)</Text>
             </View>
           </View>
@@ -180,12 +180,12 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>रिपोर्ट्स व एक्सपोर्ट</Text>
           <TouchableOpacity style={styles.row} onPress={() => router.push('/reports')}>
-            <Text style={styles.rowIcon}>📜</Text>
+            <Ionicons name="document-text-outline" size={20} color="#1F3352" style={styles.rowIcon} />
             <View style={{ flex: 1 }}>
               <Text style={styles.rowLabel}>PDF एवं CSV रिपोर्ट्स</Text>
               <Text style={styles.rowSub}>Devanagari प्रिंट रिपोर्ट व Excel स्प्रेडशीट</Text>
             </View>
-            <Text style={styles.rowArrow}>›</Text>
+            <Ionicons name="chevron-forward" size={18} color="#C05A2B" />
           </TouchableOpacity>
         </View>
 
@@ -194,37 +194,36 @@ export default function SettingsScreen() {
           <Text style={styles.sectionTitle}>लोकल बैकअप प्रबंधन (100% ऑफलाइन)</Text>
           
           <TouchableOpacity style={styles.row} onPress={handleQuickBackup} disabled={loading}>
-            <Text style={styles.rowIcon}>💾</Text>
+            <Ionicons name="save-outline" size={20} color="#1F3352" style={styles.rowIcon} />
             <View style={{ flex: 1 }}>
               <Text style={styles.rowLabel}>त्वरित बैकअप (Quick Backup)</Text>
               <Text style={styles.rowSub}>संपूर्ण डेटा की प्रामाणिक JSON बैकअप फाइल बनाएं</Text>
             </View>
-            <Text style={styles.rowArrow}>›</Text>
+            <Ionicons name="chevron-forward" size={18} color="#C05A2B" />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.row}
             onPress={() => {
-              setIsCreatingEncrypted(true);
               setShowPasswordModal(true);
             }}
             disabled={loading}
           >
-            <Text style={styles.rowIcon}>🔒</Text>
+            <Ionicons name="lock-closed-outline" size={20} color="#1F3352" style={styles.rowIcon} />
             <View style={{ flex: 1 }}>
               <Text style={styles.rowLabel}>पासवर्ड-सुरक्षित बैकअप (AES-256)</Text>
               <Text style={styles.rowSub}>गुप्त पासवर्ड द्वारा सुरक्षित एन्क्रिप्टेड फाइल बनाएं</Text>
             </View>
-            <Text style={styles.rowArrow}>›</Text>
+            <Ionicons name="chevron-forward" size={18} color="#C05A2B" />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.row} onPress={() => setShowRestoreModal(true)} disabled={loading}>
-            <Text style={styles.rowIcon}>📥</Text>
+            <Ionicons name="cloud-download-outline" size={20} color="#C05A2B" style={styles.rowIcon} />
             <View style={{ flex: 1 }}>
               <Text style={[styles.rowLabel, { color: '#C05A2B' }]}>डेटा रिस्टोर करें (Restore Data)</Text>
               <Text style={styles.rowSub}>पूर्ववर्ती बैकअप फाइल से डेटा पुनर्स्थापित करें</Text>
             </View>
-            <Text style={styles.rowArrow}>›</Text>
+            <Ionicons name="chevron-forward" size={18} color="#C05A2B" />
           </TouchableOpacity>
         </View>
 
@@ -232,16 +231,16 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>गोपनीयता व सुरक्षा</Text>
           <View style={styles.row}>
-            <Text style={styles.rowIcon}>🛡️</Text>
+            <Ionicons name="shield-checkmark-outline" size={20} color="#16A34A" style={styles.rowIcon} />
             <Text style={styles.rowLabel}>100% ऑफलाइन — कोई डेटा सर्वर पर नहीं जाता</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.rowIcon}>🔑</Text>
+            <Ionicons name="key-outline" size={20} color="#1F3352" style={styles.rowIcon} />
             <Text style={styles.rowLabel}>पैरामीटराइज़्ड क्वेरीज द्वारा SQL इंजेक्शन से सुरक्षित</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.rowIcon}>🚫</Text>
-            <Text style={styles.rowLabel}>कोई इंटरनेट अनुमति (INTERNET Permission) आवश्यक नहीं</Text>
+            <Ionicons name="cloud-offline-outline" size={20} color="#6B7280" style={styles.rowIcon} />
+            <Text style={styles.rowLabel}>कोई इंटरनेट अनुमति आवश्यक नहीं</Text>
           </View>
         </View>
       </ScrollView>
@@ -250,7 +249,7 @@ export default function SettingsScreen() {
       <Modal visible={showPasswordModal} transparent animationType="slide" onRequestClose={() => setShowPasswordModal(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>🔒 बैकअप पासवर्ड सेट करें</Text>
+            <Text style={styles.modalTitle}>बैकअप पासवर्ड सेट करें</Text>
             <Text style={styles.modalDesc}>
               इस बैकअप को खोलने के लिए इस पासवर्ड की आवश्यकता होगी। इसे कहीं सुरक्षित याद रखें।
             </Text>
@@ -278,7 +277,7 @@ export default function SettingsScreen() {
       <Modal visible={showRestoreModal} transparent animationType="slide" onRequestClose={() => setShowRestoreModal(false)}>
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { maxHeight: '85%' }]}>
-            <Text style={styles.modalTitle}>📥 डेटा रिस्टोर करें</Text>
+            <Text style={styles.modalTitle}>डेटा रिस्टोर करें</Text>
             <Text style={styles.modalDesc}>
               अपनी पूर्ववर्ती बैकअप फाइल की सामग्री को नीचे पेस्ट करें:
             </Text>
@@ -360,10 +359,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
-  rowIcon: { fontSize: 18, marginRight: 12 },
+  rowIcon: { marginRight: 12 },
   rowLabel: { fontSize: 14, color: '#1F2937', fontWeight: '600' },
   rowSub: { fontSize: 11, color: '#6B7280', marginTop: 2 },
-  rowArrow: { fontSize: 20, color: '#C05A2B', marginLeft: 8 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center', padding: 20 },
   modalContent: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 20, width: '100%', maxWidth: 400 },
   modalTitle: { fontSize: 18, fontWeight: '800', color: '#1F3352', marginBottom: 8 },

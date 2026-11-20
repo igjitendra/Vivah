@@ -1,12 +1,8 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../src/constants/Colors';
 import { Strings } from '../../src/constants/Strings';
-
-function TabIcon({ label }: { label: string }) {
-  return <Text style={{ fontSize: 18 }}>{label}</Text>;
-}
 
 export default function TabLayout() {
   return (
@@ -32,35 +28,45 @@ export default function TabLayout() {
         name="index"
         options={{
           title: Strings.tabs.home,
-          tabBarIcon: () => <TabIcon label="🏠" />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={22} color={color ? String(color) : undefined} />
+          ),
         }}
       />
       <Tabs.Screen
         name="bahi"
         options={{
           title: Strings.tabs.bahi,
-          tabBarIcon: () => <TabIcon label="📜" />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'book' : 'book-outline'} size={22} color={color ? String(color) : undefined} />
+          ),
         }}
       />
       <Tabs.Screen
         name="events"
         options={{
           title: Strings.tabs.events,
-          tabBarIcon: () => <TabIcon label="🎉" />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={22} color={color ? String(color) : undefined} />
+          ),
         }}
       />
       <Tabs.Screen
         name="people"
         options={{
           title: Strings.tabs.people,
-          tabBarIcon: () => <TabIcon label="👥" />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'people' : 'people-outline'} size={22} color={color ? String(color) : undefined} />
+          ),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: Strings.tabs.settings,
-          tabBarIcon: () => <TabIcon label="⚙️" />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'settings' : 'settings-outline'} size={22} color={color ? String(color) : undefined} />
+          ),
         }}
       />
       {/* Hide default template tab 'two' if present */}

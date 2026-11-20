@@ -11,6 +11,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../src/constants/Colors';
 import { db } from '../../src/db/database';
 import { Reminder, Person } from '../../src/types';
@@ -74,8 +75,9 @@ export default function RemindersScreen() {
       </View>
 
       <View style={styles.banner}>
-        <Text style={styles.bannerText}>
-          💡 यह फीचर आपको रिश्तेदारों के आने वाले कार्यक्रमों की याद दिलाएगा, ताकि आप समय पर पुराना रिकॉर्ड देखकर व्यवहार तय कर सकें।
+        <Ionicons name="information-circle-outline" size={18} color="#92400E" style={{ marginRight: 6 }} />
+        <Text style={[styles.bannerText, { flex: 1 }]}>
+          यह फीचर आपको रिश्तेदारों के आने वाले कार्यक्रमों की याद दिलाएगा, ताकि आप समय पर पुराना रिकॉर्ड देखकर व्यवहार तय कर सकें।
         </Text>
       </View>
 
@@ -84,16 +86,23 @@ export default function RemindersScreen() {
           <VyavahaarCard key={r.id} style={styles.card}>
             <View style={styles.rowBetween}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.personName}>
-                  👤 {r.person_name} {r.person_village ? `(${r.person_village})` : ''}
-                </Text>
-                <Text style={styles.eventTitle}>🎉 {r.event_title}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Ionicons name="person-outline" size={14} color={Colors.text} style={{ marginRight: 4 }} />
+                  <Text style={styles.personName}>
+                    {r.person_name} {r.person_village ? `(${r.person_village})` : ''}
+                  </Text>
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                  <Ionicons name="calendar-outline" size={14} color={Colors.primary} style={{ marginRight: 4 }} />
+                  <Text style={styles.eventTitle}>{r.event_title}</Text>
+                </View>
                 <Text style={styles.dateText}>
                   तारीख: {formatHindiDate(r.target_date)}
                 </Text>
               </View>
-              <View style={styles.bellBadge}>
-                <Text style={styles.bellText}>🔔 आगामी</Text>
+              <View style={[styles.bellBadge, { flexDirection: 'row', alignItems: 'center' }]}>
+                <Ionicons name="notifications-outline" size={12} color="#854D0E" style={{ marginRight: 3 }} />
+                <Text style={styles.bellText}>आगामी</Text>
               </View>
             </View>
 

@@ -44,7 +44,7 @@ export default function EventsScreen() {
         <LoadingView />
       ) : events.length === 0 ? (
         <EmptyState
-          icon="🎉"
+          iconName="calendar-outline"
           title="कोई कार्यक्रम नहीं"
           subtitle="नया कार्यक्रम जोड़ने के लिए + दबाएं"
           action={{ label: '+ नया कार्यक्रम', onPress: () => router.push('/event/new') }}

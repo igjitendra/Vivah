@@ -9,6 +9,7 @@ import {
   Modal,
   ViewStyle,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 const Colors = {
   navy: '#1F3352',
@@ -173,15 +174,15 @@ export function AmountInput({ label, amountPaise, onChangePaise, error }: Amount
 
 // ── EmptyState ─────────────────────────────────────────────────────────────
 interface EmptyStateProps {
-  icon?: string;
+  iconName?: keyof typeof Ionicons.glyphMap;
   title: string;
   subtitle?: string;
   action?: { label: string; onPress: () => void };
 }
-export function EmptyState({ icon, title, subtitle, action }: EmptyStateProps) {
+export function EmptyState({ iconName, title, subtitle, action }: EmptyStateProps) {
   return (
     <View style={styles.emptyState}>
-      {icon ? <Text style={styles.emptyIcon}>{icon}</Text> : null}
+      {iconName ? <Ionicons name={iconName} size={48} color={Colors.terracotta} style={{ marginBottom: 12 }} /> : null}
       <Text style={styles.emptyTitle}>{title}</Text>
       {subtitle ? <Text style={styles.emptySubtitle}>{subtitle}</Text> : null}
       {action ? (
@@ -233,7 +234,8 @@ export function ConfirmDialog({ visible, title, message, confirmLabel = 'हा�
 export function SyncStatusBar() {
   return (
     <View style={styles.syncBar}>
-      <Text style={styles.syncText}>📱 ऑफलाइन — डेटा सुरक्षित है</Text>
+      <Ionicons name="shield-checkmark-outline" size={14} color={Colors.gray} style={{ marginRight: 6 }} />
+      <Text style={styles.syncText}>ऑफलाइन — डेटा सुरक्षित है</Text>
     </View>
   );
 }
@@ -310,7 +312,6 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
-  emptyIcon: { fontSize: 48, marginBottom: 16 },
   emptyTitle: { fontSize: 18, fontWeight: '600', color: Colors.navy, textAlign: 'center' },
   emptySubtitle: { fontSize: 14, color: Colors.gray, textAlign: 'center', marginTop: 8 },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
@@ -326,6 +327,6 @@ const styles = StyleSheet.create({
   dialogTitle: { fontSize: 18, fontWeight: '700', color: Colors.navy, marginBottom: 10 },
   dialogMessage: { fontSize: 15, color: '#374151', marginBottom: 20 },
   dialogButtons: { flexDirection: 'row' },
-  syncBar: { backgroundColor: '#F3F4F6', paddingVertical: 6, paddingHorizontal: 16, alignItems: 'center' },
+  syncBar: { backgroundColor: '#F3F4F6', paddingVertical: 6, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   syncText: { fontSize: 12, color: Colors.gray },
 });

@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { PdfService } from '../../src/services/PdfService';
 import { CsvService } from '../../src/services/CsvService';
 import { EventsService } from '../../src/services/EventsService';
@@ -134,15 +135,17 @@ export default function ReportsScreen() {
 
         {/* PDF Reports Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📄 आधिकारिक PDF रिपोर्ट्स (Devanagari A4)</Text>
+          <Text style={styles.sectionTitle}>आधिकारिक PDF रिपोर्ट्स (Devanagari A4)</Text>
           
           <TouchableOpacity style={styles.exportCard} onPress={handleExportFullPdf} disabled={Boolean(exporting)}>
-            <View style={styles.iconCircle}><Text style={styles.iconText}>📜</Text></View>
+            <View style={styles.iconCircle}>
+              <Ionicons name="document-text-outline" size={20} color="#1F3352" />
+            </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.exportCardTitle}>संपूर्ण पारिवारिक बही खाता (PDF)</Text>
               <Text style={styles.exportCardSub}>सभी दर्ज व्यवहारों की प्रमाणित A4 प्रिंट रिपोर्ट</Text>
             </View>
-            <Text style={styles.arrowText}>›</Text>
+            <Ionicons name="chevron-forward" size={18} color="#C05A2B" />
           </TouchableOpacity>
 
           <View style={styles.yearSelectorRow}>
@@ -159,28 +162,32 @@ export default function ReportsScreen() {
           </View>
 
           <TouchableOpacity style={styles.exportCard} onPress={handleExportYearPdf} disabled={Boolean(exporting)}>
-            <View style={styles.iconCircle}><Text style={styles.iconText}>📅</Text></View>
+            <View style={styles.iconCircle}>
+              <Ionicons name="calendar-outline" size={20} color="#1F3352" />
+            </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.exportCardTitle}>वार्षिक रिपोर्ट — {selectedYear} (PDF)</Text>
               <Text style={styles.exportCardSub}>वर्ष {selectedYear} के समस्त व्यवहार</Text>
             </View>
-            <Text style={styles.arrowText}>›</Text>
+            <Ionicons name="chevron-forward" size={18} color="#C05A2B" />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.exportCard} onPress={handleExportItemsPdf} disabled={Boolean(exporting)}>
-            <View style={styles.iconCircle}><Text style={styles.iconText}>🎁</Text></View>
+            <View style={styles.iconCircle}>
+              <Ionicons name="gift-outline" size={20} color="#1F3352" />
+            </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.exportCardTitle}>उपहार व सामान सूची (PDF)</Text>
               <Text style={styles.exportCardSub}>भौतिक वस्तुओं और अनुमानित मूल्यों का अलग विवरण</Text>
             </View>
-            <Text style={styles.arrowText}>›</Text>
+            <Ionicons name="chevron-forward" size={18} color="#C05A2B" />
           </TouchableOpacity>
         </View>
 
         {/* Event-wise PDF */}
         {events.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🎉 कार्यक्रम अनुसार PDF रिपोर्ट</Text>
+            <Text style={styles.sectionTitle}>कार्यक्रम अनुसार PDF रिपोर्ट</Text>
             {events.slice(0, 5).map(ev => (
               <TouchableOpacity
                 key={ev.id}
@@ -205,33 +212,39 @@ export default function ReportsScreen() {
 
         {/* CSV Export Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📊 Excel / CSV एक्सपोर्ट (UTF-8 Devanagari)</Text>
+          <Text style={styles.sectionTitle}>Excel / CSV एक्सपोर्ट (UTF-8 Devanagari)</Text>
 
           <TouchableOpacity style={styles.exportCard} onPress={() => handleExportCsv('entries')} disabled={Boolean(exporting)}>
-            <View style={[styles.iconCircle, { backgroundColor: '#F0FDF4' }]}><Text style={styles.iconText}>📋</Text></View>
+            <View style={[styles.iconCircle, { backgroundColor: '#F0FDF4' }]}>
+              <Ionicons name="reader-outline" size={20} color="#16A34A" />
+            </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.exportCardTitle}>सभी व्यवहार डेटा (CSV)</Text>
               <Text style={styles.exportCardSub}>Excel में खोलने हेतु उपयुक्त</Text>
             </View>
-            <Text style={styles.arrowText}>›</Text>
+            <Ionicons name="chevron-forward" size={18} color="#C05A2B" />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.exportCard} onPress={() => handleExportCsv('people')} disabled={Boolean(exporting)}>
-            <View style={[styles.iconCircle, { backgroundColor: '#F0FDF4' }]}><Text style={styles.iconText}>👥</Text></View>
+            <View style={[styles.iconCircle, { backgroundColor: '#F0FDF4' }]}>
+              <Ionicons name="people-outline" size={20} color="#16A34A" />
+            </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.exportCardTitle}>व्यक्तियों की निर्देशिका (CSV)</Text>
               <Text style={styles.exportCardSub}>नाम, गाँव, रिश्ते व फोन नंबर</Text>
             </View>
-            <Text style={styles.arrowText}>›</Text>
+            <Ionicons name="chevron-forward" size={18} color="#C05A2B" />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.exportCard} onPress={() => handleExportCsv('items')} disabled={Boolean(exporting)}>
-            <View style={[styles.iconCircle, { backgroundColor: '#F0FDF4' }]}><Text style={styles.iconText}>📦</Text></View>
+            <View style={[styles.iconCircle, { backgroundColor: '#F0FDF4' }]}>
+              <Ionicons name="cube-outline" size={20} color="#16A34A" />
+            </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.exportCardTitle}>गिफ्ट व सामान सूची (CSV)</Text>
               <Text style={styles.exportCardSub}>वस्तुएँ, मात्राएँ व अनुमानित मूल्य</Text>
             </View>
-            <Text style={styles.arrowText}>›</Text>
+            <Ionicons name="chevron-forward" size={18} color="#C05A2B" />
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -304,10 +317,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 12,
   },
-  iconText: { fontSize: 18 },
   exportCardTitle: { fontSize: 14, fontWeight: '700', color: '#1F2937' },
   exportCardSub: { fontSize: 12, color: '#6B7280', marginTop: 2 },
-  arrowText: { fontSize: 20, color: '#C05A2B', marginLeft: 8 },
   yearSelectorRow: {
     flexDirection: 'row',
     alignItems: 'center',

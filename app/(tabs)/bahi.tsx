@@ -58,7 +58,7 @@ export default function BahiScreen() {
         <LoadingView />
       ) : entries.length === 0 ? (
         <EmptyState
-          icon="📒"
+          iconName="book-outline"
           title="कोई व्यवहार नहीं"
           subtitle="नया व्यवहार दर्ज करने के लिए + दबाएं"
           action={{ label: '+ नया व्यवहार', onPress: () => router.push('/entry/new') }}

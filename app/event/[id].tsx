@@ -60,7 +60,7 @@ export default function EventDetailScreen() {
       </TouchableOpacity>
 
       {entries.length === 0 ? (
-        <EmptyState icon="📒" title="कोई व्यवहार नहीं" subtitle="इस कार्यक्रम में अभी कोई रिकॉर्ड नहीं है" />
+        <EmptyState iconName="book-outline" title="कोई व्यवहार नहीं" subtitle="इस कार्यक्रम में अभी कोई रिकॉर्ड नहीं है" />
       ) : (
         <FlatList
           data={entries}

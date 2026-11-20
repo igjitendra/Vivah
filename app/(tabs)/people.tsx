@@ -46,7 +46,7 @@ export default function PeopleScreen() {
         <LoadingView />
       ) : people.length === 0 ? (
         <EmptyState
-          icon="👥"
+          iconName="people-outline"
           title={query ? 'कोई परिणाम नहीं' : 'कोई व्यक्ति नहीं'}
           subtitle={query ? 'दूसरा नाम खोजें' : 'नया व्यक्ति जोड़ने के लिए + दबाएं'}
           action={!query ? { label: '+ नया व्यक्ति', onPress: () => router.push('/person/new') } : undefined}

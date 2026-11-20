@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
   loadingBanner: { backgroundColor: '#FEF3C7', padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   loadingText: { color: '#92400E', fontSize: 13, fontWeight: '600' },
   scroll: { flex: 1 },
-  content: { padding: 16, paddingBottom: 48 },
+  content: { padding: 16, paddingBottom: 110 },
   appCard: { backgroundColor: '#1F3352', borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 20 },
   appName: { fontSize: 28, fontWeight: '800', color: '#F4EFE7', letterSpacing: 1 },
   appTagline: { fontSize: 13, color: '#A8B8CF', marginTop: 4 },

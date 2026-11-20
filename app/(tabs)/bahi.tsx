@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   filterTabActive: { backgroundColor: '#1F3352' },
   filterText: { fontSize: 13, fontWeight: '600', color: '#6B7280' },
   filterTextActive: { color: '#F4EFE7' },
-  list: { padding: 16, paddingBottom: 32 },
+  list: { padding: 16, paddingBottom: 100 },
   card: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 14, marginBottom: 10, elevation: 1 },
   cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
   amount: { fontSize: 20, fontWeight: '800', color: '#1F3352' },

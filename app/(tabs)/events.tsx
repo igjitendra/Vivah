@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 22, fontWeight: '800', color: '#F4EFE7' },
   addBtn: { backgroundColor: '#C05A2B', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
   addBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 14 },
-  list: { padding: 16, paddingBottom: 32 },
+  list: { padding: 16, paddingBottom: 100 },
   card: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 14, marginBottom: 10, elevation: 1 },
   cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   typeBadge: { backgroundColor: '#EDE9FE', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },

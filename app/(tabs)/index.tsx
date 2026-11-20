@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 28, fontWeight: '800', color: '#F4EFE7', letterSpacing: 1 },
   headerSubtitle: { fontSize: 13, color: '#A8B8CF', marginTop: 4 },
   scroll: { flex: 1 },
-  content: { padding: 16, paddingBottom: 32 },
+  content: { padding: 16, paddingBottom: 100 },
   errorBanner: { backgroundColor: '#FEE2E2', borderRadius: 8, padding: 12, marginBottom: 12 },
   errorText: { color: '#DC2626', fontSize: 14 },
   row: { flexDirection: 'row', gap: 12, marginBottom: 12 },

@@ -17,30 +17,30 @@ interface RouteInfo {
 }
 
 interface TabDescriptor {
-  options: {
+  options?: {
     title?: string;
     href?: any;
     tabBarLabel?: any;
     tabBarStyle?: any;
   };
   navigation?: {
-    navigate: (name: string, params?: any) => void;
+    navigate?: (name: string, params?: any) => void;
   };
 }
 
 interface CustomTabBarProps {
-  state: {
+  state?: {
     index: number;
     routes: RouteInfo[];
   };
-  descriptors: Record<string, TabDescriptor>;
+  descriptors?: Record<string, TabDescriptor>;
   emitter?: {
-    emit: (event: any) => { defaultPrevented: boolean };
+    emit?: (event: any) => { defaultPrevented?: boolean };
   };
   navigateToTab?: (routeKey: string) => void;
   navigation?: {
-    navigate: (name: string, params?: any) => void;
-    emit: (event: any) => { defaultPrevented: boolean };
+    navigate?: (name: string, params?: any) => void;
+    emit?: (event: any) => { defaultPrevented?: boolean };
   };
 }
 
@@ -79,21 +79,25 @@ const TAB_CONFIG: Record<
   },
 };
 
-export function FloatingPillTabBar({
-  state,
-  descriptors,
-  emitter,
-  navigateToTab,
-  navigation,
-}: CustomTabBarProps) {
+export function FloatingPillTabBar(props: CustomTabBarProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const bottomPosition = Math.max(insets.bottom, 12) + 6;
+  const bottomPosition = Math.max(insets?.bottom ?? 0, 12) + 6;
+
+  const state = props?.state;
+  const descriptors = props?.descriptors ?? {};
+  const emitter = props?.emitter;
+  const navigateToTab = props?.navigateToTab;
+  const navigation = props?.navigation;
+
+  const routes = state?.routes ?? [];
+  const currentIndex = state?.index ?? 0;
+  const currentFocusedRoute = routes[currentIndex];
 
   // Filter out hidden routes (e.g. 'two')
-  const visibleRoutes = state.routes.filter(route => {
-    const { options } = descriptors[route.key] || { options: {} };
-    if (options.href === null || route.name === 'two') {
+  const visibleRoutes = routes.filter((route) => {
+    const options = descriptors[route.key]?.options;
+    if (options?.href === null || route.name === 'two') {
       return false;
     }
     return Boolean(TAB_CONFIG[route.name]);
@@ -111,7 +115,7 @@ export function FloatingPillTabBar({
     >
       <View style={styles.pillBar} pointerEvents="auto">
         {visibleRoutes.map((route) => {
-          const isFocused = state.routes[state.index]?.key === route.key;
+          const isFocused = currentFocusedRoute?.key === route.key;
           const config = TAB_CONFIG[route.name] || {
             label: route.name,
             activeIcon: 'ellipse',
@@ -119,75 +123,87 @@ export function FloatingPillTabBar({
           };
 
           const handlePress = () => {
-            // Haptic vibration feedback on tap
             try {
+              // Haptic vibration feedback on tap
               if (Platform.OS !== 'web') {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
               }
             } catch {
-              // Ignore haptic errors if not supported
+              // Ignore haptic errors
             }
 
-            // 1. Emit tabPress event
-            let defaultPrevented = false;
             try {
+              // 1. Emit tabPress event
+              let defaultPrevented = false;
               if (emitter?.emit) {
                 const event = emitter.emit({
                   type: 'tabPress',
                   target: route.key,
                   canPreventDefault: true,
                 });
-                defaultPrevented = !!event?.defaultPrevented;
+                defaultPrevented = Boolean(event?.defaultPrevented);
               } else if (navigation?.emit) {
                 const event = navigation.emit({
                   type: 'tabPress',
                   target: route.key,
                   canPreventDefault: true,
                 });
-                defaultPrevented = !!event?.defaultPrevented;
+                defaultPrevented = Boolean(event?.defaultPrevented);
+              }
+
+              // 2. Perform navigation if not already focused and not cancelled
+              if (!isFocused && !defaultPrevented) {
+                let navigated = false;
+
+                // Official React Navigation Bottom Tabs method
+                if (typeof navigateToTab === 'function') {
+                  try {
+                    navigateToTab(route.key);
+                    navigated = true;
+                  } catch {
+                    navigated = false;
+                  }
+                }
+
+                // Route descriptor navigation
+                if (!navigated && descriptors[route.key]?.navigation?.navigate) {
+                  try {
+                    descriptors[route.key]?.navigation?.navigate?.(route.name);
+                    navigated = true;
+                  } catch {
+                    navigated = false;
+                  }
+                }
+
+                // Standard navigation prop
+                if (!navigated && navigation?.navigate) {
+                  try {
+                    navigation.navigate(route.name);
+                    navigated = true;
+                  } catch {
+                    navigated = false;
+                  }
+                }
+
+                // Direct Expo Router imperative navigation
+                if (!navigated) {
+                  try {
+                    const targetPath = route.name === 'index' ? '/(tabs)' : `/(tabs)/${route.name}`;
+                    router.navigate(targetPath as any);
+                  } catch {
+                    const targetPath = route.name === 'index' ? '/(tabs)' : `/(tabs)/${route.name}`;
+                    router.push(targetPath as any);
+                  }
+                }
               }
             } catch (err) {
-              // Continue navigation even if emit fails
-            }
-
-            // 2. Perform navigation if not already focused and not cancelled
-            if (!isFocused && !defaultPrevented) {
-              let navigated = false;
-
-              // Official React Navigation Bottom Tabs method
-              if (typeof navigateToTab === 'function') {
-                try {
-                  navigateToTab(route.key);
-                  navigated = true;
-                } catch {
-                  navigated = false;
-                }
-              }
-
-              // Route descriptor navigation
-              if (!navigated && descriptors[route.key]?.navigation?.navigate) {
-                try {
-                  descriptors[route.key].navigation!.navigate(route.name);
-                  navigated = true;
-                } catch {
-                  navigated = false;
-                }
-              }
-
-              // Standard navigation prop
-              if (!navigated && navigation?.navigate) {
-                try {
-                  navigation.navigate(route.name);
-                  navigated = true;
-                } catch {
-                  navigated = false;
-                }
-              }
-
-              // Expo Router direct imperative navigation fallback
-              if (!navigated) {
+              console.warn('Navigation error:', err);
+              // Fallback to router.navigate
+              try {
                 const targetPath = route.name === 'index' ? '/(tabs)' : `/(tabs)/${route.name}`;
                 router.navigate(targetPath as any);
+              } catch {
+                // Ignore
               }
             }
           };

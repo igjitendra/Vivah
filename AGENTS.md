@@ -58,6 +58,14 @@
    - Use only vector icons (`@expo/vector-icons`, specifically `Ionicons`).
 8. **Approved Floating Pill Bottom Navigation for Mobile.**
    - Retain the floating pill-shaped bottom navigation bar on mobile interfaces. On desktop, adapt to desktop-appropriate sidebars or top bars without forcing mobile layouts onto wide screens.
+9. **Permanent Multilingual & Localization Mandate (Step 2.5).**
+   - All new user-facing features must be localization-ready before implementation is considered complete.
+   - Never hardcode UI strings in widgets or business logic.
+   - Every new translation key must be added to the source localization file and all required target translation resources.
+   - Do not mark a language production-ready without native review and script rendering verification.
+   - All translations, font assets, and language switching must work 100% offline.
+   - Do not assume all Indian languages use left-to-right scripts (e.g. Urdu, Kashmiri, Sindhi require RTL).
+   - Never store translated UI strings in database columns; store canonical machine-readable tokens (`given`, `received`, etc.).
 
 ---
 

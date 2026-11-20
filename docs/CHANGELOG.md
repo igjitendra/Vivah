@@ -5,6 +5,26 @@
 
 ---
 
+## [1.2.5] — 2026-11-21
+
+### Added
+- **Complete Indian Multilingual Localization & Internationalization Architecture (Step 2.5)**:
+  - Central `LanguageRegistry` covering all 22 Scheduled Indian Languages of the Eighth Schedule of the Constitution of India + English fallback.
+  - Extensible language registration API (`LanguageRegistry.instance.registerLanguage()`) to dynamically support regional languages and dialects (Bhojpuri, Rajasthani, Tulu, Khasi, Garo, Mizo, etc.).
+  - BCP 47 compliant locale modeling with script distinction (`Deva`, `Beng`, `Guru`, `Gujr`, `Orya`, `Taml`, `Telu`, `Knda`, `Mlym`, `Olck`, `Mtei`, `Arab`).
+  - Right-to-Left (RTL) engine supporting Urdu, Kashmiri Arabic, and Sindhi Arabic with mixed-direction numeral and currency isolation.
+  - Dedicated documentation suite:
+    - `docs/LOCALIZATION_I18N.md`: Complete architecture specification.
+    - `docs/LANGUAGE_SUPPORT_MATRIX.md`: 22-language matrix with ISO tags, scripts, direction, fonts, and review statuses.
+    - `docs/TRANSLATION_WORKFLOW.md`: 7-stage QA lifecycle and cultural financial terminology guidelines.
+    - `docs/FONT_AND_SCRIPT_SUPPORT.md`: Noto font mapping, OpenType Indic shaping, and licensing.
+  - Official Flutter localization setup via `l10n.yaml` with template `app_en.arb`, `app_hi.arb`, and `app_ur.arb` featuring ICU pluralization.
+  - `LocaleFormatter` for display-only Indian Rupee formatting (`₹1,100`) from pure integer paise and locale-adapted dates.
+  - `UnicodeSearchUtils` implementing NFC normalization and matra-safe substring matching across 12 Indic writing systems.
+  - `LanguageSelectorScreen` UI displaying native language names, English subtitles, instant search, script badges, active indicators, and zero country flags.
+  - Riverpod `localeProvider` for instant runtime language switching with SQLite `app_settings` persistence.
+  - Automated test suites: `test/unit/localization_test.dart` and `scripts/test-multilingual-architecture.py` (22/22 tests passing).
+
 ## [1.2.0] — 2026-11-21
 
 ### Added

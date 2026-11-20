@@ -35,6 +35,18 @@
 
 ## 3. Feature-by-Feature Implementation Status
 
+### Indian Multilingual Localization Architecture (Step 2.5)
+| Module / Feature | Status | Primary Source Files | Verification Evidence |
+| :--- | :--- | :--- | :--- |
+| 22 Scheduled Languages Registry | `VERIFIED` | `lib/src/core/localization/language_registry.dart` | 22 Eighth Schedule languages + English; BCP 47 compliant. |
+| Extensible Regional Languages API | `VERIFIED` | `lib/src/core/localization/language_registry.dart` | `registerLanguage()` supports Bhojpuri, Rajasthani, Tulu, etc. |
+| ARB Catalogs & ICU Pluralization | `VERIFIED` | `lib/l10n/app_en.arb`, `app_hi.arb`, `app_ur.arb` | Key parity verified; ICU `{count, plural}` validated. |
+| RTL Text Direction Engine | `VERIFIED` | `lib/src/core/localization/models/language_spec.dart` | Urdu, Kashmiri, and Sindhi Arabic RTL verified. |
+| Unicode Search Normalization | `VERIFIED` | `lib/src/core/localization/unicode_search_utils.dart` | NFC search verified across 12 Indic scripts in Python test. |
+| Locale-Aware Currency & Numbers | `VERIFIED` | `lib/src/core/localization/locale_formatter.dart` | Paise to ₹ formatting with Indian numbering conventions. |
+| Runtime Language Selector UI | `VERIFIED` | `lib/src/core/localization/presentation/` | Searchable native name selector with script badges; zero flags. |
+| Local Locale Persistence | `VERIFIED` | `lib/src/core/localization/locale_notifier.dart` | Riverpod `localeProvider` synced with SQLite settings. |
+
 ### Flutter & SQLite/Drift Database Architecture (Step 2 & 3)
 | Module / Feature | Status | Primary Source Files | Verification Evidence |
 | :--- | :--- | :--- | :--- |

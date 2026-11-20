@@ -30,6 +30,10 @@ Welcome to the comprehensive, authoritative technical and product documentation 
 ### 3. UI, UX & Design System
 - **[UI_UX_GUIDELINES.md](UI_UX_GUIDELINES.md)**: Hindi-first design principles, Home screen layout, floating pill bottom bar, and responsiveness.
 - **[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)**: Official color tokens, typography hierarchy, spacing scale, and component specifications.
+- **[LOCALIZATION_I18N.md](LOCALIZATION_I18N.md)**: Multilingual architecture for all 22 Scheduled Indian Languages + English fallback.
+- **[LANGUAGE_SUPPORT_MATRIX.md](LANGUAGE_SUPPORT_MATRIX.md)**: Complete 22-language matrix with BCP 47 tags, native names, scripts, text direction, and review status.
+- **[TRANSLATION_WORKFLOW.md](TRANSLATION_WORKFLOW.md)**: Key naming conventions, translation lifecycles, and native review criteria.
+- **[FONT_AND_SCRIPT_SUPPORT.md](FONT_AND_SCRIPT_SUPPORT.md)**: Noto font family mapping, OpenType Indic shaping, and RTL typography.
 
 ### 4. Data Safety, Security & Exports
 - **[PRIVACY_SECURITY.md](PRIVACY_SECURITY.md)**: 100% offline-first threat model, local data ownership, and permissions audit.

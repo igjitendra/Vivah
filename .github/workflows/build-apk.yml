@@ -28,11 +28,11 @@ jobs:
       - name: Generate Android Platform Wrapper
         run: flutter create --platforms=android --org com.vyavahaar --no-pub .
 
-      - name: Install Dependencies
-        run: flutter pub get
-
       - name: Configure Android compileSdk to 36
         run: python3 scripts/configure-android-sdk.py
+
+      - name: Install Dependencies
+        run: flutter pub get
 
       - name: Run Code Generation
         run: dart run build_runner build --delete-conflicting-outputs --verbose
@@ -62,7 +62,15 @@ jobs:
           retention-days: 14
 
       - name: Build Release APK
-        run: flutter build apk --release --no-shrink
+        run: |
+          flutter build apk --release --no-shrink || (cd android && ./gradlew assembleRelease && cd ..)
+          mkdir -p build/app/outputs/flutter-apk/
+          RELEASE_APK=$(find . -name "*release*.apk" -not -path "*/intermediates/*" | head -n 1)
+          if [ -n "$RELEASE_APK" ]; then
+            echo "Copying $RELEASE_APK to build/app/outputs/flutter-apk/app-release.apk"
+            cp "$RELEASE_APK" build/app/outputs/flutter-apk/app-release.apk
+            ls -lh build/app/outputs/flutter-apk/app-release.apk
+          fi
         continue-on-error: true
 
       - name: Upload Release APK Artifact

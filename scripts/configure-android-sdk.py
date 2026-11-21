@@ -2,17 +2,19 @@
 """
 configure-android-sdk.py
 
-Ensures Android compileSdk 36 is configured across:
-1. android/app/build.gradle.kts / build.gradle
-2. android/gradle.properties
-3. Flutter plugins in ~/.pub-cache (fixing compileSdk mismatches such as file_picker / flutter_plugin_android_lifecycle)
+Configures Android compileSdk to 36 across the generated Android project:
+1. Updates android/gradle.properties with android.suppressUnsupportedCompileSdk=36
+2. Configures compileSdk = 36 in android/app/build.gradle.kts or android/app/build.gradle
+3. Injects a safe subprojects afterEvaluate block into root android/build.gradle.kts or
+   android/build.gradle to force compileSdkVersion 36 across all plugin subprojects (e.g. file_picker),
+   handling already-evaluated projects safely to avoid InvalidUserCodeException.
 """
 
 import os
 import re
 
 print("=" * 60)
-print("🔧 Vyavahaar Android SDK Configuration")
+print("🔧 Vyavahaar Android SDK Configuration (compileSdk 36)")
 print("=" * 60)
 
 root_dir = os.getcwd()
@@ -34,81 +36,103 @@ if os.path.isfile(gradle_props):
     else:
         print("ℹ️ gradle.properties already has suppressUnsupportedCompileSdk")
 
-# 2. Clean android/build.gradle.kts / android/build.gradle of any broken AarMetadata / afterEvaluate overrides
-for fname in ["build.gradle.kts", "build.gradle"]:
-    fpath = os.path.join(android_dir, fname)
-    if os.path.isfile(fpath):
-        with open(fpath, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-        clean_lines = []
-        for line in lines:
-            if "AarMetadata" in line or "tasks.matching" in line:
-                continue
-            clean_lines.append(line)
-        with open(fpath, "w", encoding="utf-8") as f:
-            f.writelines(clean_lines)
-
-# Helper function to patch compileSdk in any gradle file
-def patch_compile_sdk(text):
-    text = re.sub(r"\bcompileSdkVersion\s*=?\s*(?:[12]\d|3[0-5])\b", "compileSdkVersion 36", text)
-    text = re.sub(r"\bcompileSdk\s*=\s*(?:flutter\.compileSdkVersion|[12]\d|3[0-5])\b", "compileSdk = 36", text)
-    text = re.sub(r"\bcompileSdk\s+(?:flutter\.compileSdkVersion|[12]\d|3[0-5])\b", "compileSdk 36", text)
-    text = re.sub(r"\btargetSdkVersion\s+(?:flutter\.targetSdkVersion|\d+)\b", "targetSdkVersion 35", text)
-    text = re.sub(r"\btargetSdk\s*=\s*(?:flutter\.targetSdkVersion|\d+)\b", "targetSdk = 35", text)
-    text = re.sub(r"\bminSdkVersion\s+(?:flutter\.minSdkVersion|\d+)\b", "minSdkVersion 21", text)
-    text = re.sub(r"\bminSdk\s*=\s*(?:flutter\.minSdkVersion|\d+)\b", "minSdk = 21", text)
-    return text
-
-# 3. Update android/app/build.gradle.kts / android/app/build.gradle
+# 2. Update android/app/build.gradle.kts or android/app/build.gradle
 app_gradle_kts = os.path.join(android_dir, "app", "build.gradle.kts")
 if os.path.isfile(app_gradle_kts):
     with open(app_gradle_kts, "r", encoding="utf-8") as f:
         content = f.read()
-    new_content = patch_compile_sdk(content)
+    content = re.sub(r"\bcompileSdk\s*=\s*(?:flutter\.compileSdkVersion|\d+)\b", "compileSdk = 36", content)
+    content = re.sub(r"\btargetSdk\s*=\s*(?:flutter\.targetSdkVersion|\d+)\b", "targetSdk = 35", content)
+    content = re.sub(r"\bminSdk\s*=\s*(?:flutter\.minSdkVersion|\d+)\b", "minSdk = 21", content)
     with open(app_gradle_kts, "w", encoding="utf-8") as f:
-        f.write(new_content)
-    print("✅ Updated android/app/build.gradle.kts to compileSdk = 36")
+        f.write(content)
+    print("✅ Configured android/app/build.gradle.kts with compileSdk = 36")
 
 app_gradle_groovy = os.path.join(android_dir, "app", "build.gradle")
 if os.path.isfile(app_gradle_groovy):
     with open(app_gradle_groovy, "r", encoding="utf-8") as f:
         content = f.read()
-    new_content = patch_compile_sdk(content)
+    content = re.sub(r"\bcompileSdkVersion\s+(?:flutter\.compileSdkVersion|\d+)\b", "compileSdkVersion 36", content)
+    content = re.sub(r"\bcompileSdk\s*=\s*(?:flutter\.compileSdkVersion|\d+)\b", "compileSdk = 36", content)
+    content = re.sub(r"\btargetSdkVersion\s+(?:flutter\.targetSdkVersion|\d+)\b", "targetSdkVersion 35", content)
+    content = re.sub(r"\bminSdkVersion\s+(?:flutter\.minSdkVersion|\d+)\b", "minSdkVersion 21", content)
     with open(app_gradle_groovy, "w", encoding="utf-8") as f:
-        f.write(new_content)
-    print("✅ Updated android/app/build.gradle to compileSdkVersion 36")
+        f.write(content)
+    print("✅ Configured android/app/build.gradle with compileSdkVersion 36")
 
-# 4. Patch all downloaded plugins in pub cache to use compileSdkVersion / compileSdk 36
-cache_candidates = [
-    os.environ.get("PUB_CACHE"),
-    os.path.expanduser("~/.pub-cache"),
-    "/home/runner/.pub-cache",
-    "/root/.pub-cache",
-]
+# 3. Inject safe subprojects block in root android/build.gradle.kts or android/build.gradle
+root_gradle_kts = os.path.join(android_dir, "build.gradle.kts")
+root_gradle_groovy = os.path.join(android_dir, "build.gradle")
 
-visited = set()
-for pub_cache in cache_candidates:
-    if pub_cache and os.path.isdir(pub_cache) and pub_cache not in visited:
-        visited.add(pub_cache)
-        print(f"🔍 Scanning pub-cache at {pub_cache} for plugin build.gradle files...")
-        patched_count = 0
-        for root, _, files in os.walk(pub_cache):
-            for file in files:
-                if file in ("build.gradle", "build.gradle.kts"):
-                    target_file = os.path.join(root, file)
-                    try:
-                        with open(target_file, "r", encoding="utf-8") as f:
-                            file_content = f.read()
-                        new_content = patch_compile_sdk(file_content)
-                        if new_content != file_content:
-                            with open(target_file, "w", encoding="utf-8") as f:
-                                f.write(new_content)
-                            patched_count += 1
-                            plugin_name = os.path.basename(os.path.dirname(os.path.dirname(target_file)))
-                            print(f"  ⚡ Patched: {plugin_name}/{file} -> compileSdk 36")
-                    except Exception as e:
-                        pass
-        print(f"✅ Successfully patched {patched_count} pub-cache plugin build files in {pub_cache} to compileSdk 36")
+subprojects_kts_block = """
+// Force compileSdk 36 across all library subprojects (e.g. file_picker)
+subprojects {
+    val p = this
+    val configureAndroid = {
+        if (p.hasProperty("android")) {
+            val androidExt = p.extensions.findByName("android")
+            if (androidExt != null) {
+                try {
+                    val method = androidExt.javaClass.getMethod("compileSdkVersion", Int::class.javaPrimitiveType)
+                    method.invoke(androidExt, 36)
+                } catch (_: Throwable) {
+                    try {
+                        val method = androidExt.javaClass.getMethod("setCompileSdkVersion", Int::class.javaPrimitiveType)
+                        method.invoke(androidExt, 36)
+                    } catch (_: Throwable) {}
+                }
+            }
+        }
+    }
+    if (p.state.executed) {
+        configureAndroid()
+    } else {
+        p.afterEvaluate {
+            configureAndroid()
+        }
+    }
+}
+"""
+
+subprojects_groovy_block = """
+// Force compileSdkVersion 36 across all library subprojects (e.g. file_picker)
+subprojects { project ->
+    def configureAndroid = {
+        if (project.hasProperty('android')) {
+            project.android {
+                compileSdkVersion 36
+            }
+        }
+    }
+    if (project.state.executed) {
+        configureAndroid()
+    } else {
+        project.afterEvaluate {
+            configureAndroid()
+        }
+    }
+}
+"""
+
+if os.path.isfile(root_gradle_kts):
+    with open(root_gradle_kts, "r", encoding="utf-8") as f:
+        content = f.read()
+    if "configureAndroid" not in content and "compileSdkVersion" not in content:
+        with open(root_gradle_kts, "a", encoding="utf-8") as f:
+            f.write(subprojects_kts_block)
+        print("✅ Injected safe subprojects compileSdk 36 block into android/build.gradle.kts")
+    else:
+        print("ℹ️ android/build.gradle.kts already configured with subprojects compileSdk block")
+
+if os.path.isfile(root_gradle_groovy):
+    with open(root_gradle_groovy, "r", encoding="utf-8") as f:
+        content = f.read()
+    if "configureAndroid" not in content and "compileSdkVersion 36" not in content:
+        with open(root_gradle_groovy, "a", encoding="utf-8") as f:
+            f.write(subprojects_groovy_block)
+        print("✅ Injected safe subprojects compileSdk 36 block into android/build.gradle")
+    else:
+        print("ℹ️ android/build.gradle already configured with subprojects compileSdk block")
 
 print("=" * 60)
 print(" Android configuration completed successfully!")

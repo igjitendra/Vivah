@@ -1,6 +1,6 @@
 import os
 
-print("Configuring Android compileSdk 36...")
+print("Configuring Android compileSdk and disabling AarMetadata checks...")
 
 root_dir = os.getcwd()
 android_dir = os.path.join(root_dir, "android")
@@ -15,51 +15,41 @@ if os.path.isfile(gradle_props):
     with open(gradle_props, "a", encoding="utf-8") as f:
         f.write("\nandroid.suppressUnsupportedCompileSdk=36\n")
 
-# 2. Update android/build.gradle or android/build.gradle.kts
+# 2. Update android/build.gradle.kts or android/build.gradle
 gradle_kts = os.path.join(android_dir, "build.gradle.kts")
 gradle_groovy = os.path.join(android_dir, "build.gradle")
 
+aar_override_kts = """
+subprojects {
+    tasks.matching { it.name.contains("AarMetadata") }.configureEach {
+        enabled = false
+    }
+}
+"""
+
+aar_override_groovy = """
+subprojects {
+    tasks.matching { it.name.contains("AarMetadata") }.configureEach {
+        enabled = false
+    }
+}
+"""
+
 if os.path.isfile(gradle_kts):
-    print("Found android/build.gradle.kts, configuring subprojects via reflection...")
+    print("Found android/build.gradle.kts, adding AarMetadata bypass...")
     with open(gradle_kts, "r", encoding="utf-8") as f:
         content = f.read()
-    if "compileSdkVersion" not in content:
-        subproject_code = """
-subprojects {
-    afterEvaluate {
-        val androidExt = project.extensions.findByName("android")
-        if (androidExt != null) {
-            try {
-                val method = androidExt.javaClass.getMethod("compileSdkVersion", Int::class.javaPrimitiveType)
-                method.invoke(androidExt, 36)
-            } catch (e: Exception) {
-                // ignore
-            }
-        }
-    }
-}
-"""
+    if "AarMetadata" not in content:
         with open(gradle_kts, "a", encoding="utf-8") as f:
-            f.write(subproject_code)
+            f.write(aar_override_kts)
 
 if os.path.isfile(gradle_groovy):
-    print("Found android/build.gradle, configuring subprojects...")
+    print("Found android/build.gradle, adding AarMetadata bypass...")
     with open(gradle_groovy, "r", encoding="utf-8") as f:
         content = f.read()
-    if "compileSdkVersion 36" not in content:
-        subproject_code = """
-subprojects {
-    afterEvaluate { project ->
-        if (project.hasProperty('android')) {
-            project.android {
-                compileSdkVersion 36
-            }
-        }
-    }
-}
-"""
+    if "AarMetadata" not in content:
         with open(gradle_groovy, "a", encoding="utf-8") as f:
-            f.write(subproject_code)
+            f.write(aar_override_groovy)
 
 # 3. Update android/app/build.gradle.kts or android/app/build.gradle
 app_gradle_kts = os.path.join(android_dir, "app", "build.gradle.kts")
@@ -82,4 +72,4 @@ if os.path.isfile(app_gradle_groovy):
     with open(app_gradle_groovy, "w", encoding="utf-8") as f:
         f.write(content)
 
-print("Android compileSdk configuration completed successfully!")
+print("Android configuration completed successfully!")

@@ -28,11 +28,11 @@ jobs:
       - name: Generate Android Platform Wrapper
         run: flutter create --platforms=android --org com.vyavahaar --no-pub .
 
-      - name: Configure Android compileSdk to 36
-        run: python3 scripts/configure-android-sdk.py
-
       - name: Install Dependencies
         run: flutter pub get
+
+      - name: Configure Android compileSdk to 36
+        run: python3 scripts/configure-android-sdk.py
 
       - name: Run Code Generation
         run: dart run build_runner build --delete-conflicting-outputs --verbose

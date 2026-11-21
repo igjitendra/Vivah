@@ -11,7 +11,9 @@ void main() {
 
     test('Registry contains all 22 Scheduled Indian Languages + English', () {
       final scheduled = registry.getScheduledLanguages();
-      expect(scheduled.length, equals(22));
+      final distinctScheduledCodes = scheduled.map((s) => s.languageCode.split('-').first).toSet();
+      expect(distinctScheduledCodes.length, equals(22));
+      expect(scheduled.length, equals(25));
 
       final all = registry.getAllLanguages();
       // 22 scheduled + English = 23 primary language entries

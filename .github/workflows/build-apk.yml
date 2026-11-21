@@ -30,20 +30,43 @@ jobs:
 
       - name: Configure Android compileSdk to 36
         run: |
-          cat << 'EOF' >> android/build.gradle
+          echo "Checking android build files..."
+          ls -la android/
+          if [ -f "android/build.gradle" ]; then
+            cat << 'EOF' >> android/build.gradle
 
-          subprojects {
-              afterEvaluate { project ->
-                  if (project.hasProperty('android')) {
-                      project.android {
-                          compileSdkVersion 36
-                      }
-                  }
-              }
-          }
-          EOF
-          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/g' android/app/build.gradle || true
-          sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 36/g' android/app/build.gradle || true
+            subprojects {
+                afterEvaluate { project ->
+                    if (project.hasProperty('android')) {
+                        project.android {
+                            compileSdkVersion 36
+                        }
+                    }
+                }
+            }
+            EOF
+          fi
+          if [ -f "android/build.gradle.kts" ]; then
+            cat << 'EOF' >> android/build.gradle.kts
+
+            subprojects {
+                afterEvaluate {
+                    if (project.hasProperty("android")) {
+                        val android = project.extensions.findByName("android") as? com.android.build.gradle.BaseExtension
+                        android?.compileSdkVersion(36)
+                    }
+                }
+            }
+            EOF
+          fi
+          if [ -f "android/app/build.gradle" ]; then
+            sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/g' android/app/build.gradle || true
+            sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 36/g' android/app/build.gradle || true
+          fi
+          if [ -f "android/app/build.gradle.kts" ]; then
+            sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/g' android/app/build.gradle.kts || true
+            sed -i 's/compileSdk = [0-9]*/compileSdk = 36/g' android/app/build.gradle.kts || true
+          fi
 
       - name: Install Dependencies
         run: flutter pub get
@@ -52,7 +75,16 @@ jobs:
         run: dart run build_runner build --delete-conflicting-outputs --verbose
 
       - name: Build Debug APK
-        run: flutter build apk --debug
+        run: |
+          flutter build apk --debug --verbose || (cd android && ./gradlew assembleDebug && cd ..)
+          echo "Locating generated APKs:"
+          find . -name "*.apk" -exec ls -lh {} +
+          mkdir -p build/app/outputs/flutter-apk/
+          APK_FILE=$(find . -name "*debug*.apk" -not -path "*/intermediates/*" | head -n 1)
+          if [ -n "$APK_FILE" ]; then
+            echo "Copying $APK_FILE to build/app/outputs/flutter-apk/app-debug.apk"
+            cp "$APK_FILE" build/app/outputs/flutter-apk/app-debug.apk
+          fi
 
       - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4

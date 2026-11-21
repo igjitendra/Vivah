@@ -28,6 +28,23 @@ jobs:
       - name: Generate Android Platform Wrapper
         run: flutter create --platforms=android --org com.vyavahaar --no-pub .
 
+      - name: Configure Android compileSdk to 36
+        run: |
+          cat << 'EOF' >> android/build.gradle
+
+          subprojects {
+              afterEvaluate { project ->
+                  if (project.hasProperty('android')) {
+                      project.android {
+                          compileSdkVersion 36
+                      }
+                  }
+              }
+          }
+          EOF
+          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/g' android/app/build.gradle || true
+          sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 36/g' android/app/build.gradle || true
+
       - name: Install Dependencies
         run: flutter pub get
 

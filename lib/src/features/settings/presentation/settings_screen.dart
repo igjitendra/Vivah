@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_strings.dart';
@@ -58,6 +59,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   title: 'भाषा और प्राथमिकताएं',
                   icon: Icons.language,
                   children: [
+                    ListTile(
+                      leading: const Icon(Icons.palette_outlined, color: Color(0xFFA78BFA)),
+                      title: const Text('थीम और रंग (Themes & Colors)', style: TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: const Text('Light, Dark और 18+ कलर पैलेट्स'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push('/theme'),
+                    ),
+                    const Divider(height: 1),
                     ListTile(
                       leading: const Icon(Icons.translate, color: AppColors.deepNavy),
                       title: const Text('भाषा बदलें / Select Language', style: TextStyle(fontWeight: FontWeight.w600)),

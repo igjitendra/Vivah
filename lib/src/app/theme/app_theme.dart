@@ -1,55 +1,62 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
+import '../../core/theme/theme_palette.dart';
 
-/// Centralized Material 3 Light Theme for व्यवहार (Vyavahaar)
+/// Centralized Material 3 Dynamic Theme Builder for व्यवहार (Vyavahaar)
 class AppTheme {
   AppTheme._();
 
-  static ThemeData get lightTheme {
+  static ThemeData get lightTheme => fromPalette(ThemePalette.porcelain);
+  static ThemeData get darkTheme => fromPalette(ThemePalette.midnightAurora);
+
+  static ThemeData fromPalette(ThemePalette palette) {
+    final brightness = palette.isDark ? Brightness.dark : Brightness.light;
+
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.light,
-      colorScheme: const ColorScheme.light(
-        primary: AppColors.deepNavy,
-        onPrimary: AppColors.surfaceWhite,
-        secondary: AppColors.terracotta,
-        onSecondary: AppColors.surfaceWhite,
-        surface: AppColors.surfaceWhite,
-        onSurface: AppColors.textPrimary,
+      brightness: brightness,
+      colorScheme: ColorScheme(
+        brightness: brightness,
+        primary: palette.primary,
+        onPrimary: Colors.white,
+        secondary: palette.secondary,
+        onSecondary: Colors.white,
+        surface: palette.surface,
+        onSurface: palette.textPrimary,
         error: AppColors.diyaRed,
-        onError: AppColors.surfaceWhite,
+        onError: Colors.white,
       ),
-      scaffoldBackgroundColor: AppColors.warmCream,
+      scaffoldBackgroundColor: palette.background,
       fontFamily: 'NotoSansDevanagari',
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.deepNavy,
-        foregroundColor: AppColors.surfaceWhite,
+      appBarTheme: AppBarTheme(
+        backgroundColor: palette.isDark ? palette.surface : palette.secondary,
+        foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
-        titleTextStyle: TextStyle(
+        titleTextStyle: const TextStyle(
           fontFamily: 'NotoSansDevanagari',
           fontSize: 22,
           fontWeight: FontWeight.w800,
-          color: AppColors.surfaceWhite,
+          color: Colors.white,
           letterSpacing: 0.5,
         ),
       ),
-      cardTheme: const CardThemeData(
-        color: AppColors.surfaceWhite,
-        elevation: 2,
+      cardTheme: CardThemeData(
+        color: palette.surface,
+        elevation: palette.isDark ? 0 : 2,
         shadowColor: AppColors.shadow,
         shape: RoundedRectangleBorder(
           borderRadius: AppRadius.roundedCard,
-          side: BorderSide(color: AppColors.borderLight, width: 1),
+          side: BorderSide(color: palette.cardBorder, width: 1),
         ),
         margin: EdgeInsets.zero,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.terracotta,
-          foregroundColor: AppColors.surfaceWhite,
-          elevation: 3,
+          backgroundColor: palette.primary,
+          foregroundColor: Colors.white,
+          elevation: 2,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.md),
@@ -63,19 +70,19 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surfaceWhite,
+        fillColor: palette.surface,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: AppColors.borderLight),
+          borderSide: BorderSide(color: palette.cardBorder),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: AppColors.borderLight),
+          borderSide: BorderSide(color: palette.cardBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: AppColors.terracotta, width: 2),
+          borderSide: BorderSide(color: palette.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),

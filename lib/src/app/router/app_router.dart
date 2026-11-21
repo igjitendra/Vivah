@@ -18,6 +18,7 @@ import '../../features/reports/presentation/reports_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/reminders/presentation/reminders_screen.dart';
 import '../../core/localization/presentation/language_selector_screen.dart';
+import '../../features/settings/presentation/theme_gallery_screen.dart';
 import '../app_providers.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -199,6 +200,11 @@ final GoRouter appRouter = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       path: '/language',
       builder: (context, state) => const LanguageSelectorScreen(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/theme',
+      builder: (context, state) => const ThemeGalleryScreen(),
     ),
     GoRoute(
       parentNavigatorKey: _rootNavigatorKey,

@@ -1,9 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_strings.dart';
 import '../../domain/entities/entities.dart';
 import '../../shared/navigation/floating_pill_tab_bar.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
+import '../../features/ledger/presentation/ledger_screen.dart';
+import '../../features/events/presentation/events_list_screen.dart';
+import '../../features/events/presentation/add_event_screen.dart';
+import '../../features/events/presentation/event_detail_screen.dart';
+import '../../features/people/presentation/people_list_screen.dart';
+import '../../features/people/presentation/add_person_screen.dart';
+import '../../features/people/presentation/person_detail_screen.dart';
+import '../../features/entries/presentation/add_entry_screen.dart';
+import '../../features/entries/presentation/entry_detail_screen.dart';
+import '../../features/reports/presentation/reports_screen.dart';
+import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/reminders/presentation/reminders_screen.dart';
+import '../../core/localization/presentation/language_selector_screen.dart';
+import '../app_providers.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
@@ -72,48 +87,61 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: '/',
           pageBuilder: (context, state) => NoTransitionPage(
-            child: DashboardScreen(
-              summary: DashboardSummary.empty(),
-              onNewEntry: () => context.push('/entry/new'),
-              onNewEvent: () => context.push('/event/new'),
-              onNewPerson: () => context.push('/person/new'),
-              onOpenSettings: () => context.go('/settings'),
+            child: Consumer(
+              builder: (context, ref, _) {
+                final summaryAsync = ref.watch(dashboardSummaryProvider);
+                final summary = summaryAsync.asData?.value ?? DashboardSummary.empty();
+
+                return DashboardScreen(
+                  summary: summary,
+                  onNewEntry: () => context.push('/entry/new'),
+                  onNewEvent: () => context.push('/event/new'),
+                  onNewPerson: () => context.push('/person/new'),
+                  onOpenSettings: () => context.go('/settings'),
+                  onOpenEventDetails: (id) => context.push('/event/$id'),
+                );
+              },
             ),
           ),
         ),
         // Tab 2: Bahi Khata (Ledger)
         GoRoute(
           path: '/bahi',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: Scaffold(
-              body: Center(child: Text(AppStrings.tabBahi, style: TextStyle(fontSize: 18))),
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: LedgerScreen(
+              onNewEntry: () => context.push('/entry/new'),
+              onOpenEntryDetail: (id) => context.push('/entry/$id'),
             ),
           ),
         ),
         // Tab 3: Events (कार्यक्रम)
         GoRoute(
           path: '/events',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: Scaffold(
-              body: Center(child: Text(AppStrings.tabEvents, style: TextStyle(fontSize: 18))),
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: EventsListScreen(
+              onNewEvent: () => context.push('/event/new'),
+              onOpenEventDetail: (id) => context.push('/event/$id'),
             ),
           ),
         ),
         // Tab 4: People (लोग)
         GoRoute(
           path: '/people',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: Scaffold(
-              body: Center(child: Text(AppStrings.tabPeople, style: TextStyle(fontSize: 18))),
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: PeopleListScreen(
+              onNewPerson: () => context.push('/person/new'),
+              onOpenPersonDetail: (id) => context.push('/person/$id'),
             ),
           ),
         ),
         // Tab 5: Settings (सेटिंग्स)
         GoRoute(
           path: '/settings',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: Scaffold(
-              body: Center(child: Text(AppStrings.tabSettings, style: TextStyle(fontSize: 18))),
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: SettingsScreen(
+              onOpenLanguageSelector: () => context.push('/language'),
+              onOpenReports: () => context.push('/reports'),
+              onOpenReminders: () => context.push('/reminders'),
             ),
           ),
         ),
@@ -123,23 +151,59 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       parentNavigatorKey: _rootNavigatorKey,
       path: '/entry/new',
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('नया व्यवहार दर्ज करें फॉर्म')),
+      builder: (context, state) => AddEntryScreen(
+        initialEventId: state.uri.queryParameters['eventId'],
+        initialPersonId: state.uri.queryParameters['personId'],
       ),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/entry/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return EntryDetailScreen(entryId: id);
+      },
     ),
     GoRoute(
       parentNavigatorKey: _rootNavigatorKey,
       path: '/event/new',
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('नया कार्यक्रम बनाएं फॉर्म')),
-      ),
+      builder: (context, state) => const AddEventScreen(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/event/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return EventDetailScreen(eventId: id);
+      },
     ),
     GoRoute(
       parentNavigatorKey: _rootNavigatorKey,
       path: '/person/new',
-      builder: (context, state) => const Scaffold(
-        body: Center(child: Text('नया व्यक्ति जोड़ें फॉर्म')),
-      ),
+      builder: (context, state) => const AddPersonScreen(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/person/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return PersonDetailScreen(personId: id);
+      },
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/reports',
+      builder: (context, state) => const ReportsScreen(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/language',
+      builder: (context, state) => const LanguageSelectorScreen(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/reminders',
+      builder: (context, state) => const RemindersScreen(),
     ),
   ],
 );

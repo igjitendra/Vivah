@@ -1,0 +1,362 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_spacing.dart';
+import '../../../core/utils/currency_utils.dart';
+import '../../../core/utils/date_utils.dart';
+import '../../../domain/entities/entities.dart';
+import '../../../domain/enums/transaction_enums.dart';
+import '../../../app/app_providers.dart';
+import '../../../shared/widgets/direction_badge.dart';
+
+/// Transaction Detail & Actions Screen
+class EntryDetailScreen extends ConsumerWidget {
+  final String entryId;
+
+  const EntryDetailScreen({super.key, required this.entryId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final entriesRepo = ref.watch(entriesRepositoryProvider);
+
+    return Scaffold(
+      backgroundColor: AppColors.warmCream,
+      appBar: AppBar(
+        title: const Text(
+          'व्यवहार विवरण',
+          style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: AppColors.deepNavy,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: AppColors.white),
+            tooltip: 'प्रविष्टि हटाएं',
+            onPressed: () => _confirmArchiveEntry(context, ref),
+          ),
+        ],
+      ),
+      body: FutureBuilder<TransactionEntry?>(
+        future: entriesRepo.getEntryById(entryId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(color: AppColors.terracotta));
+          }
+          final entry = snapshot.data;
+          if (entry == null) {
+            return const Center(child: Text('व्यवहार प्रविष्टि नहीं मिली'));
+          }
+
+          final isReceived = entry.direction == TransactionDirection.received;
+          final accentColor = isReceived ? AppColors.forestGreen : AppColors.terracotta;
+
+          return ListView(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            children: [
+              // Amount & Direction Card
+              Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 2,
+                child: Container(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border(left: BorderSide(color: accentColor, width: 6)),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          DirectionBadge(direction: entry.direction),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: entry.isCompleted
+                                  ? AppColors.forestGreen.withValues(alpha: 0.1)
+                                  : (entry.isPlanned ? Colors.amber.shade100 : Colors.red.shade100),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              entry.isCompleted
+                                  ? 'सम्पन्न (Recorded)'
+                                  : (entry.isPlanned ? 'नियोजित (Planned)' : 'रद्द (Cancelled)'),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: entry.isCompleted
+                                  ? AppColors.forestGreen
+                                  : (entry.isPlanned ? Colors.amber.shade900 : Colors.red.shade800),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        entry.amountPaise != null
+                            ? CurrencyUtils.formatPaiseToRupees(entry.amountPaise!)
+                            : 'केवल वस्तु/भेंट',
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: accentColor,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        isReceived ? 'प्राप्त हुआ (Mila)' : 'दिया गया (Diya)',
+                        style: const TextStyle(fontSize: 14, color: AppColors.mutedText),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              // Relative & Event Association Card
+              Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 1,
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: Column(
+                    children: [
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const CircleAvatar(
+                          backgroundColor: AppColors.sand,
+                          child: Icon(Icons.person, color: AppColors.deepNavy),
+                        ),
+                        title: Text(
+                          entry.personName ?? 'अज्ञात व्यक्ति',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        subtitle: Text(
+                          entry.personRelationship ?? 'रिश्तेदार',
+                          style: const TextStyle(color: AppColors.mutedText),
+                        ),
+                        trailing: const Icon(Icons.chevron_right, color: AppColors.mutedText),
+                        onTap: () => context.push('/person/${entry.personId}'),
+                      ),
+                      if (entry.eventId != null) ...[
+                        const Divider(),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const CircleAvatar(
+                            backgroundColor: AppColors.sand,
+                            child: Icon(Icons.event, color: AppColors.deepNavy),
+                          ),
+                          title: Text(
+                            entry.eventTitle ?? 'कार्यक्रम',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          subtitle: const Text('पारिवारिक प्रसंग', style: TextStyle(color: AppColors.mutedText)),
+                          trailing: const Icon(Icons.chevron_right, color: AppColors.mutedText),
+                          onTap: () => context.push('/event/${entry.eventId}'),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              // Date & Mode Card
+              Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 1,
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: Column(
+                    children: [
+                      _DetailRow(
+                        icon: Icons.calendar_today,
+                        label: 'दिनांक',
+                        value: VyavahaarDateUtils.formatIsoDate(entry.transactionDate),
+                      ),
+                      const Divider(height: 20),
+                      _DetailRow(
+                        icon: Icons.category,
+                        label: 'प्रकार',
+                        value: entry.transactionType == TransactionType.cash
+                            ? 'नकद (Cash)'
+                            : (entry.transactionType == TransactionType.item
+                                ? 'सामान/भेंट (Item only)'
+                                : 'नकद व सामान (Cash + Item)'),
+                      ),
+                      if (entry.notes != null && entry.notes!.isNotEmpty) ...[
+                        const Divider(height: 20),
+                        _DetailRow(
+                          icon: Icons.note_outlined,
+                          label: 'टिप्पणी / विवरण',
+                          value: entry.notes!,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+
+              // Physical Gift Items List (if any)
+              if (entry.items.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.md),
+                Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 1,
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.card_giftcard, size: 20, color: AppColors.deepNavy),
+                            const SizedBox(width: 8),
+                            Text(
+                              'भेंट की गई वस्तुएं (${entry.items.length})',
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        ...entry.items.map((it) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('• ${it.itemName} (${it.quantity.toInt()} ${it.unit ?? ''})',
+                                      style: const TextStyle(fontSize: 14)),
+                                  if (it.estimatedValuePaise != null)
+                                    Text(
+                                      'अनुमानित: ${CurrencyUtils.formatPaiseToRupees(it.estimatedValuePaise!)}',
+                                      style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
+                                    ),
+                                ],
+                              ),
+                            )),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+
+              // Actions for Planned Transactions
+              if (entry.isPlanned) ...[
+                const SizedBox(height: AppSpacing.lg),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.forestGreen,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  icon: const Icon(Icons.check_circle_outline, color: AppColors.white),
+                  label: const Text(
+                    'व्यवहार पूर्ण मार्क करें (Mark Recorded)',
+                    style: TextStyle(color: AppColors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  onPressed: () async {
+                    await entriesRepo.markPlannedEntryRecorded(entry.id);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('व्यवहार दर्ज कर लिया गया!')),
+                      );
+                      context.pop();
+                    }
+                  },
+                ),
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red.shade700,
+                    side: BorderSide(color: Colors.red.shade400),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  icon: const Icon(Icons.cancel_outlined),
+                  label: const Text(
+                    'नियोजन रद्द करें (Cancel)',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  onPressed: () async {
+                    await entriesRepo.cancelPlannedEntry(entry.id);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('नियोजन रद्द किया गया।')),
+                      );
+                      context.pop();
+                    }
+                  },
+                ),
+              ],
+              const SizedBox(height: 40),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  void _confirmArchiveEntry(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('प्रविष्टि हटाएं?'),
+        content: const Text('क्या आप वाकई इस व्यवहार प्रविष्टि को हटाना चाहते हैं?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('रद्द करें'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.terracotta),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await ref.read(entriesRepositoryProvider).archiveEntry(entryId);
+              if (context.mounted) {
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('हटाएं', style: TextStyle(color: AppColors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _DetailRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20, color: AppColors.mutedText),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: const TextStyle(fontSize: 12, color: AppColors.mutedText)),
+            const SizedBox(height: 2),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.darkSlate),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}

@@ -29,6 +29,9 @@ class CurrencyUtils {
     return _formatter.format(rupees);
   }
 
+  /// Formats integer paise into standard Indian Rupee string (alias for formatPaise)
+  static String formatPaiseToRupees(int paise) => formatPaise(paise);
+
   /// Parses user text input string into integer paise
   static int? parseInputToPaise(String input) {
     final String clean = input.replaceAll('₹', '').replaceAll(',', '').trim();

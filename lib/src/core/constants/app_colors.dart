@@ -39,4 +39,8 @@ class AppColors {
   static const Color darkSlate = deepNavy;
   static const Color cardBackground = surfaceWhite;
   static const Color background = warmCream;
+  static const Color forestGreen = milaGreen;
+  static const Color gold = Color(0xFFD97706);
+  static const Color cardShadow = shadow;
+  static const Color sand = warmCream;
 }

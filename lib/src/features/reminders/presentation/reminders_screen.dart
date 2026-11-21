@@ -194,8 +194,6 @@ class RemindersScreen extends ConsumerWidget {
                     reminderDate: selectedDate.toIso8601String().substring(0, 10),
                     title: title,
                     notes: drift.Value(notesController.text.trim().isEmpty ? null : notesController.text.trim()),
-                    createdAt: now.toIso8601String(),
-                    updatedAt: now.toIso8601String(),
                   ),
                 );
                 if (context.mounted) {

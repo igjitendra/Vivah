@@ -46,4 +46,10 @@ class AppDateUtils {
 
     return '$day $monthName $year';
   }
+
+  /// Formats date string into readable date string
+  static String formatIsoDate(dynamic dateInput) => formatHindiDate(dateInput);
 }
+
+/// Compatibility alias for screens referencing VyavahaarDateUtils
+typedef VyavahaarDateUtils = AppDateUtils;

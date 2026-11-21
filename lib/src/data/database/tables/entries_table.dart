@@ -6,6 +6,7 @@ import 'events_table.dart';
 /// Part 3D Specification: id, person_id, event_id, direction, transaction_type,
 /// status, amount_paise, transaction_date, notes, created_at, updated_at,
 /// recorded_at, cancelled_at, archived_at.
+@DataClassName('EntryRow')
 class Entries extends Table {
   TextColumn get id => text()();
   TextColumn get personId =>

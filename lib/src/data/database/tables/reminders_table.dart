@@ -4,6 +4,7 @@ import 'entries_table.dart';
 /// Reminders table for upcoming planned व्यवहार follow-ups.
 /// Part 5 Specification: id, entry_id, reminder_date, title, notes,
 /// is_completed, created_at, updated_at.
+@DataClassName('ReminderRow')
 class Reminders extends Table {
   TextColumn get id => text()();
   TextColumn get entryId =>

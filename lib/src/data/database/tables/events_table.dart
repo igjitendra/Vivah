@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 /// Events table representing social and family ceremonies (शादी, मुंडन, गृह प्रवेश आदि).
 /// Part 3C Specification: id, title, event_type, event_date, venue, notes, created_at, updated_at, archived_at.
+@DataClassName('EventRow')
 class Events extends Table {
   TextColumn get id => text()();
   TextColumn get title => text()();

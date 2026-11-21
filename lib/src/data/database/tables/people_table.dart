@@ -4,6 +4,7 @@ import 'families_table.dart';
 /// People table representing individuals involved in व्यवहार.
 /// Part 3B Specification: id, family_id, full_name, phone_number,
 /// relationship_label, address, notes, created_at, updated_at, archived_at.
+@DataClassName('PersonRow')
 class People extends Table {
   TextColumn get id => text()();
   TextColumn get familyId =>

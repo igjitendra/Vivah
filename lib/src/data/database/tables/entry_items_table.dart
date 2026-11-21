@@ -4,6 +4,7 @@ import 'entries_table.dart';
 /// Entry items table representing physical non-cash gifts (चाँदी का सिक्का, कपड़े आदि).
 /// Part 4 Specification: id, entry_id, item_name, quantity, unit,
 /// estimated_value_paise, notes, created_at, updated_at.
+@DataClassName('EntryItemRow')
 class EntryItems extends Table {
   TextColumn get id => text()();
   TextColumn get entryId =>

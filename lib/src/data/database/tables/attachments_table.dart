@@ -3,6 +3,7 @@ import 'entries_table.dart';
 
 /// Attachments table for optional receipt images or document vouchers.
 /// Exactly mirrors SQLite table `attachments`.
+@DataClassName('AttachmentRow')
 class Attachments extends Table {
   TextColumn get id => text()();
   TextColumn get entryId =>

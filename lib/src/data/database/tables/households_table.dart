@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 /// Households table representing the user's family ledger.
 /// Exactly mirrors SQLite table `households`.
+@DataClassName('HouseholdRow')
 class Households extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();

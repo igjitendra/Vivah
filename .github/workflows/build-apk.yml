@@ -32,7 +32,7 @@ jobs:
         run: flutter pub get
 
       - name: Run Code Generation
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: dart run build_runner build --delete-conflicting-outputs --verbose
 
       - name: Build Debug APK
         run: flutter build apk --debug

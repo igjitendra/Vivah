@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 /// Families table representing clan or extended family units.
 /// Part 3A Specification: id, name, description, notes, created_at, updated_at, archived_at.
+@DataClassName('FamilyRow')
 class Families extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();

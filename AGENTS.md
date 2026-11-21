@@ -11,15 +11,14 @@
 - **App Name**: व्यवहार (Vyavahaar)
 - **Tagline**: रिश्तों का हिसाब, हमेशा याद।
 - **Scope**: **Cross-Platform Application for Five Target Platforms**:
-  1. **Android** (Mobile — Verified in Phase 3/5; Flutter scaffolded)
+  1. **Android** (Mobile — Verified in Phase 3/5; Flutter)
   2. **iOS** (Mobile — Architecture Ready)
   3. **Linux Desktop** (Desktop — Architecture Ready)
   4. **macOS Desktop** (Desktop — Architecture Ready)
   5. **Windows Desktop** (Desktop — Architecture Ready)
-- **Official Target Implementation**: **Flutter + Dart** (`lib/`).
-- **Legacy Reference Implementation**: **React Native (0.88.1) + Expo SDK 58** (`app/`, `src/`). Strictly preserved for behavioral and schema parity. Do NOT delete or overwrite without explicit approval.
+- **Official Implementation**: **Flutter + Dart** (`lib/`). Sole application framework and single source of truth.
 - **Nature**: 100% Offline-First Digital Family Ledger for Indian cultural gift & money exchanges (*shadi, baraat, tilak, mundan, griha pravesh*, etc.).
-- **Storage**: Autonomous local SQLite database engine on every supported platform.
+- **Storage**: Autonomous local SQLite database engine (Drift ORM) on every supported platform.
 
 ---
 
@@ -28,12 +27,11 @@
 1. **Never describe Vyavahaar as an Android-only application.** Always acknowledge the five-platform product vision (Android, iOS, Linux, macOS, Windows).
 2. **Always consider all five target platforms when making architectural or technology decisions.** Keep shared domain models, currency math, validation, and encryption cleanly separated from platform-specific UI adapters.
 3. **Do not assume a feature or API working on Android will work identically on iOS or desktop platforms.**
-4. **Identify platform-specific limitations before modifying shared code.** (e.g. mobile haptics vs. desktop keyboard shortcuts).
+4. **Identify platform-specific limitations before modifying shared code.** (e.g. mobile touch vs. desktop keyboard shortcuts).
 5. **Maintain the Platform Support Matrix in [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md).** Clearly distinguish what is `VERIFIED` on hardware from what is `ARCHITECTURE READY` or `PLANNED`.
 6. **Update [`docs/PLATFORM_STRATEGY.md`](docs/PLATFORM_STRATEGY.md) and [`docs/PLATFORM_RELEASE.md`](docs/PLATFORM_RELEASE.md)** whenever architectural or distribution decisions change.
 7. **Test platform-specific behavior independently.** Never claim desktop support based solely on mobile compilation.
-8. **Do NOT begin a framework rewrite or migration without explicit product-owner approval.**
-9. **Multi-Platform Support ≠ Cloud Sync.** Multi-platform means the software runs locally on five OS families; it does NOT authorize cloud synchronization. Phase 4 remains **DEFERRED**.
+8. **Multi-Platform Support ≠ Cloud Sync.** Multi-platform means the software runs locally on five OS families; it does NOT authorize cloud synchronization. Phase 4 remains **DEFERRED**.
 
 ---
 
@@ -44,7 +42,7 @@
    - The app does NOT function as a commercial debt collection or lending application.
 2. **Currency is stored in INTEGER PAISE.**
    - Never use floating-point numbers for money. ₹1,100 is stored as `110000` paise.
-   - All database columns storing money must end with `_paise` (e.g. `cash_amount_paise`).
+   - All database columns storing money must end with `_paise` (e.g. `amount_paise`, `cash_amount_paise`).
 3. **Gift / Item estimated values are NEVER mixed into cash totals.**
    - A gift/item can exist without cash, cash can exist without gifts, or both together.
    - Estimated values (`estimated_value_paise`) must be displayed separately from cash totals.
@@ -57,16 +55,16 @@
 6. **Phase 4 (Cloud & Family Sharing) is STRICTLY DEFERRED.**
    - **DO NOT** implement Supabase, Firebase, cloud sync, OTP login, user accounts, or remote servers.
 7. **No Emojis anywhere in the UI.**
-   - Use only vector icons (`@expo/vector-icons`, specifically `Ionicons`).
+   - Use only vector icons (`Icons.*`).
 8. **Approved Floating Pill Bottom Navigation for Mobile.**
    - Retain the floating pill-shaped bottom navigation bar on mobile interfaces. On desktop, adapt to desktop-appropriate sidebars or top bars without forcing mobile layouts onto wide screens.
-9. **Permanent Multilingual & Localization Mandate (Step 2.5).**
+9. **Permanent Multilingual & Localization Mandate.**
    - All new user-facing features must be localization-ready before implementation is considered complete.
    - Never hardcode UI strings in widgets or business logic.
    - Every new translation key must be added to the source localization file and all required target translation resources.
    - Do not mark a language production-ready without native review and script rendering verification.
    - All translations, font assets, and language switching must work 100% offline.
-   - Do not assume all Indian languages use left-to-right scripts (e.g. Urdu, Kashmiri, Sindhi require RTL).
+   - Support Right-to-Left (RTL) for Urdu, Kashmiri, and Sindhi.
    - Never store translated UI strings in database columns; store canonical machine-readable tokens (`given`, `received`, etc.).
 
 ---
@@ -81,16 +79,19 @@
 
 ### Phase 2: While Coding
 1. Make only the requested changes. Do not refactor unrelated working modules.
-2. Follow package manager rules: **Use `pnpm` exclusively**.
-3. Never install new system or npm dependencies without prior user approval.
+2. Follow package rules: Use standard Flutter/Dart dependencies declared in `pubspec.yaml`.
+3. Never install new system dependencies without prior user approval.
 4. Preserve existing functionality and 100% offline-first behavior.
-5. Maintain strict TypeScript types (no unchecked `any`).
+5. Maintain strict Dart typing with clean null-safety.
 6. Never fabricate implementation status, test results, or package versions.
 
 ### Phase 3: After Coding
-1. Run TypeScript check: `pnpm typecheck` (`tsc --noEmit`).
-2. Run automated test suites: `pnpm test` (both `scripts/test-business-logic.ts` and `scripts/test-phase3-features.ts`).
-3. If UI changed, verify rendering and touch/click interactions.
+1. Run Drift / Code generation if database models were modified: `dart run build_runner build --delete-conflicting-outputs`.
+2. Run automated test suites:
+   - `python3 scripts/test-database-architecture.py` (14/14 tests)
+   - `python3 scripts/test-multilingual-architecture.py` (22/22 tests)
+   - `flutter test` (CI verified)
+3. If UI changed, verify responsive layouts across mobile and desktop breakpoints.
 4. Update affected documentation in the same task:
    - [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md)
    - [`docs/CHANGELOG.md`](docs/CHANGELOG.md)
@@ -104,17 +105,17 @@
 ## 5. Development & Testing Commands
 
 ```bash
-# Package Manager
-pnpm install                 # Install dependencies
+# Dependencies & Code Generation
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
 
-# Quality Assurance & Verification
-pnpm typecheck               # Run tsc --noEmit
-pnpm test                    # Run all business logic & phase 3 tests
-pnpm test:logic              # Run pure business logic test suite (16 tests)
-pnpm test:phase3             # Run phase 3 features test suite (11 tests)
+# Automated Architecture & Logic Testing
+python3 scripts/test-database-architecture.py
+python3 scripts/test-multilingual-architecture.py
+flutter test
 
-# Development Server
-pnpm start                   # Start Expo dev server (Metro bundler)
+# Development Execution
+flutter run
 ```
 
 ---

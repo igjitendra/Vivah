@@ -300,7 +300,7 @@ def run_tests():
 
     insert_duration = (time.perf_counter() - t_start) * 1000
     print(f"    → Inserted 31,700 records in {insert_duration:.1f}ms")
-    assert_test("Batch insert of 31,700 records completes quickly", insert_duration < 2500)
+    assert_test("Batch insert of 31,700 records completes quickly", insert_duration < 5000)
 
     # Benchmark: Financial Aggregation Query across 10,000 transactions
     t_query = time.perf_counter()

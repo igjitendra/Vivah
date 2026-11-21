@@ -1,16 +1,17 @@
 # System Architecture — व्यवहार (Vyavahaar)
 
-> **Official Target Architecture**: Feature-First, MVVM + Repository Pattern, Typed Drift ORM, Flutter Riverpod  
-> **Legacy Reference MVP**: React Native 0.88.1 / Expo SDK 58.0.26 (Preserved for functional parity)  
+> **Official Implementation**: Feature-First, MVVM + Repository Pattern, Typed Drift ORM, Flutter Riverpod  
+> **Framework**: **Flutter + Dart (Sole Application Framework)**  
 > **Target Scope**: 5 Cross-Platform Operating Systems: **Android, iOS, Linux Desktop, macOS Desktop, Windows Desktop**  
 > **Offline Policy**: 100% Offline-First; SQLite is the sole source of truth; zero cloud dependencies.  
+> **Branch**: `migration/flutter-only`  
 > **Last Updated**: 2026-11-21  
 
 ---
 
-## 1. Official Target Architecture Diagram (Flutter + Dart)
+## 1. System Architecture Diagram (Flutter + Dart)
 
-The Flutter target architecture implements strict layer separation where presentation code never touches raw SQL, and business logic remains 100% independent of UI widgets:
+The Flutter architecture implements strict layer separation where presentation code never touches raw SQL, and business logic remains 100% independent of UI widgets:
 
 ```mermaid
 flowchart TD
@@ -19,10 +20,13 @@ flowchart TD
         FloatingBar[FloatingPillTabBar - Mobile]
         Sidebar[NavigationRail - Desktop / Tablet]
         DashboardView[DashboardScreen]
-        LedgerView[BahiKhataScreen]
-        PeopleView[PeopleDirectoryScreen]
-        EventsView[EventsScreen]
+        LedgerView[LedgerScreen]
+        PeopleView[PeopleListScreen & PersonDetailScreen]
+        EventsView[EventsListScreen & EventDetailScreen]
+        EntryViews[AddEntryScreen & EntryDetailScreen]
+        ReportsView[ReportsScreen]
         SettingsView[SettingsScreen]
+        RemindersView[RemindersScreen]
         LangSelector[LanguageSelectorScreen]
     end
 
@@ -36,8 +40,8 @@ flowchart TD
 
     subgraph Domain_Layer [Pure Domain & Business Rules]
         FinancialRules[FinancialRules - 12 Mandatory Rules]
-        Entities[Domain Entities: TransactionEntry, Person, Event, Family]
-        Enums[Enums: TransactionDirection, TransactionType, TransactionStatus]
+        Entities[Domain Entities: TransactionEntry, Person, Event, Family, Reminder]
+        Enums[Enums: TransactionDirection, TransactionType, TransactionStatus, EventType]
         CurrencyMath[CurrencyUtils: Integer Paise Math]
         SearchUtils[UnicodeSearchUtils: NFC Normalization across 12 Indic Scripts]
     end
@@ -101,11 +105,3 @@ flowchart TD
 * **Mila & Diya Separation**: Total Received and Total Given are queried and calculated as independent positive sums. Under no circumstances are they subtracted or netted.
 * **Soft Archiving**: Destructive deletions are avoided. People, events, families, and entries support soft archiving via `archived_at` timestamps to preserve historical records.
 * **Deletion Protection**: A person with associated transactions cannot be deleted (`ON DELETE RESTRICT` enforced by SQLite engine).
-
----
-
-## 4. Legacy Reference MVP Architecture (React Native)
-
-The repository preserves the original React Native implementation (`app/`, `src/`) for verification and behavioral parity:
-* Architecture: Expo Router file-based routing + React Hooks (`useDashboard`, `useEntries`) + Service Layer (`EntriesService`, `BackupService`) + `expo-sqlite`.
-* All 27 automated tests pass consistently via `pnpm test`.

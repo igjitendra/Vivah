@@ -5,6 +5,38 @@
 
 ---
 
+## [1.4.0] — 2026-11-21
+
+### Added
+- **Complete Expo / React Native Removal & Flutter-Only Migration**:
+  - Dedicated migration branch: `migration/flutter-only`.
+  - Migrated and created all feature presentation screens in Flutter:
+    - `LedgerScreen`: Bahi-Khata ledger list with Mila/Diya direction filtering, live search, and rupee cards.
+    - `PeopleListScreen` & `AddPersonScreen`: Contacts directory, search by name/phone/village, and person creation.
+    - `PersonDetailScreen`: Relative profile with Mila/Diya stats and chronological transaction history.
+    - `EventsListScreen` & `AddEventScreen`: Family ceremonies list and event creation.
+    - `EventDetailScreen`: Event ceremony summary, total received/given for the event, and guest transactions list.
+    - `AddEntryScreen`: Record transaction form with person & event dropdowns, direction toggle, rupee-to-paise conversion, and atomic save.
+    - `EntryDetailScreen`: Transaction detail, edit/cancel/soft-archive actions.
+    - `ReportsScreen`: PDF & CSV reports triggers.
+    - `SettingsScreen`: Language selection, reports, reminders, encrypted backup, restore picker, and privacy guarantee.
+    - `RemindersScreen`: Upcoming ceremonies and planned transactions management with completion toggles.
+  - Implemented all export and security services in Flutter:
+    - `PdfService`: High-resolution A4 Devanagari PDF reports (Complete Ledger, Received Only, Given Only) with embedded Noto Sans Devanagari fonts via `pdf` and `printing`.
+    - `CsvService`: RFC-4180 CSV export with UTF-8 BOM (`\uFEFF`) for Microsoft Excel compatibility.
+    - `BackupService`: Authenticated backup & restore using AES-256-GCM + OWASP KDF (PBKDF2-HMAC-SHA256 with 600,000 iterations), unique 128-bit salt and 12-byte nonce, envelope v4, and atomic transaction rollback.
+  - Connected declarative routing via GoRouter (`lib/src/app/router/app_router.dart`):
+    - 5 navigation tabs (`/` Dashboard, `/bahi` Bahi Khata, `/events` Events, `/people` People, `/settings` Settings).
+    - Subroutes: `/entry/new`, `/entry/:id`, `/person/new`, `/person/:id`, `/event/new`, `/event/:id`, `/reports`, `/language`, `/reminders`.
+
+### Removed
+- **Obsolete Expo, React Native & TypeScript Mobile Runtime**:
+  - Completely deleted `app/` (Expo file-based router pages) and `src/` (old React Native code).
+  - Completely deleted `components/`, `constants/`, and `dist/`.
+  - Completely removed root JavaScript tooling: `package.json`, `pnpm-lock.yaml`, `tsconfig.json`, `app.json`, `expo-env.d.ts`, and `.expo/`.
+  - Removed legacy React Native test scripts; preserved standalone Python SQLite and multilingual test suites.
+  - Updated CI workflow (`.github/workflows/ci.yml`): removed `react-native-verify` job; enhanced `flutter-verify` job with Python architecture tests.
+
 ## [1.3.0] — 2026-11-21
 
 ### Changed

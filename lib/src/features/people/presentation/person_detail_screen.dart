@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/enums/transaction_enums.dart';
@@ -18,13 +19,15 @@ class PersonDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final peopleRepo = ref.watch(peopleRepositoryProvider);
     final entriesRepo = ref.watch(entriesRepositoryProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: AppColors.warmCream,
       appBar: AppBar(
-        title: const Text('व्यक्ति विवरण व हिसाब', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
+        title: Text(l10n.personDetails, style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
         backgroundColor: AppColors.deepNavy,
         elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.white),
       ),
       body: FutureBuilder<Person?>(
         future: peopleRepo.getPersonById(personId),
@@ -34,7 +37,7 @@ class PersonDetailScreen extends ConsumerWidget {
           }
           final person = snapshot.data;
           if (person == null) {
-            return const Center(child: Text('व्यक्ति नहीं मिला'));
+            return Center(child: Text(l10n.personNotFound));
           }
 
           return FutureBuilder<Map<String, int>>(
@@ -60,14 +63,20 @@ class PersonDetailScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${person.relationshipLabel ?? 'रिश्तेदार'} • ${person.address ?? 'गाँव अज्ञात'}',
+                          '${person.relationshipLabel ?? l10n.relativeDefault} • ${person.address ?? l10n.villageUnknown}',
                           style: const TextStyle(color: AppColors.mutedText, fontSize: 14),
                         ),
                         if (person.phoneNumber != null) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            '📞 ${person.phoneNumber}',
-                            style: const TextStyle(color: AppColors.white, fontSize: 13),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              const Icon(Icons.phone, size: 14, color: AppColors.white),
+                              const SizedBox(width: 6),
+                              Text(
+                                person.phoneNumber!,
+                                style: const TextStyle(color: AppColors.white, fontSize: 13),
+                              ),
+                            ],
                           ),
                         ],
                         const SizedBox(height: 16),
@@ -85,7 +94,7 @@ class PersonDetailScreen extends ConsumerWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('कुल मिला (Received)', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                                    Text(l10n.totalReceived, style: const TextStyle(color: Colors.white70, fontSize: 11)),
                                     const SizedBox(height: 4),
                                     Text(
                                       CurrencyUtils.formatPaise(receivedPaise),
@@ -107,7 +116,7 @@ class PersonDetailScreen extends ConsumerWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('कुल दिया (Given)', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                                    Text(l10n.totalGiven, style: const TextStyle(color: Colors.white70, fontSize: 11)),
                                     const SizedBox(height: 4),
                                     Text(
                                       CurrencyUtils.formatPaise(givenPaise),
@@ -127,10 +136,10 @@ class PersonDetailScreen extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.all(AppSpacing.md),
                     child: Row(
-                      children: const [
-                        Icon(Icons.history, size: 18, color: AppColors.deepNavy),
-                        SizedBox(width: 8),
-                        Text('लेन-देन का इतिहास (Transaction History)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      children: [
+                        const Icon(Icons.history, size: 18, color: AppColors.deepNavy),
+                        const SizedBox(width: 8),
+                        Text(l10n.personHistory, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                       ],
                     ),
                   ),
@@ -145,7 +154,7 @@ class PersonDetailScreen extends ConsumerWidget {
                         }
                         final entries = entrySnap.data ?? [];
                         if (entries.isEmpty) {
-                          return const Center(child: Text('इस व्यक्ति के साथ अभी कोई व्यवहार दर्ज नहीं है'));
+                          return Center(child: Text(l10n.noTransactionsForPerson));
                         }
 
                         return ListView.builder(
@@ -159,14 +168,23 @@ class PersonDetailScreen extends ConsumerWidget {
                               child: ListTile(
                                 leading: DirectionBadge(direction: e.direction),
                                 title: Text(
-                                  e.amountPaise != null ? CurrencyUtils.formatPaise(e.amountPaise!) : 'भेंट',
+                                  e.amountPaise != null ? CurrencyUtils.formatPaise(e.amountPaise!) : l10n.giftItem,
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: e.direction == TransactionDirection.received ? AppColors.milaGreen : AppColors.diyaRed,
                                   ),
                                 ),
-                                subtitle: Text('${e.eventTitle ?? 'सामान्य'} • ${e.transactionDate}'),
-                                trailing: e.items.isNotEmpty ? Text('🎁 ${e.items.length}') : null,
+                                subtitle: Text('${e.eventTitle ?? l10n.generalEvent} • ${e.transactionDate}'),
+                                trailing: e.items.isNotEmpty
+                                    ? Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.card_giftcard, size: 16, color: AppColors.mutedText),
+                                          const SizedBox(width: 4),
+                                          Text('${e.items.length}', style: const TextStyle(color: AppColors.mutedText)),
+                                        ],
+                                      )
+                                    : null,
                               ),
                             );
                           },

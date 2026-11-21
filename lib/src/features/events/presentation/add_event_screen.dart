@@ -3,12 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/enums/transaction_enums.dart';
 import '../../../app/app_providers.dart';
 
-/// Screen to Create a New Ceremonial Event (नया कार्यक्रम)
+/// Screen to Create a New Ceremonial Event (Fully Localized, Zero Hardcoding)
 class AddEventScreen extends ConsumerStatefulWidget {
   const AddEventScreen({super.key});
 
@@ -36,12 +37,15 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
       backgroundColor: AppColors.warmCream,
       appBar: AppBar(
-        title: const Text('नया कार्यक्रम बनाएं', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
+        title: Text(l10n.createNewEvent, style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
         backgroundColor: AppColors.deepNavy,
         elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.white),
       ),
       body: _isSaving
           ? const Center(child: CircularProgressIndicator(color: AppColors.terracotta))
@@ -58,25 +62,26 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('कार्यक्रम का नाम (Event Title) *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(l10n.eventName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _titleController,
                             decoration: InputDecoration(
-                              hintText: 'उदा. अमित का विवाह, आराध्या का मुंडन',
+                              hintText: l10n.eventNameHint,
                               filled: true,
                               fillColor: AppColors.warmCream,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                             ),
-                            validator: (val) => val == null || val.trim().isEmpty ? 'नाम आवश्यक है' : null,
+                            validator: (val) => val == null || val.trim().isEmpty ? l10n.validationRequired : null,
                           ),
                           const SizedBox(height: 16),
-                          const Text('कार्यक्रम का प्रकार (Event Type)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(l10n.eventType, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 8),
                           DropdownButtonFormField<EventType>(
                             value: _selectedType,
                             items: EventType.values.map((t) {
-                              return DropdownMenuItem(value: t, child: Text(t.labelHindi));
+                              final label = l10n.isEnglish ? t.name : t.labelHindi;
+                              return DropdownMenuItem(value: t, child: Text(label));
                             }).toList(),
                             onChanged: (val) => setState(() => _selectedType = val ?? EventType.other),
                             decoration: InputDecoration(
@@ -86,7 +91,7 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          const Text('दिनांक (Event Date)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(l10n.eventDate, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 8),
                           GestureDetector(
                             onTap: _pickDate,
@@ -106,25 +111,25 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          const Text('स्थल / स्थान (Venue)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(l10n.eventLocation, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _venueController,
                             decoration: InputDecoration(
-                              hintText: 'उदा. शिव वाटिका मैरिज लॉन, कानपुर',
+                              hintText: l10n.eventLocationHint,
                               filled: true,
                               fillColor: AppColors.warmCream,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                             ),
                           ),
                           const SizedBox(height: 16),
-                          const Text('टिप्पणी (Notes)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(l10n.notes, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _notesController,
                             maxLines: 2,
                             decoration: InputDecoration(
-                              hintText: 'अतिरिक्त विवरण...',
+                              hintText: l10n.notesPlaceholder,
                               filled: true,
                               fillColor: AppColors.warmCream,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -143,7 +148,7 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
                         backgroundColor: AppColors.terracotta,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
-                      child: const Text('कार्यक्रम सहेजें (Save Event)', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: Text(l10n.saveEvent, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -159,21 +164,35 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
       initialDate: DateTime.tryParse(_eventDate) ?? now,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.terracotta,
+              onPrimary: AppColors.white,
+              onSurface: AppColors.deepNavy,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
+
     if (picked != null) {
       setState(() {
-        _eventDate = picked.toIso8601String().substring(0, 10);
+        _eventDate = picked.toIso8601String().split('T').first;
       });
     }
   }
 
   Future<void> _saveEvent() async {
+    final l10n = context.l10n;
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
     try {
       final repo = ref.read(eventsRepositoryProvider);
       final now = DateTime.now();
-      final ev = Event(
+      final event = CeremonialEvent(
         id: const Uuid().v4(),
         title: _titleController.text.trim(),
         eventType: _selectedType,
@@ -184,16 +203,17 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
         updatedAt: now,
       );
 
-      await repo.createEvent(ev);
+      await repo.saveEvent(event);
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('कार्यक्रम सफलतापूर्वक बनाया गया!'), backgroundColor: AppColors.milaGreen),
+          SnackBar(content: Text(l10n.eventSavedSuccess), backgroundColor: AppColors.milaGreen),
         );
         Navigator.pop(context);
       }
     } catch (err) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('त्रुटि: $err')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${l10n.errorGeneric}: $err')));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

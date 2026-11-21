@@ -5,11 +5,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
-import '../../../core/constants/app_strings.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../app/app_providers.dart';
 import '../services/backup_service.dart';
 
-/// Settings & System Management Screen
+/// Settings & System Management Screen (Fully Localized, Zero Hardcoding)
 class SettingsScreen extends ConsumerStatefulWidget {
   final VoidCallback onOpenLanguageSelector;
   final VoidCallback onOpenReports;
@@ -31,15 +31,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final db = ref.watch(databaseProvider);
     final backupService = BackupService(db);
 
     return Scaffold(
       backgroundColor: AppColors.warmCream,
       appBar: AppBar(
-        title: const Text(
-          'सेटिंग्स (Settings)',
-          style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.settingsTitle,
+          style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: AppColors.deepNavy,
         elevation: 0,
@@ -56,21 +57,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               children: [
                 // 1. Language & Display Card
                 _buildSectionCard(
-                  title: 'भाषा और प्राथमिकताएं',
+                  title: l10n.displayAndPreferences,
                   icon: Icons.language,
                   children: [
                     ListTile(
                       leading: const Icon(Icons.palette_outlined, color: Color(0xFFA78BFA)),
-                      title: const Text('थीम और रंग (Themes & Colors)', style: TextStyle(fontWeight: FontWeight.w600)),
-                      subtitle: const Text('Light, Dark और 18+ कलर पैलेट्स'),
+                      title: Text(l10n.themeAndColors, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: Text(l10n.themeAndColorsSubtitle),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => context.push('/theme'),
                     ),
                     const Divider(height: 1),
                     ListTile(
                       leading: const Icon(Icons.translate, color: AppColors.deepNavy),
-                      title: const Text('भाषा बदलें / Select Language', style: TextStyle(fontWeight: FontWeight.w600)),
-                      subtitle: const Text('22 भारतीय भाषाएं समर्थित'),
+                      title: Text(l10n.selectLanguage, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: Text(l10n.selectLanguageSubtitle),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: widget.onOpenLanguageSelector,
                     ),
@@ -81,13 +82,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                 // 2. Reports & Data Export Card
                 _buildSectionCard(
-                  title: 'रिपोर्ट्स और अनुस्मारक',
+                  title: l10n.reportsAndReminders,
                   icon: Icons.assignment_outlined,
                   children: [
                     ListTile(
                       leading: const Icon(Icons.description_outlined, color: AppColors.terracotta),
-                      title: const Text('PDF और CSV रिपोर्ट्स', style: TextStyle(fontWeight: FontWeight.w600)),
-                      subtitle: const Text('बही-खाता, कार्यक्रम और व्यक्तिवार प्रिंट'),
+                      title: Text(l10n.reports, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: Text(l10n.reportsSubtitle),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: widget.onOpenReports,
                     ),
@@ -95,8 +96,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const Divider(height: 1),
                       ListTile(
                         leading: const Icon(Icons.notifications_active_outlined, color: AppColors.gold),
-                        title: const Text('अनुस्मारक (Reminders)', style: TextStyle(fontWeight: FontWeight.w600)),
-                        subtitle: const Text('आगामी व्यवहार और आयोजनों की सूची'),
+                        title: Text(l10n.reminders, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        subtitle: Text(l10n.remindersSubtitle),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: widget.onOpenReminders,
                       ),
@@ -108,21 +109,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                 // 3. Backup & Restore Card
                 _buildSectionCard(
-                  title: 'ऑफ़लाइन बैकअप और पुनर्स्थापना',
+                  title: l10n.offlineBackupAndRestore,
                   icon: Icons.security,
                   children: [
                     ListTile(
                       leading: const Icon(Icons.lock_outline, color: AppColors.milaGreen),
-                      title: const Text('एन्क्रिप्टेड बैकअप बनाएं', style: TextStyle(fontWeight: FontWeight.w600)),
-                      subtitle: const Text('पासवर्ड सुरक्षित (AES-256-GCM)'),
+                      title: Text(l10n.backup, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: Text(l10n.backupSubtitle),
                       trailing: const Icon(Icons.file_upload_outlined),
                       onTap: () => _handleEncryptedBackup(backupService),
                     ),
                     const Divider(height: 1),
                     ListTile(
                       leading: const Icon(Icons.file_download_outlined, color: AppColors.deepNavy),
-                      title: const Text('बैकअप से डेटा पुनर्स्थापित करें', style: TextStyle(fontWeight: FontWeight.w600)),
-                      subtitle: const Text('सुरक्षित रोलबैक के साथ बैकअप फ़ाइल चुनें'),
+                      title: Text(l10n.restore, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: Text(l10n.restoreSubtitle),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => _handleRestoreBackup(backupService),
                     ),
@@ -138,25 +139,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     side: const BorderSide(color: AppColors.cardBorder),
                   ),
                   color: AppColors.white,
-                  child: const Padding(
-                    padding: EdgeInsets.all(AppSpacing.md),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.md),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.shield_outlined, color: AppColors.milaGreen, size: 20),
-                            SizedBox(width: 8),
+                            const Icon(Icons.shield_outlined, color: AppColors.milaGreen, size: 20),
+                            const SizedBox(width: 8),
                             Text(
-                              '100% ऑफ़लाइन और निजी',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.deepNavy),
+                              l10n.offlineGuaranteed,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.deepNavy),
                             ),
                           ],
                         ),
-                        SizedBox(height: 6),
+                        const SizedBox(height: 6),
                         Text(
-                          'व्यवहार आपके पारिवारिक रिकॉर्ड्स को किसी भी बाहरी सर्वर या क्लाउड पर नहीं भेजता। आपका सारा डेटा केवल आपके डिवाइस में सुरक्षित रहता है।',
-                          style: TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.4),
+                          l10n.privacyPolicyNotice,
+                          style: const TextStyle(color: AppColors.mutedText, fontSize: 12, height: 1.4),
                         ),
                       ],
                     ),
@@ -164,10 +165,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
 
                 const SizedBox(height: AppSpacing.xl),
-                const Center(
+                Center(
                   child: Text(
-                    'व्यवहार v1.3.0 • रिश्तों का हिसाब, हमेशा याद।',
-                    style: TextStyle(color: AppColors.mutedText, fontSize: 12),
+                    '${l10n.appName} v1.3.0 • ${l10n.appTagline}',
+                    style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
                   ),
                 ),
               ],
@@ -211,25 +212,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _handleEncryptedBackup(BackupService service) async {
+    final l10n = context.l10n;
     final passwordController = TextEditingController();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('बैकअप पासवर्ड दर्ज करें'),
+        title: Text(l10n.enterBackupPassword),
         content: TextField(
           controller: passwordController,
           obscureText: true,
-          decoration: const InputDecoration(
-            hintText: 'पासवर्ड (कम से कम 6 अक्षर)',
-            prefixIcon: Icon(Icons.lock),
+          decoration: InputDecoration(
+            hintText: l10n.backupPasswordHint,
+            prefixIcon: const Icon(Icons.lock),
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('रद्द करें')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.terracotta),
-            child: const Text('बैकअप बनाएं', style: TextStyle(color: Colors.white)),
+            child: Text(l10n.save, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -238,11 +240,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (confirmed == true && passwordController.text.trim().isNotEmpty) {
       setState(() => _isLoading = true);
       try {
-        final file = await service.createBackup(password: passwordController.text.trim());
-        await BackupService.shareBackup(file);
+        final path = await service.exportEncryptedBackup(passwordController.text.trim());
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${l10n.backupSuccess}: $path'),
+              backgroundColor: AppColors.milaGreen,
+            ),
+          );
+        }
       } catch (err) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('त्रुटि: $err')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${l10n.errorGeneric}: $err')),
+          );
         }
       } finally {
         if (mounted) setState(() => _isLoading = false);
@@ -251,6 +262,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _handleRestoreBackup(BackupService service) async {
+    final l10n = context.l10n;
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['json'],
@@ -258,50 +270,49 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     if (result != null && result.files.single.path != null) {
       final file = File(result.files.single.path!);
-      final passwordController = TextEditingController();
+      if (!mounted) return;
 
-      final proceed = await showDialog<bool>(
+      final passwordController = TextEditingController();
+      final confirmed = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('बैकअप पुनर्स्थापित करें'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('यदि बैकअप पासवर्ड-सुरक्षित है, तो कृपया पासवर्ड दर्ज करें:'),
-              const SizedBox(height: 8),
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  hintText: 'पासवर्ड (यदि आवश्यक हो)',
-                  prefixIcon: Icon(Icons.lock),
-                ),
-              ),
-            ],
+          title: Text(l10n.enterRestorePassword),
+          content: TextField(
+            controller: passwordController,
+            obscureText: true,
+            decoration: InputDecoration(
+              hintText: l10n.restorePasswordHint,
+              prefixIcon: const Icon(Icons.lock),
+            ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('रद्द करें')),
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
             ElevatedButton(
               onPressed: () => Navigator.pop(ctx, true),
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.milaGreen),
-              child: const Text('पुनर्स्थापित करें', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.terracotta),
+              child: Text(l10n.restore, style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),
       );
 
-      if (proceed == true) {
+      if (confirmed == true && passwordController.text.trim().isNotEmpty) {
         setState(() => _isLoading = true);
         try {
-          await service.restoreBackup(file, password: passwordController.text.trim());
+          await service.importEncryptedBackup(file.path, passwordController.text.trim());
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('डेटा सफलतापूर्वक पुनर्स्थापित हो गया!'), backgroundColor: AppColors.milaGreen),
+              SnackBar(
+                content: Text(l10n.restoreSuccess),
+                backgroundColor: AppColors.milaGreen,
+              ),
             );
           }
         } catch (err) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('त्रुटि: $err')));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('${l10n.errorGeneric}: $err')),
+            );
           }
         } finally {
           if (mounted) setState(() => _isLoading = false);

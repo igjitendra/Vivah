@@ -3,21 +3,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/enums/transaction_enums.dart';
 import '../../../app/app_providers.dart';
 
-/// Screen to Record a New व्यवहार Transaction
+/// Screen to record a new Mila / Diya entry (Pure, Isolated, Fully Localized)
 class AddEntryScreen extends ConsumerStatefulWidget {
-  final String? initialEventId;
   final String? initialPersonId;
+  final String? initialEventId;
 
   const AddEntryScreen({
     super.key,
-    this.initialEventId,
     this.initialPersonId,
+    this.initialEventId,
   });
 
   @override
@@ -32,9 +33,9 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
   late String? _selectedPersonId;
   late String? _selectedEventId;
   TransactionDirection _direction = TransactionDirection.received;
-  TransactionStatus _status = TransactionStatus.recorded;
-  TransactionType _transactionType = TransactionType.cash;
-  String _transactionDate = AppDateUtils.getTodayIsoString();
+  final TransactionStatus _status = TransactionStatus.recorded;
+  final TransactionType _transactionType = TransactionType.cash;
+  final String _transactionDate = AppDateUtils.getTodayIsoString();
 
   final List<EntryItem> _items = [];
   bool _isSaving = false;
@@ -55,15 +56,17 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final peopleAsync = ref.watch(activePeopleListProvider);
     final eventsAsync = ref.watch(activeEventsListProvider);
 
     return Scaffold(
       backgroundColor: AppColors.warmCream,
       appBar: AppBar(
-        title: const Text('नया व्यवहार दर्ज करें', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
+        title: Text(l10n.recordNewTransaction, style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
         backgroundColor: AppColors.deepNavy,
         elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.white),
       ),
       body: _isSaving
           ? const Center(child: CircularProgressIndicator(color: AppColors.terracotta))
@@ -92,7 +95,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                               ),
                               alignment: Alignment.center,
                               child: Text(
-                                '↓ मिला (Received)',
+                                '↓ ${l10n.received}',
                                 style: TextStyle(
                                   color: _direction == TransactionDirection.received ? AppColors.white : AppColors.textPrimary,
                                   fontWeight: FontWeight.bold,
@@ -112,7 +115,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                               ),
                               alignment: Alignment.center,
                               child: Text(
-                                '↑ दिया (Given)',
+                                '↑ ${l10n.given}',
                                 style: TextStyle(
                                   color: _direction == TransactionDirection.given ? AppColors.white : AppColors.textPrimary,
                                   fontWeight: FontWeight.bold,
@@ -136,23 +139,24 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('व्यक्ति (Person) *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(l10n.selectPersonRequired, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 8),
                           peopleAsync.when(
                             loading: () => const LinearProgressIndicator(),
-                            error: (err, _) => Text('त्रुटि: $err'),
+                            error: (err, _) => Text('${l10n.errorGeneric}: $err'),
                             data: (people) {
                               return DropdownButtonFormField<String>(
                                 value: _selectedPersonId,
-                                hint: const Text('व्यक्ति चुनें...'),
+                                hint: Text('${l10n.selectPerson}...'),
                                 items: people.map((p) {
+                                  final rel = p.relationshipLabel ?? l10n.relativeDefault;
                                   return DropdownMenuItem(
                                     value: p.id,
-                                    child: Text('${p.fullName} (${p.relationshipLabel ?? 'रिश्तेदार'})'),
+                                    child: Text('${p.fullName} ($rel)'),
                                   );
                                 }).toList(),
                                 onChanged: (val) => setState(() => _selectedPersonId = val),
-                                validator: (val) => val == null ? 'कृपया व्यक्ति चुनें' : null,
+                                validator: (val) => val == null ? l10n.selectPersonRequired : null,
                                 decoration: InputDecoration(
                                   filled: true,
                                   fillColor: AppColors.warmCream,
@@ -177,23 +181,23 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('नकद राशि (₹ Rupees)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(l10n.amountRupees, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _amountController,
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
                               prefixText: '₹ ',
-                              hintText: 'उदा. 1100',
+                              hintText: l10n.amountPlaceholder,
                               filled: true,
                               fillColor: AppColors.warmCream,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                             ),
                             validator: (val) {
                               if (_transactionType == TransactionType.cash || _transactionType == TransactionType.cashAndItem) {
-                                if (val == null || val.trim().isEmpty) return 'राशि दर्ज करें';
+                                if (val == null || val.trim().isEmpty) return l10n.amountRequired;
                                 final num = int.tryParse(val.trim());
-                                if (num == null || num <= 0) return 'मान्य राशि दर्ज करें';
+                                if (num == null || num <= 0) return l10n.amountRequired;
                               }
                               return null;
                             },
@@ -214,17 +218,17 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('कार्यक्रम (Event - ऐच्छिक)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(l10n.selectEventOptional, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 8),
                           eventsAsync.when(
                             loading: () => const LinearProgressIndicator(),
-                            error: (err, _) => Text('त्रुटि: $err'),
+                            error: (err, _) => Text('${l10n.errorGeneric}: $err'),
                             data: (events) {
                               return DropdownButtonFormField<String>(
                                 value: _selectedEventId,
-                                hint: const Text('कार्यक्रम चुनें (वैकल्पिक)...'),
+                                hint: Text('${l10n.selectEventOptional}...'),
                                 items: [
-                                  const DropdownMenuItem(value: null, child: Text('कोई कार्यक्रम नहीं')),
+                                  DropdownMenuItem(value: null, child: Text(l10n.noEvent)),
                                   ...events.map((e) => DropdownMenuItem(value: e.id, child: Text('${e.title} (${e.eventDate})'))),
                                 ],
                                 onChanged: (val) => setState(() => _selectedEventId = val),
@@ -252,13 +256,13 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('टिप्पणी / विवरण (Notes)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(l10n.notes, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _notesController,
                             maxLines: 2,
                             decoration: InputDecoration(
-                              hintText: 'उदा. अमित के विवाह में दिया गया शगुन...',
+                              hintText: l10n.notesPlaceholder,
                               filled: true,
                               fillColor: AppColors.warmCream,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -280,7 +284,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                         backgroundColor: AppColors.terracotta,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
-                      child: const Text('व्यवहार सहेजें (Save)', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: Text(l10n.saveTransaction, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -291,6 +295,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
   }
 
   Future<void> _saveEntry() async {
+    final l10n = context.l10n;
     if (!_formKey.currentState!.validate()) return;
     if (_selectedPersonId == null) return;
 
@@ -321,13 +326,13 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('व्यवहार सफलतापूर्वक दर्ज किया गया!'), backgroundColor: AppColors.milaGreen),
+          SnackBar(content: Text(l10n.transactionSavedSuccess), backgroundColor: AppColors.milaGreen),
         );
         Navigator.pop(context);
       }
     } catch (err) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('त्रुटि: $err')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${l10n.errorGeneric}: $err')));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

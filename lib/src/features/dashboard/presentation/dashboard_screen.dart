@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
-import '../../../core/constants/app_strings.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
 
-/// Redesigned Home Screen for व्यवहार (Vyavahaar) in Flutter
+/// Redesigned Home Screen for व्यवहार (Vyavahaar) (Fully Localized, Zero Hardcoding)
 class DashboardScreen extends StatelessWidget {
   final DashboardSummary summary;
   final VoidCallback onNewEntry;
@@ -27,6 +27,7 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final double topPadding = MediaQuery.of(context).padding.top;
 
     return Scaffold(
@@ -60,20 +61,20 @@ class DashboardScreen extends StatelessWidget {
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
-                      AppStrings.appName,
-                      style: TextStyle(
+                      l10n.appName,
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
                         color: AppColors.surfaceWhite,
                         letterSpacing: 0.5,
                       ),
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text(
-                      AppStrings.tagline,
-                      style: TextStyle(
+                      l10n.appTagline,
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: AppColors.textMuted,
@@ -129,9 +130,9 @@ class DashboardScreen extends StatelessWidget {
                                   child: const Icon(Icons.arrow_downward, size: 14, color: AppColors.milaGreen),
                                 ),
                                 const SizedBox(width: 6),
-                                const Text(
-                                  AppStrings.totalMila,
-                                  style: TextStyle(
+                                Text(
+                                  l10n.totalReceived,
+                                  style: const TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
                                     color: AppColors.milaGreen,
@@ -150,9 +151,9 @@ class DashboardScreen extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            const Text(
-                              AppStrings.receivedAmount,
-                              style: TextStyle(
+                            Text(
+                              l10n.received,
+                              style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
                                 color: Color(0xFF166534),
@@ -186,9 +187,9 @@ class DashboardScreen extends StatelessWidget {
                                   child: const Icon(Icons.arrow_upward, size: 14, color: AppColors.diyaRed),
                                 ),
                                 const SizedBox(width: 6),
-                                const Text(
-                                  AppStrings.totalDiya,
-                                  style: TextStyle(
+                                Text(
+                                  l10n.totalGiven,
+                                  style: const TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
                                     color: AppColors.diyaRed,
@@ -207,9 +208,9 @@ class DashboardScreen extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            const Text(
-                              AppStrings.givenAmount,
-                              style: TextStyle(
+                            Text(
+                              l10n.given,
+                              style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
                                 color: Color(0xFF991B1B),
@@ -235,19 +236,19 @@ class DashboardScreen extends StatelessWidget {
                     children: [
                       _StatColumn(
                         icon: Icons.calendar_today_outlined,
-                        label: AppStrings.tabEvents,
+                        label: l10n.tabEvents,
                         value: '${summary.totalEvents}',
                       ),
                       Container(width: 1, height: 32, color: AppColors.divider),
                       _StatColumn(
                         icon: Icons.people_outline,
-                        label: AppStrings.tabPeople,
+                        label: l10n.tabPeople,
                         value: '${summary.totalPeople}',
                       ),
                       Container(width: 1, height: 32, color: AppColors.divider),
                       _StatColumn(
                         icon: Icons.book_outlined,
-                        label: AppStrings.tabBahi,
+                        label: l10n.tabBahi,
                         value: '${summary.totalEntries}',
                       ),
                     ],
@@ -256,9 +257,9 @@ class DashboardScreen extends StatelessWidget {
                 const SizedBox(height: AppSpacing.lg),
 
                 // D. Current / Recent Event
-                const Text(
-                  AppStrings.recentEvent,
-                  style: TextStyle(
+                Text(
+                  l10n.recentEvent,
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
@@ -306,7 +307,7 @@ class DashboardScreen extends StatelessWidget {
                                 if (summary.recentEventDate != null) ...[
                                   const SizedBox(height: 2),
                                   Text(
-                                    AppDateUtils.formatHindiDate(summary.recentEventDate),
+                                    AppDateUtils.formatIsoDate(summary.recentEventDate),
                                     style: const TextStyle(
                                       fontSize: 12,
                                       color: AppColors.textSecondary,
@@ -330,10 +331,10 @@ class DashboardScreen extends StatelessWidget {
                       border: Border.all(color: AppColors.borderLight, style: BorderStyle.solid),
                     ),
                     child: Column(
-                      children: const [
+                      children: [
                         Text(
-                          AppStrings.noRecentEvent,
-                          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                          l10n.noRecentEvent,
+                          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
                         ),
                       ],
                     ),
@@ -342,9 +343,9 @@ class DashboardScreen extends StatelessWidget {
                 const SizedBox(height: AppSpacing.xl),
 
                 // E. Quick Actions
-                const Text(
-                  AppStrings.quickActions,
-                  style: TextStyle(
+                Text(
+                  l10n.quickActions,
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
@@ -383,19 +384,19 @@ class DashboardScreen extends StatelessWidget {
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
+                            children: [
                               Text(
-                                AppStrings.newEntry,
-                                style: TextStyle(
+                                l10n.newTransaction,
+                                style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.surfaceWhite,
                                 ),
                               ),
-                              SizedBox(height: 2),
+                              const SizedBox(height: 2),
                               Text(
-                                AppStrings.newEntrySubtitle,
-                                style: TextStyle(
+                                l10n.newEntrySubtitle,
+                                style: const TextStyle(
                                   fontSize: 11,
                                   color: Color(0xD9FFFFFF),
                                 ),
@@ -420,8 +421,8 @@ class DashboardScreen extends StatelessWidget {
                 // Secondary Action 1: New Event
                 _ActionTile(
                   icon: Icons.calendar_today_outlined,
-                  title: AppStrings.newEvent,
-                  subtitle: AppStrings.newEventSubtitle,
+                  title: l10n.newEvent,
+                  subtitle: l10n.newEventSubtitle,
                   onTap: onNewEvent,
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -429,8 +430,8 @@ class DashboardScreen extends StatelessWidget {
                 // Secondary Action 2: New Person
                 _ActionTile(
                   icon: Icons.person_add_alt_1_outlined,
-                  title: AppStrings.newPerson,
-                  subtitle: AppStrings.newPersonSubtitle,
+                  title: l10n.newPerson,
+                  subtitle: l10n.newPersonSubtitle,
                   onTap: onNewPerson,
                 ),
               ],

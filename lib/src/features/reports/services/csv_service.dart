@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:csv/csv.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../core/utils/currency_utils.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../domain/entities/entities.dart';
 
 /// Service for generating Excel-compatible CSV exports with UTF-8 BOM
@@ -10,28 +10,29 @@ class CsvService {
   CsvService._();
 
   /// Export entries to CSV file
-  static Future<File> exportEntriesCsv(List<TransactionEntry> entries) async {
+  static Future<File> exportEntriesCsv(List<TransactionEntry> entries, {AppLocalizations? l10n}) async {
     final rows = <List<dynamic>>[];
 
     // CSV Header
     rows.add([
       'Transaction ID',
-      'Date',
-      'Person Name',
-      'Relationship',
-      'Village / Address',
-      'Direction (दिशा)',
-      'Cash Amount (Rupees)',
-      'Cash Amount (Paise)',
-      'Transaction Type',
-      'Status',
-      'Event Title',
-      'Physical Gifts / Items',
-      'Notes',
+      l10n?.transactionDate ?? 'Date',
+      l10n?.personName ?? 'Person Name',
+      l10n?.relationCategory ?? 'Relationship',
+      l10n?.villageCity ?? 'Village / Address',
+      l10n?.direction ?? 'Direction',
+      '${l10n?.cashAmount ?? 'Cash Amount'} (Rupees)',
+      '${l10n?.cashAmount ?? 'Cash Amount'} (Paise)',
+      l10n?.type ?? 'Transaction Type',
+      l10n?.status ?? 'Status',
+      l10n?.eventName ?? 'Event Title',
+      l10n?.giftItem ?? 'Physical Gifts / Items',
+      l10n?.notes ?? 'Notes',
     ]);
 
     for (final e in entries) {
-      final directionLabel = e.direction.value == 'received' ? 'मिला (Received)' : 'दिया (Given)';
+      final isRec = e.direction.value == 'received';
+      final directionLabel = isRec ? (l10n?.received ?? 'Received') : (l10n?.given ?? 'Given');
       final giftSummary = e.items.map((i) => '${i.itemName} (x${i.quantity})').join('; ');
 
       rows.add([
@@ -52,7 +53,7 @@ class CsvService {
     }
 
     final csvString = const ListToCsvConverter().convert(rows);
-    // Prepend UTF-8 BOM so Excel opens Hindi Devanagari correctly without garbling
+    // Prepend UTF-8 BOM so Excel opens UTF-8 text correctly without garbling
     final contentWithBom = '\uFEFF$csvString';
 
     final outputDir = await getApplicationDocumentsDirectory();
@@ -62,7 +63,7 @@ class CsvService {
   }
 
   /// Share CSV file via native share sheet
-  static Future<void> shareCsv(File file) async {
-    await Share.shareXFiles([XFile(file.path)], text: 'व्यवहार CSV बही-खाता');
+  static Future<void> shareCsv(File file, {String? shareText}) async {
+    await Share.shareXFiles([XFile(file.path)], text: shareText ?? 'Vyavahaar CSV Ledger');
   }
 }

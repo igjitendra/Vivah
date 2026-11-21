@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart' as drift;
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../app/app_providers.dart';
 import '../../../data/database/app_database.dart';
@@ -14,21 +15,23 @@ class RemindersScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final db = ref.watch(databaseProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: AppColors.warmCream,
       appBar: AppBar(
-        title: const Text(
-          'अनुस्मारक (Reminders)',
-          style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.remindersTitle,
+          style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: AppColors.deepNavy,
         elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.white),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.terracotta,
         child: const Icon(Icons.add, color: AppColors.white),
-        onPressed: () => _showAddReminderDialog(context, db),
+        onPressed: () => _showAddReminderDialog(context, db, l10n),
       ),
       body: StreamBuilder<List<ReminderRow>>(
         stream: db.remindersDao.watchAllReminders(),
@@ -45,14 +48,14 @@ class RemindersScreen extends ConsumerWidget {
                 children: [
                   Icon(Icons.notifications_none, size: 64, color: AppColors.mutedText.withValues(alpha: 0.5)),
                   const SizedBox(height: 12),
-                  const Text(
-                    'कोई अनुस्मारक नहीं है।',
-                    style: TextStyle(fontSize: 16, color: AppColors.mutedText, fontWeight: FontWeight.bold),
+                  Text(
+                    l10n.noReminders,
+                    style: const TextStyle(fontSize: 16, color: AppColors.mutedText, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'आगामी आयोजनों या व्यवहार के लिए याद दिलाएं।',
-                    style: TextStyle(fontSize: 13, color: AppColors.mutedText),
+                  Text(
+                    l10n.noRemindersSubtitle,
+                    style: const TextStyle(fontSize: 13, color: AppColors.mutedText),
                   ),
                 ],
               ),
@@ -77,7 +80,7 @@ class RemindersScreen extends ConsumerWidget {
                 onDismissed: (_) {
                   db.remindersDao.deleteReminder(item.id);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('अनुस्मारक हटाया गया')),
+                    SnackBar(content: Text(l10n.reminderDeleted)),
                   );
                 },
                 child: Card(
@@ -101,7 +104,7 @@ class RemindersScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'दिनांक: ${VyavahaarDateUtils.formatIsoDate(item.reminderDate)}',
+                          '${l10n.datePrefix}${VyavahaarDateUtils.formatIsoDate(item.reminderDate)}',
                           style: const TextStyle(fontSize: 12, color: AppColors.mutedText),
                         ),
                         if (item.notes != null && item.notes!.isNotEmpty) ...[
@@ -123,7 +126,7 @@ class RemindersScreen extends ConsumerWidget {
     );
   }
 
-  void _showAddReminderDialog(BuildContext context, AppDatabase db) {
+  void _showAddReminderDialog(BuildContext context, AppDatabase db, AppLocalizations l10n) {
     final titleController = TextEditingController();
     final notesController = TextEditingController();
     DateTime selectedDate = DateTime.now().add(const Duration(days: 1));
@@ -132,23 +135,23 @@ class RemindersScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('नया अनुस्मारक बनाएं'),
+          title: Text(l10n.newReminder),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: titleController,
-                  decoration: const InputDecoration(
-                    labelText: 'शीर्षक *',
-                    hintText: 'उदा. शादी में शगुन देना है',
+                  decoration: InputDecoration(
+                    labelText: l10n.reminderTitleLabel,
+                    hintText: l10n.reminderTitleHint,
                   ),
                 ),
                 const SizedBox(height: 12),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.calendar_today, color: AppColors.terracotta),
-                  title: Text('दिनांक: ${VyavahaarDateUtils.formatIsoDate(selectedDate.toIso8601String().substring(0, 10))}'),
+                  title: Text('${l10n.datePrefix}${VyavahaarDateUtils.formatIsoDate(selectedDate.toIso8601String().substring(0, 10))}'),
                   trailing: TextButton(
                     onPressed: () async {
                       final picked = await showDatePicker(
@@ -161,15 +164,15 @@ class RemindersScreen extends ConsumerWidget {
                         setState(() => selectedDate = picked);
                       }
                     },
-                    child: const Text('बदलें'),
+                    child: Text(l10n.changeDate),
                   ),
                 ),
                 const SizedBox(height: 8),
                 TextField(
                   controller: notesController,
-                  decoration: const InputDecoration(
-                    labelText: 'टिप्पणी (वैकल्पिक)',
-                    hintText: 'अतिरिक्त विवरण लिखें',
+                  decoration: InputDecoration(
+                    labelText: l10n.notesOptional,
+                    hintText: l10n.notesOptionalHint,
                   ),
                   maxLines: 2,
                 ),
@@ -179,7 +182,7 @@ class RemindersScreen extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('रद्द करें'),
+              child: Text(l10n.cancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.terracotta),
@@ -200,7 +203,7 @@ class RemindersScreen extends ConsumerWidget {
                   Navigator.pop(ctx);
                 }
               },
-              child: const Text('सहेजें', style: TextStyle(color: AppColors.white)),
+              child: Text(l10n.save, style: const TextStyle(color: AppColors.white)),
             ),
           ],
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/theme_palette.dart';
 import '../../../core/theme/theme_notifier.dart';
 
@@ -14,6 +15,7 @@ class ThemeGalleryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeState = ref.watch(themeProvider);
     final isCurrentDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: isCurrentDark ? const Color(0xFF0F172A) : AppColors.warmCream,
@@ -28,7 +30,7 @@ class ThemeGalleryScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Themes',
+              l10n.themeGalleryTitle,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -36,7 +38,7 @@ class ThemeGalleryScreen extends ConsumerWidget {
               ),
             ),
             Text(
-              'Light and dark mode, and theme gallery',
+              l10n.themeGallerySubtitle,
               style: TextStyle(
                 fontSize: 12,
                 color: isCurrentDark ? const Color(0xFF94A3B8) : AppColors.textSecondary,
@@ -47,9 +49,9 @@ class ThemeGalleryScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text(
-              'Done',
-              style: TextStyle(
+            child: Text(
+              l10n.done,
+              style: const TextStyle(
                 color: Color(0xFFA78BFA),
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -67,7 +69,7 @@ class ThemeGalleryScreen extends ConsumerWidget {
             // COLOR THEME SELECTOR (Auto / Light / Dark)
             // ==========================================
             Text(
-              'Color Theme',
+              l10n.colorTheme,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -89,7 +91,7 @@ class ThemeGalleryScreen extends ConsumerWidget {
                   Expanded(
                     child: _buildModeTab(
                       context,
-                      label: 'Auto (System)',
+                      label: l10n.colorThemeAuto,
                       icon: Icons.brightness_auto,
                       isSelected: themeState.themeMode == ThemeMode.system,
                       onTap: () => ref.read(themeProvider.notifier).setThemeMode(ThemeMode.system),
@@ -99,7 +101,7 @@ class ThemeGalleryScreen extends ConsumerWidget {
                   Expanded(
                     child: _buildModeTab(
                       context,
-                      label: 'Light',
+                      label: l10n.colorThemeLight,
                       icon: Icons.light_mode_outlined,
                       isSelected: themeState.themeMode == ThemeMode.light,
                       onTap: () => ref.read(themeProvider.notifier).setThemeMode(ThemeMode.light),
@@ -109,7 +111,7 @@ class ThemeGalleryScreen extends ConsumerWidget {
                   Expanded(
                     child: _buildModeTab(
                       context,
-                      label: 'Dark',
+                      label: l10n.colorThemeDark,
                       icon: Icons.dark_mode_outlined,
                       isSelected: themeState.themeMode == ThemeMode.dark,
                       onTap: () => ref.read(themeProvider.notifier).setThemeMode(ThemeMode.dark),
@@ -126,7 +128,7 @@ class ThemeGalleryScreen extends ConsumerWidget {
             // LIGHT THEME GALLERY SECTION
             // ==========================================
             Text(
-              'Light theme',
+              l10n.lightThemeSection,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -134,7 +136,7 @@ class ThemeGalleryScreen extends ConsumerWidget {
               ),
             ),
             Text(
-              'Used in Light mode, and by Auto when the system is light.',
+              l10n.lightThemeDescription,
               style: TextStyle(
                 fontSize: 12,
                 color: isCurrentDark ? const Color(0xFF94A3B8) : AppColors.textSecondary,
@@ -168,7 +170,7 @@ class ThemeGalleryScreen extends ConsumerWidget {
             // DARK THEME GALLERY SECTION
             // ==========================================
             Text(
-              'Dark theme',
+              l10n.darkThemeSection,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -176,7 +178,7 @@ class ThemeGalleryScreen extends ConsumerWidget {
               ),
             ),
             Text(
-              'Used in Dark mode, and by Auto when the system is dark.',
+              l10n.darkThemeDescription,
               style: TextStyle(
                 fontSize: 12,
                 color: isCurrentDark ? const Color(0xFF94A3B8) : AppColors.textSecondary,

@@ -69,30 +69,30 @@ class FinancialRules {
     // 1. Validate cash type requires positive amount
     if (type == TransactionType.cash) {
       if (amountPaise == null || amountPaise <= 0) {
-        throw ArgumentError('नकद व्यवहार में वैध राशि आवश्यक है (Amount must be > 0)');
+        throw ArgumentError('Cash transaction requires positive amount (amount > 0)');
       }
     }
 
     // 2. Validate item-only type requires at least one item
     if (type == TransactionType.item) {
       if (items.isEmpty) {
-        throw ArgumentError('भेंट/सामान व्यवहार में कम से कम एक सामान आवश्यक है');
+        throw ArgumentError('Item transaction requires at least one item');
       }
     }
 
     // 3. Validate cash and item requires both
     if (type == TransactionType.cashAndItem) {
       if (amountPaise == null || amountPaise <= 0) {
-        throw ArgumentError('नकद और भेंट व्यवहार में वैध नकद राशि आवश्यक है');
+        throw ArgumentError('Cash and item transaction requires positive cash amount');
       }
       if (items.isEmpty) {
-        throw ArgumentError('नकद और भेंट व्यवहार में कम से कम एक सामान आवश्यक है');
+        throw ArgumentError('Cash and item transaction requires at least one item');
       }
     }
 
     // 4. Validate amount is not negative
     if (amountPaise != null && amountPaise < 0) {
-      throw ArgumentError('राशि ऋणात्मक नहीं हो सकती (Amount cannot be negative)');
+      throw ArgumentError('Amount cannot be negative');
     }
   }
 }

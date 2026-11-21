@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_spacing.dart';
+import '../app_localizations.dart';
 import '../language_registry.dart';
 import '../locale_notifier.dart';
 import '../models/language_spec.dart';
@@ -30,6 +31,7 @@ class _LanguageSelectorScreenState extends ConsumerState<LanguageSelectorScreen>
   Widget build(BuildContext context) {
     final currentLocale = ref.watch(localeProvider);
     final allLanguages = LanguageRegistry.instance.getAllLanguages();
+    final l10n = context.l10n;
 
     final filteredLanguages = allLanguages.where((lang) {
       if (_searchQuery.isEmpty) return true;
@@ -44,9 +46,9 @@ class _LanguageSelectorScreenState extends ConsumerState<LanguageSelectorScreen>
     return Scaffold(
       backgroundColor: AppColors.warmCream,
       appBar: AppBar(
-        title: const Text(
-          'भाषा चुनें / Select Language',
-          style: TextStyle(
+        title: Text(
+          l10n.selectLanguageTitle,
+          style: const TextStyle(
             color: AppColors.white,
             fontWeight: FontWeight.bold,
             fontSize: 18,
@@ -70,7 +72,7 @@ class _LanguageSelectorScreenState extends ConsumerState<LanguageSelectorScreen>
                 });
               },
               decoration: InputDecoration(
-                hintText: 'भाषा खोजें / Search language...',
+                hintText: l10n.searchLanguageHint,
                 prefixIcon: const Icon(Icons.search, color: AppColors.mutedText),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
@@ -100,7 +102,7 @@ class _LanguageSelectorScreenState extends ConsumerState<LanguageSelectorScreen>
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
             color: AppColors.warmCream,
             child: Text(
-              'संविधान की 8वीं अनुसूची की सभी 22 भारतीय भाषाएं (${allLanguages.length - 1} + English)',
+              l10n.scheduledLanguagesSubtitle(allLanguages.length - 1),
               style: const TextStyle(
                 fontSize: 12,
                 color: AppColors.mutedText,
@@ -187,7 +189,7 @@ class _LanguageSelectorScreenState extends ConsumerState<LanguageSelectorScreen>
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('भाषा बदली गई: ${lang.nameNative} (${lang.nameEnglish})'),
+                          content: Text(l10n.languageChangedTo('${lang.nameNative} (${lang.nameEnglish})')),
                           duration: const Duration(seconds: 2),
                           backgroundColor: AppColors.deepNavy,
                         ),

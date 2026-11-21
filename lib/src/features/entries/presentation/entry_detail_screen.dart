@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
@@ -19,21 +20,23 @@ class EntryDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final entriesRepo = ref.watch(entriesRepositoryProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: AppColors.warmCream,
       appBar: AppBar(
-        title: const Text(
-          'व्यवहार विवरण',
-          style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.transactionDetails,
+          style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: AppColors.deepNavy,
         elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.white),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline, color: AppColors.white),
-            tooltip: 'प्रविष्टि हटाएं',
-            onPressed: () => _confirmArchiveEntry(context, ref),
+            tooltip: l10n.deleteTransaction,
+            onPressed: () => _confirmArchiveEntry(context, ref, l10n),
           ),
         ],
       ),
@@ -45,7 +48,7 @@ class EntryDetailScreen extends ConsumerWidget {
           }
           final entry = snapshot.data;
           if (entry == null) {
-            return const Center(child: Text('व्यवहार प्रविष्टि नहीं मिली'));
+            return Center(child: Text(l10n.noTransactionsFound));
           }
 
           final isReceived = entry.direction == TransactionDirection.received;
@@ -81,14 +84,14 @@ class EntryDetailScreen extends ConsumerWidget {
                             ),
                             child: Text(
                               entry.isCompleted
-                                  ? 'सम्पन्न (Recorded)'
-                                  : (entry.isPlanned ? 'नियोजित (Planned)' : 'रद्द (Cancelled)'),
+                                  ? l10n.statusRecorded
+                                  : (entry.isPlanned ? l10n.statusPlanned : l10n.statusCancelled),
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 color: entry.isCompleted
-                                  ? AppColors.forestGreen
-                                  : (entry.isPlanned ? Colors.amber.shade900 : Colors.red.shade800),
+                                    ? AppColors.forestGreen
+                                    : (entry.isPlanned ? Colors.amber.shade900 : Colors.red.shade800),
                               ),
                             ),
                           ),
@@ -98,7 +101,7 @@ class EntryDetailScreen extends ConsumerWidget {
                       Text(
                         entry.amountPaise != null
                             ? CurrencyUtils.formatPaiseToRupees(entry.amountPaise!)
-                            : 'केवल वस्तु/भेंट',
+                            : l10n.itemOnly,
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
@@ -107,7 +110,7 @@ class EntryDetailScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        isReceived ? 'प्राप्त हुआ (Mila)' : 'दिया गया (Diya)',
+                        isReceived ? l10n.received : l10n.given,
                         style: const TextStyle(fontSize: 14, color: AppColors.mutedText),
                       ),
                     ],
@@ -131,11 +134,11 @@ class EntryDetailScreen extends ConsumerWidget {
                           child: Icon(Icons.person, color: AppColors.deepNavy),
                         ),
                         title: Text(
-                          entry.personName ?? 'अज्ञात व्यक्ति',
+                          entry.personName ?? l10n.unknownPerson,
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         subtitle: Text(
-                          entry.personRelationship ?? 'रिश्तेदार',
+                          entry.personRelationship ?? l10n.relativeDefault,
                           style: const TextStyle(color: AppColors.mutedText),
                         ),
                         trailing: const Icon(Icons.chevron_right, color: AppColors.mutedText),
@@ -150,10 +153,10 @@ class EntryDetailScreen extends ConsumerWidget {
                             child: Icon(Icons.event, color: AppColors.deepNavy),
                           ),
                           title: Text(
-                            entry.eventTitle ?? 'कार्यक्रम',
+                            entry.eventTitle ?? l10n.eventsTitle,
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                           ),
-                          subtitle: const Text('पारिवारिक प्रसंग', style: TextStyle(color: AppColors.mutedText)),
+                          subtitle: Text(l10n.familyEvent, style: const TextStyle(color: AppColors.mutedText)),
                           trailing: const Icon(Icons.chevron_right, color: AppColors.mutedText),
                           onTap: () => context.push('/event/${entry.eventId}'),
                         ),
@@ -174,24 +177,24 @@ class EntryDetailScreen extends ConsumerWidget {
                     children: [
                       _DetailRow(
                         icon: Icons.calendar_today,
-                        label: 'दिनांक',
+                        label: l10n.transactionDate,
                         value: VyavahaarDateUtils.formatIsoDate(entry.transactionDate),
                       ),
                       const Divider(height: 20),
                       _DetailRow(
                         icon: Icons.category,
-                        label: 'प्रकार',
+                        label: l10n.type,
                         value: entry.transactionType == TransactionType.cash
-                            ? 'नकद (Cash)'
+                            ? l10n.cash
                             : (entry.transactionType == TransactionType.item
-                                ? 'सामान/भेंट (Item only)'
-                                : 'नकद व सामान (Cash + Item)'),
+                                ? l10n.itemOnly
+                                : l10n.cashAndItem),
                       ),
                       if (entry.notes != null && entry.notes!.isNotEmpty) ...[
                         const Divider(height: 20),
                         _DetailRow(
                           icon: Icons.note_outlined,
-                          label: 'टिप्पणी / विवरण',
+                          label: l10n.notes,
                           value: entry.notes!,
                         ),
                       ],
@@ -216,7 +219,7 @@ class EntryDetailScreen extends ConsumerWidget {
                             const Icon(Icons.card_giftcard, size: 20, color: AppColors.deepNavy),
                             const SizedBox(width: 8),
                             Text(
-                              'भेंट की गई वस्तुएं (${entry.items.length})',
+                              l10n.giftItemsWithCount(entry.items.length),
                               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                           ],
@@ -231,7 +234,7 @@ class EntryDetailScreen extends ConsumerWidget {
                                       style: const TextStyle(fontSize: 14)),
                                   if (it.estimatedValuePaise != null)
                                     Text(
-                                      'अनुमानित: ${CurrencyUtils.formatPaiseToRupees(it.estimatedValuePaise!)}',
+                                      '${l10n.estimated}: ${CurrencyUtils.formatPaiseToRupees(it.estimatedValuePaise!)}',
                                       style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
                                     ),
                                 ],
@@ -253,15 +256,15 @@ class EntryDetailScreen extends ConsumerWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   icon: const Icon(Icons.check_circle_outline, color: AppColors.white),
-                  label: const Text(
-                    'व्यवहार पूर्ण मार्क करें (Mark Recorded)',
-                    style: TextStyle(color: AppColors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  label: Text(
+                    l10n.markRecorded,
+                    style: const TextStyle(color: AppColors.white, fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   onPressed: () async {
                     await entriesRepo.markPlannedEntryRecorded(entry.id);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('व्यवहार दर्ज कर लिया गया!')),
+                        SnackBar(content: Text(l10n.markedRecordedSuccess)),
                       );
                       context.pop();
                     }
@@ -276,15 +279,15 @@ class EntryDetailScreen extends ConsumerWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   icon: const Icon(Icons.cancel_outlined),
-                  label: const Text(
-                    'नियोजन रद्द करें (Cancel)',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  label: Text(
+                    l10n.cancelPlan,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   onPressed: () async {
                     await entriesRepo.cancelPlannedEntry(entry.id);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('नियोजन रद्द किया गया।')),
+                        SnackBar(content: Text(l10n.planCancelledSuccess)),
                       );
                       context.pop();
                     }
@@ -299,16 +302,16 @@ class EntryDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _confirmArchiveEntry(BuildContext context, WidgetRef ref) {
+  void _confirmArchiveEntry(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('प्रविष्टि हटाएं?'),
-        content: const Text('क्या आप वाकई इस व्यवहार प्रविष्टि को हटाना चाहते हैं?'),
+        title: Text(l10n.confirmDeleteTransactionTitle),
+        content: Text(l10n.confirmDeleteTransaction),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('रद्द करें'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.terracotta),
@@ -319,7 +322,7 @@ class EntryDetailScreen extends ConsumerWidget {
                 Navigator.pop(context);
               }
             },
-            child: const Text('हटाएं', style: TextStyle(color: AppColors.white)),
+            child: Text(l10n.delete, style: const TextStyle(color: AppColors.white)),
           ),
         ],
       ),

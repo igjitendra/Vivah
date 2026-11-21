@@ -3,10 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../app/app_providers.dart';
 
-/// Screen to Add a New Person / Relative
+/// Screen to Add a New Person / Relative (Fully Localized, Zero Hardcoding)
 class AddPersonScreen extends ConsumerStatefulWidget {
   const AddPersonScreen({super.key});
 
@@ -36,12 +37,15 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
       backgroundColor: AppColors.warmCream,
       appBar: AppBar(
-        title: const Text('नया व्यक्ति जोड़ें', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
+        title: Text(l10n.addNewPerson, style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
         backgroundColor: AppColors.deepNavy,
         elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.white),
       ),
       body: _isSaving
           ? const Center(child: CircularProgressIndicator(color: AppColors.terracotta))
@@ -58,63 +62,63 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('पूरा नाम (Full Name) *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(l10n.personName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _nameController,
                             decoration: InputDecoration(
-                              hintText: 'उदा. रामकिशोर शर्मा',
+                              hintText: l10n.personNameHint,
                               filled: true,
                               fillColor: AppColors.warmCream,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                             ),
-                            validator: (val) => val == null || val.trim().isEmpty ? 'नाम आवश्यक है' : null,
+                            validator: (val) => val == null || val.trim().isEmpty ? l10n.validationRequired : null,
                           ),
                           const SizedBox(height: 16),
-                          const Text('रिश्ता / संबंध (Relationship)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(l10n.relationCategory, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _relationController,
                             decoration: InputDecoration(
-                              hintText: 'उदा. मामा, चाचा जी, बहनोई, मित्र',
+                              hintText: l10n.relationCategoryHint,
                               filled: true,
                               fillColor: AppColors.warmCream,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                             ),
                           ),
                           const SizedBox(height: 16),
-                          const Text('गाँव / शहर / पता (Address)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(l10n.villageCity, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _addressController,
                             decoration: InputDecoration(
-                              hintText: 'उदा. रामपुर, लखनऊ',
+                              hintText: l10n.villageCityHint,
                               filled: true,
                               fillColor: AppColors.warmCream,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                             ),
                           ),
                           const SizedBox(height: 16),
-                          const Text('फ़ोन नंबर (Phone - ऐच्छिक)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(l10n.phoneNumber, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _phoneController,
                             keyboardType: TextInputType.phone,
                             decoration: InputDecoration(
-                              hintText: 'उदा. 9876543210',
+                              hintText: l10n.phoneNumberHint,
                               filled: true,
                               fillColor: AppColors.warmCream,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                             ),
                           ),
                           const SizedBox(height: 16),
-                          const Text('टिप्पणी (Notes)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(l10n.notes, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _notesController,
                             maxLines: 2,
                             decoration: InputDecoration(
-                              hintText: 'अतिरिक्त विवरण...',
+                              hintText: l10n.notesPlaceholder,
                               filled: true,
                               fillColor: AppColors.warmCream,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -133,7 +137,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                         backgroundColor: AppColors.terracotta,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
-                      child: const Text('व्यक्ति सहेजें (Save Person)', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: Text(l10n.savePerson, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -143,6 +147,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
   }
 
   Future<void> _savePerson() async {
+    final l10n = context.l10n;
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
     try {
@@ -159,16 +164,17 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
         updatedAt: now,
       );
 
-      await repo.createPerson(person);
+      await repo.savePerson(person);
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('व्यक्ति सफलतापूर्वक जोड़ा गया!'), backgroundColor: AppColors.milaGreen),
+          SnackBar(content: Text(l10n.personSavedSuccess), backgroundColor: AppColors.milaGreen),
         );
         Navigator.pop(context);
       }
     } catch (err) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('त्रुटि: $err')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${l10n.errorGeneric}: $err')));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

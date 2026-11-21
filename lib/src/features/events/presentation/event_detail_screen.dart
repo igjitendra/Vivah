@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
@@ -20,21 +21,23 @@ class EventDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final eventsRepo = ref.watch(eventsRepositoryProvider);
     final entriesRepo = ref.watch(entriesRepositoryProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: AppColors.warmCream,
       appBar: AppBar(
-        title: const Text(
-          'कार्यक्रम विवरण',
-          style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.eventDetails,
+          style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: AppColors.deepNavy,
         elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.white),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline, color: AppColors.white),
-            tooltip: 'कार्यक्रम हटाएं',
-            onPressed: () => _confirmArchiveEvent(context, ref),
+            tooltip: l10n.deleteEvent,
+            onPressed: () => _confirmArchiveEvent(context, ref, l10n),
           ),
         ],
       ),
@@ -42,9 +45,9 @@ class EventDetailScreen extends ConsumerWidget {
         onPressed: () => context.push('/entry/new?eventId=$eventId'),
         backgroundColor: AppColors.terracotta,
         icon: const Icon(Icons.add, color: AppColors.white),
-        label: const Text(
-          'व्यवहार दर्ज करें',
-          style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+        label: Text(
+          l10n.recordNewTransaction,
+          style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
         ),
       ),
       body: FutureBuilder<Event?>(
@@ -57,7 +60,7 @@ class EventDetailScreen extends ConsumerWidget {
           }
           final event = snapshot.data;
           if (event == null) {
-            return const Center(child: Text('कार्यक्रम नहीं मिला'));
+            return Center(child: Text(l10n.eventNotFound));
           }
 
           return StreamBuilder<List<TransactionEntry>>(
@@ -98,7 +101,7 @@ class EventDetailScreen extends ConsumerWidget {
                                 border: Border.all(color: AppColors.gold, width: 1),
                               ),
                               child: Text(
-                                event.eventType.displayName,
+                                l10n.eventTypeLabel(event.eventType),
                                 style: const TextStyle(
                                   color: AppColors.gold,
                                   fontSize: 12,
@@ -156,7 +159,7 @@ class EventDetailScreen extends ConsumerWidget {
                       children: [
                         Expanded(
                           child: _SummaryBox(
-                            title: 'कुल मिला (Received)',
+                            title: l10n.totalReceived,
                             amountPaise: receivedPaise,
                             accentColor: AppColors.forestGreen,
                             icon: Icons.south_west,
@@ -165,7 +168,7 @@ class EventDetailScreen extends ConsumerWidget {
                         const SizedBox(width: AppSpacing.md),
                         Expanded(
                           child: _SummaryBox(
-                            title: 'कुल दिया (Given)',
+                            title: l10n.totalGiven,
                             amountPaise: givenPaise,
                             accentColor: AppColors.terracotta,
                             icon: Icons.north_east,
@@ -181,12 +184,12 @@ class EventDetailScreen extends ConsumerWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'व्यवहार प्रविष्टियां (Transactions)',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.darkSlate),
+                        Text(
+                          l10n.eventTransactions,
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.darkSlate),
                         ),
                         Text(
-                          'कुल: ${entries.length}',
+                          '${l10n.total}: ${entries.length}',
                           style: const TextStyle(fontSize: 13, color: AppColors.mutedText),
                         ),
                       ],
@@ -197,10 +200,10 @@ class EventDetailScreen extends ConsumerWidget {
                   // Transactions List
                   Expanded(
                     child: entries.isEmpty
-                        ? const Center(
+                        ? Center(
                             child: Text(
-                              'इस कार्यक्रम में कोई प्रविष्टि नहीं है।',
-                              style: TextStyle(color: AppColors.mutedText),
+                              l10n.noTransactionsForEvent,
+                              style: const TextStyle(color: AppColors.mutedText),
                             ),
                           )
                         : ListView.separated(
@@ -216,17 +219,17 @@ class EventDetailScreen extends ConsumerWidget {
                                   onTap: () => context.push('/entry/${item.id}'),
                                   leading: DirectionBadge(direction: item.direction),
                                   title: Text(
-                                    item.personName ?? 'अज्ञात व्यक्ति',
+                                    item.personName ?? l10n.unknownPerson,
                                     style: const TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                   subtitle: Text(
-                                    '${VyavahaarDateUtils.formatIsoDate(item.transactionDate)}${item.items.isNotEmpty ? ' • ${item.items.length} सामान' : ''}',
+                                    '${VyavahaarDateUtils.formatIsoDate(item.transactionDate)}${item.items.isNotEmpty ? ' • ${item.items.length} ${l10n.items}' : ''}',
                                     style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
                                   ),
                                   trailing: Text(
                                     item.amountPaise != null
                                         ? CurrencyUtils.formatPaiseToRupees(item.amountPaise!)
-                                        : 'भेंट / सामान',
+                                        : l10n.giftItem,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
@@ -249,16 +252,16 @@ class EventDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _confirmArchiveEvent(BuildContext context, WidgetRef ref) {
+  void _confirmArchiveEvent(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('कार्यक्रम हटाएं?'),
-        content: const Text('क्या आप वाकई इस कार्यक्रम को हटाना चाहते हैं? इसके लेन-देन सुरक्षित रहेंगे।'),
+        title: Text(l10n.confirmDeleteEventTitle),
+        content: Text(l10n.confirmDeleteEventBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('रद्द करें'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.terracotta),
@@ -269,7 +272,7 @@ class EventDetailScreen extends ConsumerWidget {
                 Navigator.pop(context);
               }
             },
-            child: const Text('हटाएं', style: TextStyle(color: AppColors.white)),
+            child: Text(l10n.delete, style: const TextStyle(color: AppColors.white)),
           ),
         ],
       ),

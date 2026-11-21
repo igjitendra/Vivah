@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../app/app_providers.dart';
 
-/// Events Management Screen (कार्यक्रम)
+/// Events Management Screen (Fully Localized, Zero Hardcoding)
 class EventsListScreen extends ConsumerStatefulWidget {
   final VoidCallback onNewEvent;
   final ValueChanged<String>? onOpenEventDetail;
@@ -25,14 +26,15 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final eventsAsync = ref.watch(activeEventsListProvider);
 
     return Scaffold(
       backgroundColor: AppColors.warmCream,
       appBar: AppBar(
-        title: const Text(
-          'पारिवारिक कार्यक्रम (Events)',
-          style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.eventsTitle,
+          style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: AppColors.deepNavy,
         elevation: 0,
@@ -43,7 +45,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
           onPressed: widget.onNewEvent,
           backgroundColor: AppColors.terracotta,
           icon: const Icon(Icons.add, color: AppColors.white),
-          label: const Text('नया कार्यक्रम', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
+          label: Text(l10n.newEvent, style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
         ),
       ),
       body: Column(
@@ -55,7 +57,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
             child: TextField(
               onChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
               decoration: InputDecoration(
-                hintText: 'कार्यक्रम का नाम या स्थल खोजें...',
+                hintText: l10n.searchEventsHint,
                 prefixIcon: const Icon(Icons.search, color: AppColors.mutedText),
                 filled: true,
                 fillColor: AppColors.warmCream,
@@ -72,18 +74,19 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
           Expanded(
             child: eventsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator(color: AppColors.terracotta)),
-              error: (err, stack) => Center(child: Text('त्रुटि: $err')),
+              error: (err, stack) => Center(child: Text('${l10n.errorGeneric}: $err')),
               data: (events) {
                 final filtered = events.where((e) {
                   if (_searchQuery.isEmpty) return true;
+                  final typeLabel = l10n.isEnglish ? e.eventType.name : e.eventType.labelHindi;
                   return e.title.toLowerCase().contains(_searchQuery) ||
                       (e.venue ?? '').toLowerCase().contains(_searchQuery) ||
-                      e.eventType.labelHindi.toLowerCase().contains(_searchQuery);
+                      typeLabel.toLowerCase().contains(_searchQuery);
                 }).toList();
 
                 if (filtered.isEmpty) {
-                  return const Center(
-                    child: Text('कोई कार्यक्रम नहीं मिला', style: TextStyle(color: AppColors.mutedText, fontSize: 16)),
+                  return Center(
+                    child: Text(l10n.noEventsFound, style: const TextStyle(color: AppColors.mutedText, fontSize: 16)),
                   );
                 }
 
@@ -97,6 +100,8 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                   itemCount: filtered.length,
                   itemBuilder: (context, index) {
                     final ev = filtered[index];
+                    final eventTypeName = l10n.isEnglish ? ev.eventType.name : ev.eventType.labelHindi;
+
                     return Card(
                       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                       shape: RoundedRectangleBorder(
@@ -127,7 +132,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
-                                      ev.eventType.labelHindi,
+                                      eventTypeName,
                                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.deepNavy),
                                     ),
                                   ),

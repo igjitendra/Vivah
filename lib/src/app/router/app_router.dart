@@ -18,6 +18,7 @@ import '../../features/reports/presentation/reports_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/reminders/presentation/reminders_screen.dart';
 import '../../core/localization/presentation/language_selector_screen.dart';
+import '../../core/localization/app_localizations.dart';
 import '../../features/settings/presentation/theme_gallery_screen.dart';
 import '../app_providers.dart';
 
@@ -68,15 +69,49 @@ final GoRouter appRouter = GoRouter(
       navigatorKey: _shellNavigatorKey,
       builder: (context, state, child) {
         final int index = _calculateSelectedIndex(state.uri.path);
+        final l10n = context.l10n;
+        final dynamicTabs = [
+          TabItemData(
+            label: l10n.tabHome,
+            activeIcon: Icons.home,
+            inactiveIcon: Icons.home_outlined,
+            routePath: '/',
+          ),
+          TabItemData(
+            label: l10n.tabBahi,
+            activeIcon: Icons.menu_book,
+            inactiveIcon: Icons.menu_book_outlined,
+            routePath: '/bahi',
+          ),
+          TabItemData(
+            label: l10n.tabEvents,
+            activeIcon: Icons.calendar_today,
+            inactiveIcon: Icons.calendar_today_outlined,
+            routePath: '/events',
+          ),
+          TabItemData(
+            label: l10n.tabPeople,
+            activeIcon: Icons.people,
+            inactiveIcon: Icons.people_outline,
+            routePath: '/people',
+          ),
+          TabItemData(
+            label: l10n.tabSettings,
+            activeIcon: Icons.settings,
+            inactiveIcon: Icons.settings_outlined,
+            routePath: '/settings',
+          ),
+        ];
+
         return Scaffold(
           body: Stack(
             children: [
               child,
               FloatingPillTabBar(
                 currentIndex: index,
-                items: appTabs,
+                items: dynamicTabs,
                 onTabSelected: (idx) {
-                  context.go(appTabs[idx].routePath);
+                  context.go(dynamicTabs[idx].routePath);
                 },
               ),
             ],

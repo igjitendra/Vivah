@@ -151,14 +151,14 @@ class BackupService {
 
     if (isEncrypted) {
       if (password == null || password.trim().isEmpty) {
-        throw ArgumentError('बैकअप पासवर्ड आवश्यक है (Password required)');
+        throw ArgumentError('Password required for encrypted backup');
       }
 
       final cipherData = envelope['cipher'] as Map<String, dynamic>?;
       final kdfData = envelope['kdf'] as Map<String, dynamic>?;
 
       if (cipherData == null || kdfData == null) {
-        throw const FormatException('अमान्य एन्क्रिप्टेड बैकअप संरचना (Corrupt envelope)');
+        throw const FormatException('Invalid or corrupt encrypted backup envelope');
       }
 
       final saltBytes = base64Decode(kdfData['salt'] as String);
@@ -192,7 +192,7 @@ class BackupService {
         );
         payloadMap = jsonDecode(utf8.decode(decryptedBytes)) as Map<String, dynamic>;
       } catch (_) {
-        throw ArgumentError('गलत पासवर्ड या दूषित बैकअप (Incorrect password or corrupted file)');
+        throw ArgumentError('Incorrect password or corrupted backup file');
       }
     } else {
       payloadMap = envelope['payload'] as Map<String, dynamic>? ?? {};
@@ -229,7 +229,7 @@ class BackupService {
         await _db.into(_db.people).insert(PeopleCompanion.insert(
           id: m['id'] as String,
           familyId: Value(m['family_id'] as String? ?? m['familyId'] as String?),
-          fullName: (m['full_name'] as String?) ?? (m['name'] as String? ?? 'अज्ञात'),
+          fullName: (m['full_name'] as String?) ?? (m['name'] as String? ?? 'Unknown'),
           phoneNumber: Value(m['phone_number'] as String? ?? m['phone'] as String?),
           relationshipLabel: Value(m['relationship_label'] as String? ?? m['relationship'] as String?),
           address: Value(m['address'] as String? ?? m['village'] as String?),
@@ -246,7 +246,7 @@ class BackupService {
         await _db.into(_db.events).insert(EventsCompanion.insert(
           id: m['id'] as String,
           title: m['title'] as String,
-          eventType: (m['event_type'] as String?) ?? (m['eventType'] as String? ?? 'अन्य'),
+          eventType: (m['event_type'] as String?) ?? (m['eventType'] as String? ?? 'other'),
           eventDate: (m['event_date'] as String?) ?? (m['eventDate'] as String? ?? DateTime.now().toIso8601String().substring(0, 10)),
           venue: Value(m['venue'] as String?),
           notes: Value(m['notes'] as String?),
@@ -300,7 +300,7 @@ class BackupService {
           entryId: (m['entry_id'] as String?) ?? (m['entryId'] as String? ?? ''),
           itemName: (m['item_name'] as String?) ?? (m['itemName'] as String? ?? ''),
           quantity: Value(qty),
-          unit: Value(m['unit'] as String? ?? 'संख्या'),
+          unit: Value(m['unit'] as String? ?? 'unit'),
           estimatedValuePaise: Value(estPaise != null ? BigInt.from(estPaise) : null),
           notes: Value(m['notes'] as String? ?? m['condition'] as String?),
           createdAt: Value(m['created_at'] as String? ?? DateTime.now().toIso8601String()),
@@ -330,7 +330,7 @@ class BackupService {
 
   /// Share backup file via native share sheet
   static Future<void> shareBackup(File file) async {
-    await Share.shareXFiles([XFile(file.path)], text: 'व्यवहार बैकअप फ़ाइल');
+    await Share.shareXFiles([XFile(file.path)], text: 'Vyavahaar Backup');
   }
 
   List<int> _generateRandomBytes(int length) {

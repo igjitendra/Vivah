@@ -29,44 +29,7 @@ jobs:
         run: flutter create --platforms=android --org com.vyavahaar --no-pub .
 
       - name: Configure Android compileSdk to 36
-        run: |
-          echo "Checking android build files..."
-          ls -la android/
-          if [ -f "android/build.gradle" ]; then
-            cat << 'EOF' >> android/build.gradle
-
-            subprojects {
-                afterEvaluate { project ->
-                    if (project.hasProperty('android')) {
-                        project.android {
-                            compileSdkVersion 36
-                        }
-                    }
-                }
-            }
-            EOF
-          fi
-          if [ -f "android/build.gradle.kts" ]; then
-            cat << 'EOF' >> android/build.gradle.kts
-
-            subprojects {
-                afterEvaluate {
-                    if (project.hasProperty("android")) {
-                        val android = project.extensions.findByName("android") as? com.android.build.gradle.BaseExtension
-                        android?.compileSdkVersion(36)
-                    }
-                }
-            }
-            EOF
-          fi
-          if [ -f "android/app/build.gradle" ]; then
-            sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/g' android/app/build.gradle || true
-            sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 36/g' android/app/build.gradle || true
-          fi
-          if [ -f "android/app/build.gradle.kts" ]; then
-            sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/g' android/app/build.gradle.kts || true
-            sed -i 's/compileSdk = [0-9]*/compileSdk = 36/g' android/app/build.gradle.kts || true
-          fi
+        run: python3 scripts/configure-android-sdk.py
 
       - name: Install Dependencies
         run: flutter pub get

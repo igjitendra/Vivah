@@ -41,7 +41,6 @@ for fname in ["build.gradle.kts", "build.gradle"]:
         with open(fpath, "r", encoding="utf-8") as f:
             lines = f.readlines()
         clean_lines = []
-        skip = False
         for line in lines:
             if "AarMetadata" in line or "tasks.matching" in line:
                 continue
@@ -49,56 +48,67 @@ for fname in ["build.gradle.kts", "build.gradle"]:
         with open(fpath, "w", encoding="utf-8") as f:
             f.writelines(clean_lines)
 
+# Helper function to patch compileSdk in any gradle file
+def patch_compile_sdk(text):
+    text = re.sub(r"\bcompileSdkVersion\s*=?\s*(?:[12]\d|3[0-5])\b", "compileSdkVersion 36", text)
+    text = re.sub(r"\bcompileSdk\s*=\s*(?:flutter\.compileSdkVersion|[12]\d|3[0-5])\b", "compileSdk = 36", text)
+    text = re.sub(r"\bcompileSdk\s+(?:flutter\.compileSdkVersion|[12]\d|3[0-5])\b", "compileSdk 36", text)
+    text = re.sub(r"\btargetSdkVersion\s+(?:flutter\.targetSdkVersion|\d+)\b", "targetSdkVersion 35", text)
+    text = re.sub(r"\btargetSdk\s*=\s*(?:flutter\.targetSdkVersion|\d+)\b", "targetSdk = 35", text)
+    text = re.sub(r"\bminSdkVersion\s+(?:flutter\.minSdkVersion|\d+)\b", "minSdkVersion 21", text)
+    text = re.sub(r"\bminSdk\s*=\s*(?:flutter\.minSdkVersion|\d+)\b", "minSdk = 21", text)
+    return text
+
 # 3. Update android/app/build.gradle.kts / android/app/build.gradle
 app_gradle_kts = os.path.join(android_dir, "app", "build.gradle.kts")
 if os.path.isfile(app_gradle_kts):
     with open(app_gradle_kts, "r", encoding="utf-8") as f:
         content = f.read()
-    content = re.sub(r"compileSdk\s*=\s*(?:flutter\.compileSdkVersion|\d+)", "compileSdk = 36", content)
-    content = re.sub(r"targetSdk\s*=\s*(?:flutter\.targetSdkVersion|\d+)", "targetSdk = 35", content)
-    content = re.sub(r"minSdk\s*=\s*(?:flutter\.minSdkVersion|\d+)", "minSdk = 21", content)
+    new_content = patch_compile_sdk(content)
     with open(app_gradle_kts, "w", encoding="utf-8") as f:
-        f.write(content)
+        f.write(new_content)
     print("✅ Updated android/app/build.gradle.kts to compileSdk = 36")
 
 app_gradle_groovy = os.path.join(android_dir, "app", "build.gradle")
 if os.path.isfile(app_gradle_groovy):
     with open(app_gradle_groovy, "r", encoding="utf-8") as f:
         content = f.read()
-    content = re.sub(r"compileSdkVersion\s+(?:flutter\.compileSdkVersion|\d+)", "compileSdkVersion 36", content)
-    content = re.sub(r"compileSdk\s*=\s*(?:flutter\.compileSdkVersion|\d+)", "compileSdk = 36", content)
-    content = re.sub(r"targetSdkVersion\s+(?:flutter\.targetSdkVersion|\d+)", "targetSdkVersion 35", content)
-    content = re.sub(r"minSdkVersion\s+(?:flutter\.minSdkVersion|\d+)", "minSdkVersion 21", content)
+    new_content = patch_compile_sdk(content)
     with open(app_gradle_groovy, "w", encoding="utf-8") as f:
-        f.write(content)
+        f.write(new_content)
     print("✅ Updated android/app/build.gradle to compileSdkVersion 36")
 
-# 4. Patch all downloaded plugins in pub cache to use compileSdkVersion 36
-pub_cache = os.environ.get("PUB_CACHE") or os.path.expanduser("~/.pub-cache")
-if os.path.isdir(pub_cache):
-    print(f"🔍 Scanning pub-cache at {pub_cache} for plugin build.gradle files...")
-    patched_count = 0
-    for root, _, files in os.walk(pub_cache):
-        for file in files:
-            if file in ("build.gradle", "build.gradle.kts"):
-                target_file = os.path.join(root, file)
-                try:
-                    with open(target_file, "r", encoding="utf-8") as f:
-                        file_content = f.read()
-                    new_content = file_content
-                    # Replace compileSdkVersion < 36 with 36
-                    new_content = re.sub(r"compileSdkVersion\s+(?:[12]\d|3[0-5])\b", "compileSdkVersion 36", new_content)
-                    new_content = re.sub(r"compileSdk\s*=\s*(?:[12]\d|3[0-5])\b", "compileSdk = 36", new_content)
-                    if new_content != file_content:
-                        with open(target_file, "w", encoding="utf-8") as f:
-                            f.write(new_content)
-                        patched_count += 1
-                        print(f"  ⚡ Patched: {os.path.basename(os.path.dirname(os.path.dirname(target_file)))}/{file} -> compileSdk 36")
-                except Exception as e:
-                    pass
-    print(f"✅ Successfully patched {patched_count} pub-cache plugin build files to compileSdk 36")
-else:
-    print(f"ℹ️ Pub cache not found at {pub_cache}")
+# 4. Patch all downloaded plugins in pub cache to use compileSdkVersion / compileSdk 36
+cache_candidates = [
+    os.environ.get("PUB_CACHE"),
+    os.path.expanduser("~/.pub-cache"),
+    "/home/runner/.pub-cache",
+    "/root/.pub-cache",
+]
+
+visited = set()
+for pub_cache in cache_candidates:
+    if pub_cache and os.path.isdir(pub_cache) and pub_cache not in visited:
+        visited.add(pub_cache)
+        print(f"🔍 Scanning pub-cache at {pub_cache} for plugin build.gradle files...")
+        patched_count = 0
+        for root, _, files in os.walk(pub_cache):
+            for file in files:
+                if file in ("build.gradle", "build.gradle.kts"):
+                    target_file = os.path.join(root, file)
+                    try:
+                        with open(target_file, "r", encoding="utf-8") as f:
+                            file_content = f.read()
+                        new_content = patch_compile_sdk(file_content)
+                        if new_content != file_content:
+                            with open(target_file, "w", encoding="utf-8") as f:
+                                f.write(new_content)
+                            patched_count += 1
+                            plugin_name = os.path.basename(os.path.dirname(os.path.dirname(target_file)))
+                            print(f"  ⚡ Patched: {plugin_name}/{file} -> compileSdk 36")
+                    except Exception as e:
+                        pass
+        print(f"✅ Successfully patched {patched_count} pub-cache plugin build files in {pub_cache} to compileSdk 36")
 
 print("=" * 60)
 print(" Android configuration completed successfully!")

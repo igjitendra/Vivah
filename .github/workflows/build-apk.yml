@@ -47,6 +47,10 @@ jobs:
           if [ -n "$APK_FILE" ]; then
             echo "Copying $APK_FILE to build/app/outputs/flutter-apk/app-debug.apk"
             cp "$APK_FILE" build/app/outputs/flutter-apk/app-debug.apk
+            ls -lh build/app/outputs/flutter-apk/app-debug.apk
+          else
+            echo "ERROR: No APK found after build!"
+            exit 1
           fi
 
       - name: Upload Debug APK Artifact

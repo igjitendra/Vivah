@@ -4,8 +4,7 @@ publish_to: "none"
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.6.0 <4.0.0"
-  flutter: ">=3.27.0"
+  sdk: ">=3.2.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -14,55 +13,53 @@ dependencies:
     sdk: flutter
 
   # State Management & Dependency Injection
-  flutter_riverpod: ^2.6.1
+  flutter_riverpod: ^2.5.1
 
   # Declarative Routing
-  go_router: ^14.6.2
+  go_router: ^14.2.0
 
   # Type-Safe SQLite Persistence
-  drift: ^2.20.3
-  sqlite3: ^2.4.6
-  path_provider: ^2.1.5
+  drift: ^2.20.0
+  sqlite3: ^2.4.0
+  path_provider: ^2.1.0
   path: ^1.9.0
 
   # Models & Immutability
-  freezed_annotation: ^2.4.4
-  json_annotation: ^4.9.0
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.8.1
 
   # Cryptography & Security (100% Offline AES-256-GCM + PBKDF2)
-  cryptography: ^2.7.2
-  flutter_secure_storage: ^9.2.2
+  cryptography: ^2.7.0
+  flutter_secure_storage: ^9.0.0
 
   # Document Generation & File Handling
-  pdf: ^3.11.1
-  printing: ^5.13.1
+  pdf: ^3.10.0
+  printing: ^5.11.0
   csv: ^6.0.0
-  file_picker: ^8.1.4
-  share_plus: ^10.1.2
+  file_picker: ^8.0.0
+  share_plus: ^10.0.0
 
   # Formatting & Localization
-  intl: ^0.19.0
+  intl: any
 
   # UUID generation for primary keys
-  uuid: ^4.5.1
+  uuid: ^4.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  integration_test:
-    sdk: flutter
 
   # Code Generation
-  build_runner: ^2.4.13
-  drift_dev: ^2.20.3
-  freezed: ^2.5.7
-  json_serializable: ^6.9.0
+  build_runner: ^2.4.8
+  drift_dev: ^2.20.0
+  freezed: ^2.5.0
+  json_serializable: ^6.8.0
 
   # Testing & Mocking
-  mocktail: ^1.0.4
+  mocktail: ^1.0.3
 
   # Static Analysis
-  flutter_lints: ^5.0.0
+  flutter_lints: ^4.0.0
 
 flutter:
   uses-material-design: true

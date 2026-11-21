@@ -72,6 +72,7 @@ enum EventType {
   other('अन्य');
 
   final String labelHindi;
+  String get displayName => labelHindi;
   const EventType(this.labelHindi);
 
   static EventType fromString(String val) {

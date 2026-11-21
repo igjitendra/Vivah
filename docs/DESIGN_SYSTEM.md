@@ -1,7 +1,8 @@
 # Design System & Token Specifications — व्यवहार (Vyavahaar)
 
-> **Document Version**: 2.0  
-> **Source Files**: `src/constants/Colors.ts`, `src/constants/Strings.ts`, `src/components/ui/`  
+> **Document Version**: 3.0  
+> **Source Files**: `lib/src/core/constants/app_colors.dart`, `lib/src/core/constants/app_spacing.dart`, `lib/src/app/theme/app_theme.dart`  
+> **Sole Application Framework**: Flutter + Material 3  
 > **Last Updated**: 2026-11-21
 
 ---

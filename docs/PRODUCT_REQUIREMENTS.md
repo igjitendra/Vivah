@@ -50,7 +50,7 @@
 ### Should Have (P1 — Production Polish)
 - [x] **Soft-Delete Architecture**: Records preserve `deleted_at` timestamp rather than hard deletion.
 - [x] **Pull-to-Refresh & Focus Auto-Refresh**: Auto-sync dashboard summary on tab focus.
-- [x] **Vector Iconography (No Emojis)**: High-quality `@expo/vector-icons` throughout.
+- [x] **Vector Iconography (No Emojis)**: High-quality vector icons from Flutter Material Icons throughout.
 - [ ] **Android Home Screen Widget**: Quick glance at upcoming planned events (Deferred to Post-Launch).
 
 ### Could Have (P2 — Future Enhancements)

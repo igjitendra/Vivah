@@ -1,38 +1,36 @@
 # Backup & Restore Architecture — व्यवहार (Vyavahaar)
 
-> **Implementation**: `src/services/BackupService.ts`  
-> **UI Entry Point**: `app/(tabs)/settings.tsx`  
-> **Format Version**: v3 (`vyavahaar_backup_version: 3`)  
-> **Last Updated**: 2026-11-21
+> **Implementation**: `lib/src/features/settings/services/backup_service.dart`  
+> **UI Entry Point**: `lib/src/features/settings/presentation/settings_screen.dart` (`/settings`)  
+> **Format Version**: v4 (`vyavahaar_backup_version: 4`) with backward compatibility for v3  
+> **Cryptographic Standard**: AES-256-GCM + PBKDF2-HMAC-SHA256 (600,000 iterations, OWASP-aligned)  
+> **Sole Application Framework**: Flutter + Dart  
+> **Last Updated**: 2026-11-21  
 
 ---
 
 ## 1. Backup File Format Specification
 
-Backups are exported as standardized, self-describing `.json` files. They exist in two formats: **Plain JSON** (for personal device storage) and **AES-256 Encrypted JSON** (for sharing via WhatsApp or Drive).
+Backups are exported as standardized, self-describing `.json` files. They exist in two formats: **Plain JSON** (for personal device storage) and **AES-256-GCM Encrypted JSON** (for sharing via email, WhatsApp, or Drive).
 
-### 1.1 Plain Backup Envelope
+### 1.1 Plain Backup Envelope (v4)
 ```json
 {
-  "vyavahaar_backup_version": 3,
+  "vyavahaar_backup_version": 4,
   "app_version": "1.0.0",
   "created_at": "2026-11-21T03:00:00.000Z",
   "is_encrypted": false,
-  "checksum": "sha256_hash_of_payload",
   "metadata": {
-    "vyavahaar_backup_version": 3,
+    "vyavahaar_backup_version": 4,
     "app_version": "1.0.0",
     "created_at": "2026-11-21T03:00:00.000Z",
     "is_encrypted": false,
     "people_count": 14,
-    "families_count": 3,
     "events_count": 5,
     "entries_count": 28,
-    "items_count": 8,
-    "reminders_count": 2
+    "items_count": 8
   },
   "payload": {
-    "households": [ ... ],
     "families": [ ... ],
     "people": [ ... ],
     "events": [ ... ],
@@ -43,29 +41,34 @@ Backups are exported as standardized, self-describing `.json` files. They exist 
 }
 ```
 
-### 1.2 Encrypted Backup Envelope
-When password protection is enabled, the `payload` is encrypted and replaced with cryptographic parameters:
+### 1.2 Encrypted Backup Envelope (v4)
+When password protection is enabled, the `payload` is encrypted using authenticated AES-256-GCM:
 ```json
 {
-  "vyavahaar_backup_version": 3,
+  "vyavahaar_backup_version": 4,
   "app_version": "1.0.0",
   "created_at": "2026-11-21T03:00:00.000Z",
   "is_encrypted": true,
-  "salt": "a1f9e8... (hex)",
-  "iv": "3d9c81... (hex)",
-  "ciphertext": "U2FsdGVkX1...",
-  "hmac": "98a7bc... (hex)",
   "metadata": {
-    "vyavahaar_backup_version": 3,
+    "vyavahaar_backup_version": 4,
     "app_version": "1.0.0",
     "created_at": "2026-11-21T03:00:00.000Z",
     "is_encrypted": true,
     "people_count": 14,
-    "families_count": 3,
     "events_count": 5,
     "entries_count": 28,
-    "items_count": 8,
-    "reminders_count": 2
+    "items_count": 8
+  },
+  "kdf": {
+    "algorithm": "PBKDF2-HMAC-SHA256",
+    "iterations": 600000,
+    "salt": "<base64-encoded-16-byte-salt>"
+  },
+  "cipher": {
+    "algorithm": "AES-256-GCM",
+    "nonce": "<base64-encoded-12-byte-nonce>",
+    "tag": "<base64-encoded-16-byte-auth-tag>",
+    "ciphertext": "<base64-encoded-ciphertext>"
   }
 }
 ```
@@ -74,23 +77,23 @@ When password protection is enabled, the `payload` is encrypted and replaced wit
 
 ## 2. Backup Generation Process
 
-1. **Extraction**: `BackupService.dumpDatabaseToPayload()` queries all 7 SQLite tables (`households`, `families`, `people`, `events`, `entries`, `entry_items`, `reminders`).
-2. **Metadata Summary**: Counts and timestamps are calculated for user visibility.
-3. **Encryption (If Requested)**:
-   - Unique 128-bit salt and 128-bit IV generated via `CryptoJS.lib.WordArray.random(16)`.
-   - PBKDF2 derives key from user password + salt (`10,000` iterations, 256-bit key size).
-   - Payload encrypted with AES-256-CBC.
-   - HMAC-SHA256 checksum calculated over ciphertext.
-4. **File Persistence**: Written to app-private cache directory:
-   - Plain format: `vyavahaar_backup_YYYY-MM-DD_HH-mm-ss.json`
-   - Encrypted format: `vyavahaar_encrypted_backup_YYYY-MM-DD_HH-mm-ss.json`
-5. **Native Share Sheet**: Invokes `Sharing.shareAsync()` so the user can send the file to Google Drive, WhatsApp, Email, or save to local storage.
+1. **Extraction**: `BackupService` queries the active SQLite database tables (`families`, `people`, `events`, `entries`, `entry_items`, `reminders`).
+2. **Metadata Summary**: Entity counts and timestamps are calculated for user visibility.
+3. **Encryption (If Password Provided)**:
+   - Cryptographically secure 128-bit (16-byte) salt generated via `Random.secure()`.
+   - Cryptographically secure 96-bit (12-byte) nonce generated via `Random.secure()`.
+   - PBKDF2-HMAC-SHA256 derives 256-bit encryption key with **600,000 iterations** (OWASP password storage recommendation).
+   - Payload encrypted with authenticated **AES-256-GCM** generating ciphertext and 128-bit authentication tag.
+4. **File Output**: Written to the application's document directory:
+   - Plain format: `vyavahaar_backup_<timestamp>.json`
+   - Encrypted format: `vyavahaar_backup_<timestamp>.enc.json`
+5. **Native Share Sheet**: Invokes `Share.shareXFiles()` via `share_plus` allowing the user to store the backup locally, send via email, or copy to cloud drives.
 
 ---
 
-## 3. Safe Restore Architecture
+## 3. Safe Restore Architecture & Atomic Rollback
 
-Restoring data is a critical operation. The system employs a multi-tiered safety strategy:
+Restoring data is a safety-critical operation:
 
 ```mermaid
 sequenceDiagram
@@ -98,39 +101,37 @@ sequenceDiagram
     actor User
     participant Settings as SettingsScreen
     participant Service as BackupService
-    participant SQLite as SQLite Database (WAL)
+    participant SQLite as Drift AppDatabase
 
     User->>Settings: Selects Backup File & Enters Password (if encrypted)
-    Settings->>Service: restoreFromFile(fileUri, password?)
-    Service->>Service: Validate Envelope & Checksum
-    alt Decryption Failed / Wrong Password
-        Service-->>Settings: Throw Error ("अमान्य पासवर्ड या दूषित बैकअप")
-        Settings-->>User: Show Alert: Current Data Untouched
-    else Validation Succeeded
-        Service->>Service: Capture In-Memory Safety Snapshot
-        Service->>SQLite: withTransactionSync (Begin Transaction)
-        Service->>SQLite: DELETE FROM all tables in reverse FK order
-        Service->>SQLite: INSERT all rows from backup payload
-        alt Error during Table Replacement
-            Service->>SQLite: Rollback Transaction to Safety Snapshot
-            Service-->>Settings: Throw Error ("पुनर्स्थापना विफल")
-            Settings-->>User: Alert: Restored Previous Data
-        else Insertion Complete & FK Verified
-            Service->>SQLite: Commit Transaction
-            Service-->>Settings: Return Restore Result (Counts of restored entities)
-            Settings-->>User: Show Success Dialog & Trigger UI Refresh
+    Settings->>Service: restoreBackup(file, password?)
+    Service->>Service: Parse Envelope & Inspect Encryption
+    alt Encrypted: Derive Key with 600,000 PBKDF2 Iterations
+        Service->>Service: AES-256-GCM Decrypt & Tag Authentication
+        alt Incorrect Password or Tampered Tag
+            Service-->>Settings: Throw ArgumentError ("गलत पासवर्ड या दूषित बैकअप")
+            Settings-->>User: Show Error Dialog: Current Database Untouched
         end
+    end
+    Service->>SQLite: db.transaction() (Begin Atomic SQLite Transaction)
+    Service->>SQLite: DELETE FROM entry_items, entries, events, people, families, reminders
+    Service->>SQLite: INSERT all rows from payload (supporting v3 & v4 key schemas)
+    alt Any Error During Insertion
+        Service->>SQLite: Rollback SQLite Transaction (Zero Partial Data)
+        Service-->>Settings: Throw Error ("पुनर्स्थापना विफल")
+        Settings-->>User: Alert: Transaction Rolled Back Safely
+    else Insertion Complete & PRAGMA foreign_key_check Passed
+        Service->>SQLite: Commit SQLite Transaction
+        Service-->>Settings: Complete Successfully
+        Settings-->>User: Show Success Notification & Refresh State
     end
 ```
 
 ---
 
-## 4. Test Verification Evidence
+## 4. Backward Compatibility
 
-The backup and restore system is continuously tested in `scripts/test-phase3-features.ts`:
-- **Test 2.1**: Encrypted backup generates unique salt and IV for every single run (`PASSED`).
-- **Test 2.2**: Decryption succeeds with correct password and restores exact byte-for-byte payload (`PASSED`).
-- **Test 2.3**: Decryption fails cleanly and is rejected when given an incorrect password (`PASSED`).
-- **Test 2.4**: Tampered or truncated ciphertext is detected by HMAC and rejected (`PASSED`).
-- **Test 3.1**: Safety snapshot captures complete state before modification (`PASSED`).
-- **Test 3.2**: Atomic rollback restores original database state on simulated restore failure (`PASSED`).
+The restore engine supports both:
+1. **Envelope v4**: Snake_case keys (`full_name`, `amount_paise`, `transaction_date`, `is_completed`).
+2. **Legacy Envelope v3**: CamelCase keys (`name`, `cashAmountPaise`, `village`, `deleted_at`).
+Existing backups created prior to the migration can be safely restored without data loss.

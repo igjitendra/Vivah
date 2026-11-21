@@ -31,16 +31,16 @@
 ---
 
 ## ADR 004: SQLite with WAL Mode as Single Source of Truth
-- **Date**: 2026-11-20
-- **Decision**: Use `expo-sqlite` with `PRAGMA journal_mode = WAL;` and foreign keys enabled as the sole primary storage engine.
-- **Context**: SQLite provides ACID compliance, fast indexing, scale up to tens of thousands of records, and zero external database overhead.
+- **Date**: 2026-11-20 (Updated 2026-11-21)
+- **Decision**: Use modern SQLite engine with `PRAGMA journal_mode = WAL;` and foreign keys enabled via typed Drift ORM as the sole primary storage engine.
+- **Context**: SQLite provides ACID compliance, fast indexing, scale up to tens of thousands of records, and zero external database overhead across all 5 platforms.
 - **Status**: **APPROVED & VERIFIED**
 
 ---
 
 ## ADR 005: Monetary Storage in Integer Paise
 - **Date**: 2026-11-20
-- **Decision**: All financial amounts are stored as integer paise (`cash_amount_paise = rupees * 100`).
+- **Decision**: All financial amounts are stored as integer paise (`amount_paise = rupees * 100`).
 - **Context**: Prevents IEEE 754 floating-point rounding errors.
 - **Status**: **APPROVED & VERIFIED**
 
@@ -80,7 +80,7 @@
 
 ## ADR 010: Zero Emojis in User Interface
 - **Date**: 2026-11-21
-- **Decision**: Emojis are strictly banned across the entire application UI. Vector icons (`Ionicons`) must be used exclusively.
+- **Decision**: Emojis are strictly banned across the entire application UI. Vector icons (`Icons.*`) must be used exclusively.
 - **Context**: Professional, dignified, and cultural aesthetic required for an Indian family ledger.
 - **Status**: **APPROVED & VERIFIED**
 
@@ -94,9 +94,9 @@
 
 ---
 
-## ADR 012: Production-Grade Hindi PDF & AES-256 Offline Backup
+## ADR 012: Production-Grade Hindi PDF & Offline Backup
 - **Date**: 2026-11-21
-- **Decision**: Implement offline Devanagari PDF export using `expo-print` and encrypted backup using AES-256-GCM + PBKDF2 with atomic rollback safety.
+- **Decision**: Implement offline Devanagari PDF export using Flutter `pdf` + `printing` packages and encrypted backup using AES-256-GCM + PBKDF2 with atomic rollback safety.
 - **Context**: Concludes Phase 3 MVP deliverables with verified automated test coverage.
 - **Status**: **APPROVED & VERIFIED**
 
@@ -111,26 +111,25 @@
 
 ---
 
-## ADR 014: Flutter / Dart Approved as Official 5-Platform Target Architecture
+## ADR 014: Flutter / Dart Approved as Sole Application Framework
 - **Date**: 2026-11-21
-- **Decision**: Formally approved Flutter (Dart) + Riverpod + Drift ORM + GoRouter as the official production target architecture for all five operating systems (Android, iOS, Linux, macOS, Windows).
+- **Decision**: Formally approved Flutter (Dart) + Riverpod + Drift ORM + GoRouter as the sole application framework for all five operating systems (Android, iOS, Linux, macOS, Windows).
 - **Context**: Flutter provides official native compilation across mobile and desktop from a single codebase with high performance and identical SQLite semantics.
-- **Consequences**: Future production feature development proceeds in Flutter (`lib/`). The React Native codebase is preserved as a verified legacy reference.
-- **Status**: **APPROVED & OFFICIAL TARGET**
+- **Status**: **APPROVED & SOLE FRAMEWORK**
 
 ---
 
-## ADR 015: React Native Codebase Status & Preservation Policy
+## ADR 015: Complete Removal of Expo / React Native Runtime
 - **Date**: 2026-11-21
-- **Decision**: The existing React Native (0.88.1) + Expo SDK 58 MVP source code in `app/` and `src/` is strictly preserved as a legacy functional reference. It must not be deleted or overwritten.
-- **Context**: The React Native application represents a complete, verified implementation (27/27 automated tests passing) that serves as the behavioral benchmark and schema source of truth for the Flutter implementation.
-- **Status**: **APPROVED & PRESERVED AS REFERENCE**
+- **Decision**: Following full functional and schema migration to Flutter on `migration/flutter-only`, all obsolete Expo, React Native, and TypeScript mobile runtime dependencies and configuration files (`package.json`, `tsconfig.json`, `app.json`, `app/`, `src/`) were completely deleted to prevent dual-framework maintenance burden.
+- **Context**: Eliminates developer confusion, reduces repository weight, and standardizes testing exclusively on Dart and standalone Python architecture suites.
+- **Status**: **SUPERSEDED & REMOVAL COMPLETED**
 
 ---
 
 ## ADR 016: Backup Cryptography & Key Derivation (OWASP Alignment)
 - **Date**: 2026-11-21
-- **Decision**: Authenticated backup encryption must use **AES-256-GCM** with a unique 96/128-bit CSPRNG nonce per operation and a unique 128-bit salt. The key derivation function must adhere to OWASP recommendations: Argon2id (primary) or PBKDF2-HMAC-SHA256 with 600,000 iterations.
+- **Decision**: Authenticated backup encryption must use **AES-256-GCM** with a unique 96/128-bit CSPRNG nonce per operation and a unique 128-bit salt. The key derivation function must adhere to OWASP recommendations: PBKDF2-HMAC-SHA256 with 600,000 iterations.
 - **Context**: 10,000 iterations in pure JavaScript was an obsolete performance workaround in the reference code. In native Flutter C/Dart FFI, 600,000 iterations executes in ~210ms on device hardware, providing robust brute-force protection without freezing the UI.
 - **Status**: **APPROVED & IMPLEMENTED IN ARCHITECTURE**
 

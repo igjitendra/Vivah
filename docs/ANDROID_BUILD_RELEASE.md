@@ -2,62 +2,30 @@
 
 > **Platform**: Android Mobile (Tier 1 Target)  
 > **Package Identifier**: `com.vyavahaar.app` (Target Play Store ID)  
-> **Runtime**: React Native 0.88.1 / Expo SDK 58  
+> **Runtime**: Flutter Stable / Dart 3.x  
 > **Master Multi-Platform Release Guide**: [`docs/PLATFORM_RELEASE.md`](PLATFORM_RELEASE.md) (Covers Android, iOS, Linux, macOS, and Windows)  
-> **Last Updated**: 2026-11-21
+> **Last Updated**: 2026-11-21  
 
 ---
 
-## 1. Android Configuration (`app.json`)
+## 1. Android Configuration
 
-```json
-{
-  "expo": {
-    "name": "व्यवहार",
-    "slug": "vyavahaar",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "vyavahaar",
-    "userInterfaceStyle": "light",
-    "android": {
-      "package": "com.vyavahaar.app",
-      "versionCode": 1,
-      "adaptiveIcon": {
-        "backgroundColor": "#1F3352",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
-      },
-      "predictiveBackGestureEnabled": false
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "resizeMode": "contain",
-          "backgroundColor": "#1F3352"
-        }
-      ],
-      "expo-sharing"
-    ]
-  }
-}
-```
+In the Flutter Android project configuration:
+- **Application ID / Package Name**: `com.vyavahaar.app`
+- **Application Label**: व्यवहार
+- **Version Name**: `1.0.0`
+- **Version Code**: `1`
+- **Orientation**: `portrait`
+
+### Target SDK Specifications:
+- **Minimum SDK (`minSdkVersion`)**: Android 8.0 (API Level 26) — Supports 95%+ of active Android devices in India.
+- **Target SDK (`targetSdkVersion`)**: Android 15 (API Level 35) — Complies with Google Play Store 2025/2026 submission mandates.
+- **Compile SDK (`compileSdkVersion`)**: Android 15 (API Level 35)
+- **Supported ABIs**: `arm64-v8a`, `armeabi-v7a`, `x86_64`
 
 ---
 
-## 2. SDK & Target Requirements
-
-- **Minimum SDK (minSdkVersion)**: Android 8.0 (API Level 26) — Supports 95%+ of active Android devices in India.
-- **Target SDK (targetSdkVersion)**: Android 15 (API Level 35) — Complies with Google Play Store 2025/2026 requirements.
-- **Architectures Supported**: `arm64-v8a`, `armeabi-v7a`, `x86_64`.
-
----
-
-## 3. Brand Assets & Adaptive Icons
+## 2. Brand Assets & Adaptive Icons
 
 All icons and splash screens follow the official brand palette (Navy `#1F3352` & Terracotta `#C05A2B`):
 - `assets/images/icon.png`: 1024x1024 px full-bleed app icon.
@@ -68,33 +36,30 @@ All icons and splash screens follow the official brand palette (Navy `#1F3352` &
 
 ---
 
-## 4. Build Profiles & Generation
+## 3. Build & Packaging Commands (Flutter)
 
-### 4.1 Development Testing (Expo Go)
-For daily rapid development:
+### 3.1 Local Development Run
 ```bash
-pnpm start
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+flutter run -d <android-device-id>
 ```
-Scan the terminal QR code in the Expo Go app.
 
-### 4.2 Production Android App Bundle (`.aab`) via EAS
+### 3.2 Production Android App Bundle (`.aab`) for Google Play
 ```bash
-# 1. Install EAS CLI globally if needed
-pnpm dlx eas-cli login
-
-# 2. Configure build profile in eas.json
-pnpm dlx eas-cli build --platform android --profile production
+flutter build appbundle --release --obfuscate --split-debug-info=build/app/outputs/symbols
 ```
-Produces an optimized `.aab` file ready for upload to Google Play Console.
+Produces an optimized `.aab` file at `build/app/outputs/bundle/release/app-release.aab` ready for upload to Google Play Console.
 
-### 4.3 Standalone Production APK for Direct Sideloading
+### 3.3 Standalone Production APK for Direct Sideloading
 ```bash
-pnpm dlx eas-cli build --platform android --profile preview
+flutter build apk --release --split-per-abi
 ```
+Produces optimized APKs per ABI (`app-arm64-v8a-release.apk`, `app-armeabi-v7a-release.apk`) reducing download size for end users.
 
 ---
 
-## 5. Google Play Store Pre-Launch Checklist
+## 4. Google Play Store Pre-Launch Checklist
 
 - [ ] **Data Safety Declaration**:
   - Personal Data: None collected remotely.
@@ -105,5 +70,5 @@ pnpm dlx eas-cli build --platform android --profile preview
 - [ ] **Store Listing Copy (Hindi & English)**:
   - Title: व्यवहार — Digital Family Ledger (बही खाता)
   - Short Description: रिश्तों का हिसाब, हमेशा याद। शादी, तिलक और पारिवारिक आयोजनों का डिजिटल बही खाता।
-  - Full Description: Highlight offline-first, PDF reports, AES-256 backup, and zero commercial debt framing.
+  - Full Description: Highlight offline-first, PDF reports, AES-256-GCM backup, and zero commercial debt framing.
 - [ ] **Screenshots**: High-res screenshots featuring the Redesigned Home Screen, Bahi Khata, Person History, and Hindi PDF preview.

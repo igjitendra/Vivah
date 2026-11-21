@@ -6,10 +6,11 @@
 
 ## 1. Operating Principles
 
-1. **Investigate Before Editing**: Never assume you know the repository state from your training data or previous chat snippets. Always inspect the actual files first.
+1. **Investigate Before Editing**: Never assume you know the repository state from training data or previous chat snippets. Always inspect the actual files first.
 2. **Never Break Working Features**: Never replace working architectures, delete user data, or modify working business logic unless explicitly requested.
 3. **Continuous Documentation Maintenance**: Every code change must update its corresponding documentation in the same task.
 4. **Honesty Over Optimism**: Never mark a task as "VERIFIED" without running actual tests or inspecting code evidence.
+5. **Flutter + Dart is the Sole Framework**: No React Native, Expo, or TypeScript application code.
 
 ---
 
@@ -25,14 +26,14 @@ flowchart TD
     end
 
     subgraph Stage2 [Stage 2: Implementation & Safeguards]
-        S2A[4. Apply minimal, precise changes]
+        S2A[4. Apply minimal, precise changes in Flutter/Dart]
         S2B[5. Preserve domain rules: Mila/Diya separate, integer paise]
-        S2C[6. Reuse existing UI components & pnpm only]
+        S2C[6. Use standard dependencies & Icons.* only]
         S2A --> S2B --> S2C
     end
 
     subgraph Stage3 [Stage 3: Verification & Doc Update]
-        S3A[7. Run pnpm typecheck & pnpm test]
+        S3A[7. Run architecture test scripts & Flutter tests]
         S3B[8. Update docs/PROJECT_STATUS.md & docs/CHANGELOG.md]
         S3C[9. Verify internal links & deliver structured report]
         S3A --> S3B --> S3C
@@ -50,7 +51,7 @@ Before modifying any file, the AI agent must:
 - [ ] Read `docs/README.md` and `docs/PROJECT_STATUS.md`.
 - [ ] Check `docs/KNOWN_CONSTRAINTS.md` to ensure the requested task does not violate non-negotiable boundaries.
 - [ ] Check `docs/DOMAIN_RULES.md` if touching financial, ledger, or transaction code.
-- [ ] Check `docs/DATABASE_SCHEMA.md` if touching database queries or SQLite models.
+- [ ] Check `docs/DATABASE_SCHEMA.md` if touching database queries, DAOs, or Drift models.
 - [ ] Check `docs/UI_UX_GUIDELINES.md` if modifying or adding UI components.
 - [ ] Run `git status` to check existing uncommitted modifications.
 
@@ -62,18 +63,19 @@ While writing code, the AI agent must:
 - [ ] Make only the requested changes; do not refactor unrelated working files.
 - [ ] Maintain 100% offline-first behavior (zero cloud/server calls).
 - [ ] Store currency in **integer paise** exclusively.
-- [ ] Keep **Mila** and **Diya** strictly separated.
-- [ ] Use **vector icons (`Ionicons`) only**; zero emojis in UI.
-- [ ] Use package manager **`pnpm`** exclusively. Never install dependencies without explicit user permission.
-- [ ] Retain the approved floating pill bottom navigation bar.
+- [ ] Keep **Mila** and **Diya** strictly separated (never compute a net debt).
+- [ ] Use **vector icons (`Icons.*`) only**; zero emojis in UI.
+- [ ] Use dependencies declared in `pubspec.yaml`. Never add unnecessary dependencies without permission.
+- [ ] Retain the approved floating pill bottom navigation bar on mobile and responsive layout on desktop.
 
 ---
 
 ## 5. Post-Coding Verification & Documentation Checklist
 
 After writing code, the AI agent must:
-- [ ] Run `pnpm typecheck` (`tsc --noEmit`) and ensure 0 errors.
-- [ ] Run `pnpm test` (`pnpm test:logic && pnpm test:phase3`) and ensure all 27 tests pass.
+- [ ] Run database architecture stress tests: `python3 scripts/test-database-architecture.py` (ensure 14/14 pass).
+- [ ] Run multilingual localization tests: `python3 scripts/test-multilingual-architecture.py` (ensure 22/22 pass).
+- [ ] Run `flutter test` when local Flutter toolchain is present.
 - [ ] Update `docs/PROJECT_STATUS.md` with verified status changes.
 - [ ] Update `docs/CHANGELOG.md` with a summary of changes.
 - [ ] Update `docs/FEATURES.md` if feature scope changed.

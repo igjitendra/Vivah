@@ -25,13 +25,13 @@
 - **Output Formats**:
   - Production App Bundle: `app-release.aab` (uploaded to Google Play Console).
   - Standalone Testing APK: `app-release.apk` (for direct offline sideloading on user devices).
-- **Compilation Tooling**: EAS Build (`eas build --platform android --profile production`) or native Gradle (`./gradlew bundleRelease`).
+- **Compilation Tooling**: Flutter Gradle (`flutter build appbundle --release` or `flutter build apk --release`).
 - **Permissions**: Zero internet permissions requested.
 
 ### 2.2 iOS Build & Release
 - **Bundle Identifier**: `com.vyavahaar.app`
-- **Minimum iOS Version**: iOS 15.0+ (supported by Expo SDK 58).
-- **Output Format**: Signed `.ipa` archive via Xcode or EAS Cloud.
+- **Minimum iOS Version**: iOS 15.0+ (supported by Flutter stable).
+- **Output Format**: Signed `.ipa` archive via `flutter build ipa --release` or Xcode.
 - **App Store Review Compliance**:
   - Offline functional verification (App operates 100% without Wi-Fi/cellular).
   - Privacy Nutrition Labels: "Data Not Collected" (all records stored locally in private SQLite sandbox).

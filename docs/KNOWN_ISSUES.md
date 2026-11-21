@@ -1,7 +1,8 @@
 # Known Issues & Limitations — व्यवहार (Vyavahaar)
 
 > **Tracking Policy**: An issue is removed only after an automated test or verified fix is committed.  
-> **Last Updated**: 2026-11-21
+> **Sole Application Framework**: Flutter + Dart  
+> **Last Updated**: 2026-11-21  
 
 ---
 
@@ -9,22 +10,24 @@
 
 | Issue ID | Description | Severity | Affected Module | Resolution Date | Resolution Details |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **ISSUE-01** | `Cannot read property 'emit' of undefined` on tab bar press | High | `FloatingTabBar.tsx` | 2026-11-21 | Handled `emitter?.emit` and `navigateToTab(route.key)` for Expo Router 58. |
-| **ISSUE-02** | Tab bar touch clipping on older Android versions | Medium | `app/(tabs)/_layout.tsx` | 2026-11-21 | Added `tabBarStyle: { position: 'absolute', bottom: 0 }` and `hitSlop: 12`. |
-| **ISSUE-03** | Unicode emojis in UI violating aesthetic standards | Low | All screens | 2026-11-21 | Replaced all emojis with `@expo/vector-icons` Ionicons. |
-| **ISSUE-04** | Deprecated `SafeAreaView` warning in Expo SDK 58 | Low | Layouts | 2026-11-21 | Upgraded to `useSafeAreaInsets` from `react-native-safe-area-context`. |
+| **ISSUE-01** | Missing Noto Sans Devanagari font files declared in `pubspec.yaml` | High | `pubspec.yaml`, `assets/fonts/` | 2026-11-21 | Added Google Noto Sans Devanagari TTF files covering all declared weights into `assets/fonts/`. |
+| **ISSUE-02** | Missing `assets/icons/` directory declared in `pubspec.yaml` | Medium | `pubspec.yaml`, `assets/` | 2026-11-21 | Created `assets/icons/` directory with `.gitkeep` to prevent packaging warnings. |
+| **ISSUE-03** | Incomplete table repopulation in `BackupService.restoreBackup()` | High | `backup_service.dart` | 2026-11-21 | Implemented atomic insertion loop with backward-compatible key resolution for v3 and v4 envelopes. |
+| **ISSUE-04** | Outdated Expo / React Native references across documentation | Medium | `docs/` | 2026-11-21 | Audited and updated all documentation to reflect Flutter-only architecture. |
 
 ---
 
-## 2. Tracked Limitations & Future Considerations
+## 2. Tracked Limitations & Environment Notes
 
-### 2.1 PDF Export Online Font Loading Fallback
-- **Description**: `PdfService.ts` loads `@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap');` in its HTML template.
-- **Limitation**: When a device is completely in Airplane mode (zero internet connection ever), the webview printing engine falls back to Android's built-in system Devanagari font.
-- **Workaround**: Android's native system Devanagari font renders correctly; however, embedding local base64-encoded WOFF2 font files directly into the HTML string can be added in Phase 5 for 100% font consistency without network cache.
-- **Severity**: Low.
+### 2.1 Termux Local Execution Limitation
+- **Description**: In Android Termux (`Linux aarch64`), local `flutter` and `dart` command-line binaries are not installed in the system PATH.
+- **Impact**: Full compilation, `flutter build`, `flutter analyze`, and `flutter test` cannot run locally inside the Termux shell.
+- **Mitigation / Architecture**: 
+  - Complete architecture, database constraints, stress benchmarks (31,700 records), and 22-language localization are tested locally via standalone Python 3.12 test suites (`scripts/test-database-architecture.py`, `scripts/test-multilingual-architecture.py`).
+  - Full Flutter static analysis, code generation, and unit tests run in GitHub Actions CI (`.github/workflows/ci.yml`) on Ubuntu runners with `flutter: stable` and `channel: stable`.
+- **Severity**: Low (development environment constraint; does not affect application code).
 
-### 2.2 Termux Node.js Bytecode Export Limitation
-- **Description**: Running `npx expo export` in Termux Android environment can fail when Hermes bytecode compilation binary encounters glibc incompatibilities.
-- **Workaround**: Run `npx expo export --no-bytecode` when bundling in Termux, or build via EAS Cloud.
-- **Severity**: Low (development environment only; does not affect end-user APK/AAB).
+### 2.2 External Platform SDK Requirements
+- **Description**: Building native release binaries for iOS, macOS, and Windows requires their respective host operating systems (macOS for iOS/macOS; Windows for Windows MSIX).
+- **Workaround**: Automated multi-platform matrix builds via GitHub Actions CI.
+- **Severity**: Low (standard cross-platform development practice).

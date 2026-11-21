@@ -108,7 +108,7 @@ class BackupService {
       );
 
       // AES-256-GCM Authenticated Encryption
-      final aesGcm = AesGcm.with256Bits();
+      final aesGcm = AesGcm.with256bits();
       final secretBox = await aesGcm.encrypt(
         utf8.encode(payloadJson),
         secretKey: secretKey,
@@ -178,7 +178,7 @@ class BackupService {
         nonce: saltBytes,
       );
 
-      final aesGcm = AesGcm.with256Bits();
+      final aesGcm = AesGcm.with256bits();
       final secretBox = SecretBox(
         cipherTextBytes,
         nonce: nonceBytes,

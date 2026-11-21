@@ -31,4 +31,12 @@ class AppColors {
 
   // Elevation & Shadows
   static const Color shadow = Color(0x1F0F172A);
+
+  // Convenience & UI Tokens
+  static const Color white = surfaceWhite;
+  static const Color cardBorder = borderLight;
+  static const Color mutedText = textMuted;
+  static const Color darkSlate = deepNavy;
+  static const Color cardBackground = surfaceWhite;
+  static const Color background = warmCream;
 }

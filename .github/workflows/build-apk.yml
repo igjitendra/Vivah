@@ -3,7 +3,11 @@ name: Build Vyavahaar Android APK
 on:
   push:
     branches: [ migration/flutter-only, main ]
-  workflow_dispatch: # Allows manual trigger from GitHub Actions UI
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build-apk:
@@ -80,3 +84,40 @@ jobs:
           path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Prepare Release Assets
+        run: |
+          mkdir -p release-assets/
+          if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
+            cp -f "build/app/outputs/flutter-apk/app-debug.apk" release-assets/
+          fi
+          if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+            cp -f "build/app/outputs/flutter-apk/app-release.apk" release-assets/
+          fi
+          ls -lh release-assets/
+
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/migration/flutter-only' || github.ref == 'refs/heads/main'
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.0.0-preview' }}
+          name: "व्यवहार (Vyavahaar) ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.0.0 Preview' }}"
+          body: |
+            ### 📱 व्यवहार (Vyavahaar) — Digital Family Ledger
+            *रिश्तों का हिसाब, हमेशा याद।*
+
+            #### ✨ What's Included:
+            - **100% Offline & Private SQLite** (Encrypted AES-256 backup)
+            - **Pure English & 22 Scheduled Indian Languages** (Zero Hardcoded strings)
+            - **Light / Dark Mode & 18+ Beautiful Theme Palettes**
+            - **PDF Ledger Printing (A4) & Excel CSV Export**
+            - **Mila / Diya Financial Clarity (Never netted)**
+
+            #### 📥 Direct APK Downloads:
+            - **`app-debug.apk`** — Universal build (Recommended: install directly on any Android)
+            - **`app-release.apk`** — Production optimized release build
+          files: release-assets/*.apk
+          prerelease: ${{ !startsWith(github.ref, 'refs/tags/') }}
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

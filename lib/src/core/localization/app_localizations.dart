@@ -109,6 +109,7 @@ class AppLocalizations {
   String get relationCategoryHint => isEnglish ? 'e.g. Maternal Uncle, Friend...' : (isUrdu ? 'مثال: ماموں، دوست...' : 'उदा. मामा, मित्र, पड़ोसी...');
   String get savePerson => isEnglish ? 'Save Person' : (isUrdu ? 'شخص محفوظ کریں' : 'व्यक्ति सहेजें');
   String get personDetails => isEnglish ? 'Person Details' : (isUrdu ? 'تفصیلات' : 'व्यक्ति विवरण');
+  String get personNotFound => isEnglish ? 'Person not found' : (isUrdu ? 'شخص نہیں ملا' : 'व्यक्ति नहीं मिला');
   String get personSavedSuccess => isEnglish ? 'Person saved successfully' : (isUrdu ? 'شخص کامیابی سے محفوظ ہو گیا' : 'व्यक्ति सफलतापूर्वक सहेजा गया');
   String get noPeopleFound => isEnglish ? 'No people found' : (isUrdu ? 'کوئی شخص نہیں ملا' : 'कोई व्यक्ति नहीं मिला');
   String get personHistory => isEnglish ? 'Transaction History' : (isUrdu ? 'لین دین کی تاریخ' : 'व्यवहार इतिहास');
@@ -136,6 +137,7 @@ class AppLocalizations {
   String get noRecentEvent => isEnglish ? 'No active event' : (isUrdu ? 'کوئی فعال تقریب نہیں' : 'अभी कोई सक्रिय कार्यक्रम नहीं है');
   String get createFirstEvent => isEnglish ? 'Create First Event' : (isUrdu ? 'پہلی تقریب بنائیں' : 'पहला कार्यक्रम बनाएं');
   String get deleteEvent => isEnglish ? 'Delete Event' : (isUrdu ? 'تقریب حذف کریں' : 'कार्यक्रम हटाएं');
+  String get eventNotFound => isEnglish ? 'Event not found' : (isUrdu ? 'تقریب نہیں ملی' : 'कार्यक्रम नहीं मिला');
   String get confirmDeleteEventTitle => isEnglish ? 'Delete Event?' : (isUrdu ? 'تقریب حذف کریں؟' : 'कार्यक्रम हटाएं?');
   String get confirmDeleteEventBody => isEnglish
       ? 'Are you sure you want to delete this event? Its transactions will remain safe.'

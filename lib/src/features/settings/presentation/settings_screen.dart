@@ -240,7 +240,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (confirmed == true && passwordController.text.trim().isNotEmpty) {
       setState(() => _isLoading = true);
       try {
-        final path = await service.exportEncryptedBackup(passwordController.text.trim());
+        final backupFile = await service.createBackup(password: passwordController.text.trim());
+        final path = backupFile.path;
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -299,7 +300,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (confirmed == true && passwordController.text.trim().isNotEmpty) {
         setState(() => _isLoading = true);
         try {
-          await service.importEncryptedBackup(file.path, passwordController.text.trim());
+          await service.restoreBackup(file, password: passwordController.text.trim());
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

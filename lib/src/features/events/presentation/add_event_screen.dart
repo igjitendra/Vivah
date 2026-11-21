@@ -192,7 +192,7 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
     try {
       final repo = ref.read(eventsRepositoryProvider);
       final now = DateTime.now();
-      final event = CeremonialEvent(
+      final event = Event(
         id: const Uuid().v4(),
         title: _titleController.text.trim(),
         eventType: _selectedType,
@@ -203,7 +203,7 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
         updatedAt: now,
       );
 
-      await repo.saveEvent(event);
+      await repo.createEvent(event);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

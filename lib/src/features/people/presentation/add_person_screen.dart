@@ -164,7 +164,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
         updatedAt: now,
       );
 
-      await repo.savePerson(person);
+      await repo.createPerson(person);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

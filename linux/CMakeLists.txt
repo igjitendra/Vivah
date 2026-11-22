@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 project(runner LANGUAGES CXX)
 
 set(BINARY_NAME "vyavahaar")
-set(APPLICATION_ID "com.vyavahaar.app")
+set(APPLICATION_ID "com.procsctools.vyavahaar")
 
 cmake_policy(SET CMP0063 NEW)
 

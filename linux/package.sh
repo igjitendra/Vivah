@@ -13,8 +13,8 @@ cp -r "$bundle"/. "$out/Vyavahaar/"
 tar -C "$out" -czf Vyavahaar-linux-x64.tar.gz Vyavahaar
 
 cp -r "$bundle"/. "$out/AppDir/usr/bin/"
-cp "$bundle/com.vyavahaar.app.desktop" "$bundle/com.vyavahaar.app.png" "$out/AppDir/" 2>/dev/null || true
-ln -sf com.vyavahaar.app.png "$out/AppDir/.DirIcon" 2>/dev/null || true
+cp "$bundle/com.procsctools.vyavahaar.desktop" "$bundle/com.procsctools.vyavahaar.png" "$out/AppDir/" 2>/dev/null || true
+ln -sf com.procsctools.vyavahaar.png "$out/AppDir/.DirIcon" 2>/dev/null || true
 ln -sf usr/bin/vyavahaar "$out/AppDir/AppRun"
 
 curl -fsSL -o "$out/appimagetool" "$tool"

@@ -73,6 +73,8 @@ DynamicLibrary _openAndroidSqlite() {
 
   // 4. Known common paths
   for (final candidate in [
+    '/data/data/com.procsctools.vyavahaar/lib/libsqlite3.so',
+    '/data/user/0/com.procsctools.vyavahaar/lib/libsqlite3.so',
     '/data/data/com.vyavahaar.vyavahaar/lib/libsqlite3.so',
     '/data/user/0/com.vyavahaar.vyavahaar/lib/libsqlite3.so',
     '/data/data/com.vyavahaar.app/lib/libsqlite3.so',

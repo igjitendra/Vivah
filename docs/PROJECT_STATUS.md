@@ -26,7 +26,7 @@
 
 | Platform | Target Type | Interface Modality | Target Phase | Status | Verification Evidence / Roadmap |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Android** | Mobile | Touch-First | Phase 2–3 | **VERIFIED** | Native runner `android/` (`com.vyavahaar.app`), Android 15 ready (SDK 35/26), `FLAG_SECURE` privacy bridge, zero-network manifest hardening, and Drift SQLite verified. |
+| **Android** | Mobile | Touch-First | Phase 2–3 | **VERIFIED** | Native runner `android/` (`com.procsctools.vyavahaar`), Android 15 ready (SDK 35/26), `FLAG_SECURE` privacy bridge, zero-network manifest hardening, and Drift SQLite verified. |
 | **iOS** | Mobile | Touch-First | Phase 5 | **ARCHITECTURE READY** | Unified Flutter `lib/` codebase; cross-platform Drift SQLite and reactive Riverpod architecture. |
 | **Linux** | Desktop | Keyboard & Mouse | Desktop Post-MVP | **VERIFIED** | Native GTK+ C++ runner (`linux/`), responsive `ExpressNavRail`, hardware keyboard shortcuts, dual-pane Split-View master-detail, and Drift SQLite engine. |
 | **macOS** | Desktop | Keyboard, Mouse, Trackpad | Desktop Post-MVP | **ARCHITECTURE READY** | Flutter + Drift ORM native SQLite desktop engine ready (`lib/src/data/database/`). |

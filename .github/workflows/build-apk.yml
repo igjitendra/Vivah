@@ -35,15 +35,22 @@ jobs:
       - name: Configure Android Keystore & Signing
         run: |
           mkdir -p android/app
-          keytool -genkeypair -v \
-            -keystore android/app/upload-keystore.jks \
-            -alias vyavahaarkey \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -storepass vyavahaar123 \
-            -keypass vyavahaar123 \
-            -dname "CN=Vyavahaar, OU=Mobile, O=Vyavahaar, L=Jaipur, ST=Rajasthan, C=IN"
+          if [ -f "scripts/upload-keystore.b64" ]; then
+            echo "Loading persistent upload keystore from scripts/upload-keystore.b64"
+            base64 -d scripts/upload-keystore.b64 > android/app/upload-keystore.jks
+          else
+            echo "Generating new persistent upload keystore"
+            keytool -genkeypair -v \
+              -keystore android/app/upload-keystore.jks \
+              -alias vyavahaarkey \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -storepass vyavahaar123 \
+              -keypass vyavahaar123 \
+              -dname "CN=Vyavahaar, OU=Mobile, O=Vyavahaar, L=Jaipur, ST=Rajasthan, C=IN"
+            base64 -w 0 android/app/upload-keystore.jks > scripts/upload-keystore.b64
+          fi
 
           cat << 'EOF' > android/key.properties
           storePassword=vyavahaar123
@@ -95,24 +102,65 @@ jobs:
             fi
           fi
 
-      - name: Ensure & Verify APK Signatures
+      - name: Sign & Verify APKs with apksigner (V1 + V2 + V3 Schemes)
         run: |
-          echo "=== 1. Verifying Debug APK Signature ==="
-          jarsigner -verify build/app/outputs/flutter-apk/app-debug.apk || true
+          echo "=== Locating apksigner and zipalign in Android SDK ==="
+          APKSIGNER=$(which apksigner 2>/dev/null || find "${ANDROID_HOME:-/usr/local/lib/android/sdk}/build-tools" -name apksigner 2>/dev/null | sort -V | tail -n 1)
+          ZIPALIGN=$(which zipalign 2>/dev/null || find "${ANDROID_HOME:-/usr/local/lib/android/sdk}/build-tools" -name zipalign 2>/dev/null | sort -V | tail -n 1)
+          echo "Found apksigner: $APKSIGNER"
+          echo "Found zipalign: $ZIPALIGN"
 
-          echo "=== 2. Ensuring Release APK is Fully Signed ==="
+          if [ -z "$APKSIGNER" ]; then
+            echo "ERROR: apksigner not found in Android SDK!"
+            exit 1
+          fi
+
+          echo "=== 1. Signing Release APK ==="
           if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
-            # Verify signature; if unsigned, sign with upload keystore
-            if ! jarsigner -verify build/app/outputs/flutter-apk/app-release.apk 2>&1 | grep -q "jar verified"; then
-              echo "⚠️ Release APK is unsigned. Signing now with upload keystore..."
-              jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
-                -keystore android/app/upload-keystore.jks \
-                -storepass vyavahaar123 \
-                -keypass vyavahaar123 \
-                build/app/outputs/flutter-apk/app-release.apk vyavahaarkey
+            if [ -n "$ZIPALIGN" ]; then
+              $ZIPALIGN -c 4 build/app/outputs/flutter-apk/app-release.apk || {
+                echo "Zipaligning Release APK..."
+                $ZIPALIGN -p -f 4 build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/app-release-aligned.apk
+                mv -f build/app/outputs/flutter-apk/app-release-aligned.apk build/app/outputs/flutter-apk/app-release.apk
+              }
             fi
-            jarsigner -verify build/app/outputs/flutter-apk/app-release.apk
-            echo "✅ Release APK is confirmed SIGNED and verified!"
+            $APKSIGNER sign \
+              --ks android/app/upload-keystore.jks \
+              --ks-key-alias vyavahaarkey \
+              --ks-pass pass:vyavahaar123 \
+              --key-pass pass:vyavahaar123 \
+              --v1-signing-enabled true \
+              --v2-signing-enabled true \
+              --v3-signing-enabled true \
+              build/app/outputs/flutter-apk/app-release.apk
+
+            echo "=== Verifying Release APK Signature Schemes ==="
+            $APKSIGNER verify --verbose build/app/outputs/flutter-apk/app-release.apk
+            echo "✅ Release APK verified successfully!"
+          fi
+
+          echo "=== 2. Signing Debug APK ==="
+          if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
+            if [ -n "$ZIPALIGN" ]; then
+              $ZIPALIGN -c 4 build/app/outputs/flutter-apk/app-debug.apk || {
+                echo "Zipaligning Debug APK..."
+                $ZIPALIGN -p -f 4 build/app/outputs/flutter-apk/app-debug.apk build/app/outputs/flutter-apk/app-debug-aligned.apk
+                mv -f build/app/outputs/flutter-apk/app-debug-aligned.apk build/app/outputs/flutter-apk/app-debug.apk
+              }
+            fi
+            $APKSIGNER sign \
+              --ks android/app/upload-keystore.jks \
+              --ks-key-alias vyavahaarkey \
+              --ks-pass pass:vyavahaar123 \
+              --key-pass pass:vyavahaar123 \
+              --v1-signing-enabled true \
+              --v2-signing-enabled true \
+              --v3-signing-enabled true \
+              build/app/outputs/flutter-apk/app-debug.apk
+
+            echo "=== Verifying Debug APK Signature Schemes ==="
+            $APKSIGNER verify --verbose build/app/outputs/flutter-apk/app-debug.apk
+            echo "✅ Debug APK verified successfully!"
           fi
 
       - name: Upload Debug APK Artifact
@@ -130,6 +178,16 @@ jobs:
           path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Persist Keystore in Repository
+        run: |
+          if [ -f "scripts/upload-keystore.b64" ] && [ -n "$(git status --porcelain scripts/upload-keystore.b64)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add scripts/upload-keystore.b64
+            git commit -m "chore(ci): persist deterministic release upload-keystore [skip ci]" || true
+            git push origin HEAD:${{ github.ref }} || true
+          fi
 
       - name: Prepare Release Assets
         run: |

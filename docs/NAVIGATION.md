@@ -10,10 +10,14 @@
 
 ## 1. Declarative Route Map & Hierarchy
 
-GoRouter manages navigation using a top-level `ShellRoute` for bottom tab navigation on mobile, plus standalone full-screen push routes:
+GoRouter manages navigation with `initialLocation: '/splash'`, a top-level `ShellRoute` for bottom tab navigation on mobile, plus standalone full-screen push routes:
 
 ```
-appRouter (GoRouter)
+appRouter (GoRouter) - initialLocation: '/splash'
+├── Standalone Entry & Onboarding Routes:
+│   ├── '/splash'       # SplashScreen (Animated brand launch, checks onboarding)
+│   └── '/onboarding'   # OnboardingScreen (3-stage cultural walkthrough & tour)
+│
 ├── ShellRoute (hosts FloatingPillTabBar on mobile)
 │   ├── '/'             # Tab 1: DashboardScreen (Home Dashboard)
 │   ├── '/bahi'         # Tab 2: LedgerScreen (Bahi-Khata Ledger)
@@ -30,6 +34,7 @@ appRouter (GoRouter)
 │   ├── '/person/:id'   # PersonDetailScreen (Person Profile & Exchange History)
 │   ├── '/reports'      # ReportsScreen (PDF & CSV Export Hub)
 │   ├── '/language'     # LanguageSelectorScreen (22 Scheduled Languages Selector)
+│   ├── '/theme'        # ThemeGalleryScreen (Light/Dark themes gallery)
 │   └── '/reminders'    # RemindersScreen (Upcoming Ceremonies & Reminders)
 ```
 

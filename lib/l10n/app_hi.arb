@@ -30,5 +30,19 @@
   "errorDatabase": "डेटाबेस त्रुटि",
   "offlineNotice": "100% ऑफ़लाइन और सुरक्षित",
   "entryCount": "{count, plural, =0{कोई व्यवहार नहीं} =1{1 व्यवहार} other{{count} व्यवहार}}",
-  "personCount": "{count, plural, =0{कोई व्यक्ति नहीं} =1{1 व्यक्ति} other{{count} व्यक्ति}}"
+  "personCount": "{count, plural, =0{कोई व्यक्ति नहीं} =1{1 व्यक्ति} other{{count} व्यक्ति}}",
+  "splashLoading": "ऑफ़लाइन बही लोड हो रही है...",
+  "onboardingSkip": "छोड़ें",
+  "onboardingNext": "आगे बढ़ें",
+  "onboardingGetStarted": "शुरू करें",
+  "onboardingSlide1Title": "पारिवारिक उत्सवों का सच्चा साथी",
+  "onboardingSlide1Desc": "शादी, बारात, मुंडन, गृह प्रवेश या कोई भी सामाजिक अवसर — हर नेग, शगुन और भेंट का हिसाब सुरक्षित रखें।",
+  "onboardingSlide1Badge": "मिला और दिया हमेशा अलग",
+  "onboardingSlide2Title": "रिश्तों का मान-सम्मान",
+  "onboardingSlide2Desc": "सामाजिक लेन-देन में हिसाब रखना स्नेह और सम्मान का प्रतीक है। नकद और भेंट दोनों का अलग-अलग विवरण।",
+  "onboardingSlide2Badge": "100% सम्मानजनक हिसाब",
+  "onboardingSlide3Title": "पूर्णतः ऑफ़लाइन और निजी",
+  "onboardingSlide3Desc": "आपका डेटा केवल आपके फोन में रहता है। किसी इंटरनेट, सर्वर या लॉगिन की आवश्यकता नहीं है।",
+  "onboardingSlide3Badge": "बिना इंटरनेट, बिना लॉगिन",
+  "onboardingAppTour": "ऐप परिचय (ऑनबोर्डिंग)"
 }

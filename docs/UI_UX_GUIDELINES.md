@@ -76,3 +76,25 @@ The Home Screen (`lib/src/features/dashboard/presentation/dashboard_screen.dart`
   - Body & Labels: 13–14sp, Regular to Medium (`FontWeight.w500`).
   - Subtitles & Meta: 11–12sp, Muted (`AppColors.mutedText`).
 - **Currency Rendering**: Always prepend the authentic Indian Rupee symbol `₹` without floating decimals (e.g. `₹1,100`, never `₹1100.00`).
+
+---
+
+## 5. Splash Screen & First-Launch Onboarding UX Guidelines
+
+### 5.1 Animated Splash Screen Experience
+- **First Impression**: The splash screen serves as the authoritative, calm gateway to the app. It must immediately reassure the user with cultural familiarity and digital data safety.
+- **Visual Staging**:
+  - Deep Navy canvas (`#1F3352`) evokes institutional permanence and trust.
+  - Central elevated circular badge displaying the Open Bahi + Terracotta Checkmark `AppSymbol`.
+  - Stately Devanagari wordmark "व्यवहार" with cultural tagline "रिश्तों का हिसाब, हमेशा याद।".
+  - Floating bottom trust badge: "100% ऑफ़लाइन और सुरक्षित" with offline lock icon.
+- **Timing Guideline**: 1.8 seconds minimum display time. Never snap abruptly; always use smooth fade transitions.
+
+### 5.2 First-Launch Onboarding Walkthrough
+- **Tone**: Respectful, warm, clear, and reassuring. Focuses on family trust rather than commercial utility.
+- **Structure (3 Culturally Crafted Slides)**:
+  1. *Slide 1 (Digital Bahi Khata)*: Introduces how traditional Indian social gifting (*shadi, mundan, griha pravesh*) is neatly digitized with Mila (Received) and Diya (Given) kept strictly separate.
+  2. *Slide 2 (Cultural Dignity & Zero Debt)*: Clarifies that this ledger is about honoring mutual goodwill and relations, not debt collection or commercial accounting. Highlights pre-event budget planning.
+  3. *Slide 3 (100% Offline & Private)*: Emphasizes that zero data ever leaves the user's phone. Features AES-256-GCM encryption, PDF/CSV reports, and includes an instant language switcher chip.
+- **User Agency**: A prominent "छोड़ें" (Skip) pill is always available on early slides so returning or impatient users can immediately enter the app.
+- **Revisiting**: Users can re-open the onboarding tour at any time from **Settings ➔ Display & Preferences ➔ ऐप परिचय (Onboarding)**.

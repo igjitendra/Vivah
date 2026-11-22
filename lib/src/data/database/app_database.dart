@@ -3,7 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
+import 'sqlite_loader.dart';
 
 import 'tables/families_table.dart';
 import 'tables/people_table.dart';
@@ -78,14 +78,13 @@ class AppDatabase extends _$AppDatabase {
 }
 
 @pragma('vm:entry-point')
-Future<void> _isolateSetup() async {
-  try {
-    await applyWorkaroundToOpenSqlite3OnOldAndroidVersions();
-  } catch (_) {}
+void _isolateSetup() {
+  setupSqliteLoader();
 }
 
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
+    setupSqliteLoader();
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'vyavahaar.db'));
     return NativeDatabase.createInBackground(

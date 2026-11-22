@@ -55,6 +55,12 @@ class AppLocalizations {
   String get recordNewTransaction => isEnglish ? 'Record New Transaction' : (isUrdu ? 'نیا لین دین درج کریں' : 'नया व्यवहार दर्ज करें');
   String get searchLedgerHint => isEnglish ? 'Search person, village or event...' : (isUrdu ? 'شخص، گاؤں یا تقریب تلاش کریں...' : 'व्यक्ति, गाँव या कार्यक्रम खोजें...');
   String get noTransactionsFound => isEnglish ? 'No transactions found' : (isUrdu ? 'کوئی لین دین نہیں ملا' : 'कोई व्यवहार नहीं मिला');
+  String get noResultsFound => isEnglish ? 'No results found' : (isUrdu ? 'کوئی نتیجہ نہیں ملا' : 'कोई परिणाम नहीं मिला');
+  String get noEntriesYet => isEnglish ? 'No transactions yet' : (isUrdu ? 'ابھی کوئی لین دین نہیں ہے' : 'अभी कोई व्यवहार नहीं है');
+  String get tryDifferentSearch => isEnglish ? 'Try a different search term' : (isUrdu ? 'مختلف الفاظ سے تلاش کرنے کی کوشش کریں' : 'अलग नाम या शब्द से खोजें');
+  String get recordFirstTransaction => isEnglish ? 'Tap below to record your first transaction' : (isUrdu ? 'اپنا پہلا لین دین درج کرنے کے لیے نیچے ٹیپ کریں' : 'नीचे बटन दबाकर पहला व्यवहार दर्ज करें');
+  String get offlineNotice => isEnglish ? '100% Offline & Private' : (isUrdu ? '100% آف لائن اور نجی' : '100% ऑफ़लाइन और सुरक्षित');
+  String get planned => statusPlanned;
   String get transactionDetails => isEnglish ? 'Transaction Details' : (isUrdu ? 'لین دین کی تفصیلات' : 'व्यवहार विवरण');
   String get transactionDate => isEnglish ? 'Transaction Date' : (isUrdu ? 'تاریخ' : 'व्यवहार दिनांक');
   String get status => isEnglish ? 'Status' : (isUrdu ? 'حیثیت' : 'स्थिति');
@@ -286,6 +292,28 @@ class AppLocalizations {
   String get languageChanged => isEnglish ? 'Language changed' : (isUrdu ? 'زبان تبدیل ہو گئی' : 'भाषा बदली गई');
   String get backupSuccess => isEnglish ? 'Backup created successfully' : (isUrdu ? 'بیک اپ کامیابی سے بن گیا' : 'बैकअप सफलतापूर्वक बनाया गया');
   String get restoreSuccess => isEnglish ? 'Data restored successfully' : (isUrdu ? 'ڈیٹا کامیابی سے بحال ہو گیا' : 'डेटा सफलतापूर्वक पुनर्स्थापित हुआ');
+
+  // Splash & Onboarding
+  String get splashLoading => isEnglish ? 'Initializing offline ledger...' : (isUrdu ? 'آف لائن بہی لوڈ ہو رہی ہے...' : 'ऑफ़लाइन बही लोड हो रही है...');
+  String get onboardingSkip => isEnglish ? 'Skip' : (isUrdu ? 'چھوڑیں' : 'छोड़ें');
+  String get onboardingNext => isEnglish ? 'Next' : (isUrdu ? 'آگے بڑھیں' : 'आगे बढ़ें');
+  String get onboardingGetStarted => isEnglish ? 'Get Started' : (isUrdu ? 'شروع کریں' : 'शुरू करें');
+  String get onboardingSlide1Title => isEnglish ? 'Companion for Family Celebrations' : (isUrdu ? 'خاندانی تقاریب کا سچا ساتھی' : 'पारिवारिक उत्सवों का सच्चा साथी');
+  String get onboardingSlide1Desc => isEnglish
+      ? 'Weddings, celebrations, ceremonies — safely keep record of every gift, cash and social offering.'
+      : (isUrdu ? 'شادی، بارات، عقیقہ یا کوئی بھی تقریب — ہر تحفے اور نقد کا حساب محفوظ رکھیں۔' : 'शादी, बारात, मुंडन, गृह प्रवेश या कोई भी सामाजिक अवसर — हर नेग, शगुन और भेंट का हिसाब सुरक्षित रखें।');
+  String get onboardingSlide1Badge => isEnglish ? 'Received & Given Always Separated' : (isUrdu ? 'ملا اور دیا ہمیشہ الگ' : 'मिला और दिया हमेशा अलग');
+  String get onboardingSlide2Title => isEnglish ? 'Dignity of Family Relations' : (isUrdu ? 'رشتوں کا مان و احترام' : 'रिश्तों का मान-सम्मान');
+  String get onboardingSlide2Desc => isEnglish
+      ? 'Recording social exchanges is a gesture of love and respect. Pure separation of cash and items.'
+      : (isUrdu ? 'سماجی لین دین کا حساب محبت اور احترام کی علامت ہے۔ نقد اور تحائف کا الگ الگ اندراج۔' : 'सामाजिक लेन-देन में हिसाब रखना स्नेह और सम्मान का प्रतीक है। नकद और भेंट दोनों का अलग-अलग विवरण।');
+  String get onboardingSlide2Badge => isEnglish ? '100% Respectful Ledger' : (isUrdu ? '100% باوقار حساب' : '100% सम्मानजनक हिसाब');
+  String get onboardingSlide3Title => isEnglish ? '100% Offline & Private' : (isUrdu ? 'مکمل آف لائن اور نجی' : 'पूर्णतः ऑफ़लाइन और निजी');
+  String get onboardingSlide3Desc => isEnglish
+      ? 'Your ledger stays exclusively on your device. Zero cloud, zero tracking, no accounts needed.'
+      : (isUrdu ? 'آپ کا ڈیٹا صرف آپ کے فون میں رہتا ہے۔ کسی انٹرنیٹ، سرور یا لاگ ان کی ضرورت نہیں۔' : 'आपका डेटा केवल आपके फोन में रहता है। किसी इंटरनेट, सर्वर या लॉगिन की आवश्यकता नहीं है।');
+  String get onboardingSlide3Badge => isEnglish ? 'No Internet, No Login' : (isUrdu ? 'بغیر انٹرنیٹ، بغیر لاگ ان' : 'बिना इंटरनेट, बिना लॉगिन');
+  String get onboardingAppTour => isEnglish ? 'App Tour & Onboarding' : (isUrdu ? 'ایپ کا تعارف' : 'ऐप परिचय (ऑनबोर्डिंग)');
 
   // Plurals
   String entryCount(int count) {

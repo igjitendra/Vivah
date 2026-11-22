@@ -17,6 +17,8 @@ The Flutter architecture implements strict layer separation where presentation c
 flowchart TD
     subgraph Presentation_Layer [Presentation Layer - Widgets & Shell]
         Shell[Adaptive Shell: ResponsiveLayout]
+        SplashView[SplashScreen - Animated Gateway]
+        OnboardingView[OnboardingScreen - 3-Stage Walkthrough]
         FloatingBar[FloatingPillTabBar - Mobile]
         Sidebar[NavigationRail - Desktop / Tablet]
         DashboardView[DashboardScreen]
@@ -105,3 +107,16 @@ flowchart TD
 * **Mila & Diya Separation**: Total Received and Total Given are queried and calculated as independent positive sums. Under no circumstances are they subtracted or netted.
 * **Soft Archiving**: Destructive deletions are avoided. People, events, families, and entries support soft archiving via `archived_at` timestamps to preserve historical records.
 * **Deletion Protection**: A person with associated transactions cannot be deleted (`ON DELETE RESTRICT` enforced by SQLite engine).
+
+---
+
+## 4. First Launch & Onboarding Persistence Architecture
+
+Vyavahaar maintains a 100% offline-first onboarding lifecycle:
+1. **Initial Route**: `appRouter` points to `/splash`.
+2. **State Inspection**: `SplashScreen` queries `SettingsRepository.getSetting('onboarding_completed')` from the Drift `settings` table.
+3. **Branching Decision**:
+   - If `'onboarding_completed' == 'true'`: Navigates to `/` (Home Dashboard).
+   - If not set or `null`: Navigates to `/onboarding`.
+4. **Completion & Dismissal**: Completing the 3-slide walkthrough or tapping "छोड़ें" (Skip) writes `'onboarding_completed' = 'true'` via `SettingsRepository.setSetting()`, atomically persisting the state to local SQLite.
+5. **Re-tour Mechanism**: The onboarding tour can be re-launched from Settings with `?fromSettings=true` without affecting previous user preferences.

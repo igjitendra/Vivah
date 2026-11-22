@@ -1,4 +1,5 @@
 import '../enums/transaction_enums.dart';
+export '../enums/transaction_enums.dart';
 
 /// Family Entity (परिवार / कुल)
 class Family {

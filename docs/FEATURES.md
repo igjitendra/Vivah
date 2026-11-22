@@ -75,3 +75,18 @@
   - Pre-restore validation and decryption in memory.
   - Atomic database transaction replacement with automatic rollback on error.
   - File picker integration for native backup file selection across platforms.
+
+### 1.10 Splash Screen & Onboarding Walkthrough (`lib/src/features/splash/`, `lib/src/features/onboarding/`)
+- **Animated Splash Screen** (`splash_screen.dart`):
+  - Deep Navy brand canvas with radial ambient aura.
+  - Official Open Bahi + Terracotta Checkmark logo animation (fade & spring scale).
+  - Devanagari wordmark and cultural tagline "रिश्तों का हिसाब, हमेशा याद।".
+  - Bottom "100% ऑफ़लाइन और सुरक्षित" trust indicator.
+  - Automatic routing logic: checks `onboarding_completed` flag in SQLite to route to Onboarding or Dashboard.
+- **Interactive Onboarding Walkthrough** (`onboarding_screen.dart`):
+  - 3 culturally authentic slides:
+    1. *पारिवारिक उत्सवों का सच्चा साथी*: Digital Bahi Khata, Mila & Diya separation, cash vs. gifts.
+    2. *रिश्तों का मान-सम्मान*: Mutual respect ethos, zero commercial debt mindset, budget planning.
+    3. *पूर्णतः ऑफ़लाइन और निजी*: Zero cloud, military-grade AES-256 encryption, PDF/CSV exports, and 1-tap language switch chip.
+  - Tactile navigation with `ExpressSquish`, animated dot indicator, skip action, and atomic SQLite persistence.
+  - Re-accessible at any time from Settings Screen.

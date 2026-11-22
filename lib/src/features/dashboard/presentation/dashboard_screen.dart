@@ -6,6 +6,7 @@ import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../shared/widgets/express_squish.dart';
+import '../../../shared/widgets/app_logo.dart';
 
 /// Modern Material 3 Card-Based Dashboard for व्यवहार (Vyavahaar)
 /// Fully theme-adaptive (Light / Dark & Color Palettes) with tactile ExpressSquish feedback.
@@ -78,12 +79,16 @@ class DashboardScreen extends StatelessWidget {
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(6),
+                            padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
-                              color: primaryAccent.withValues(alpha: 0.28),
+                              color: Colors.white.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(Icons.menu_book, color: Colors.white, size: 20),
+                            child: const AppSymbol(
+                              size: 22,
+                              pageColor: AppColors.warmCream,
+                              checkmarkColor: AppColors.terracotta,
+                            ),
                           ),
                           const SizedBox(width: 10),
                           Text(

@@ -1,6 +1,6 @@
 # Verified Project Status — व्यवहार (Vyavahaar)
 
-> **Last Verified Date**: 2026-11-21  
+> **Last Verified Date**: 2026-11-22  
 > **Official Implementation**: **Flutter + Dart (Sole Application Framework)** (`lib/`) — 5 Platforms (Android, iOS, Linux, macOS, Windows)  
 > **Branch**: `migration/flutter-only`  
 > **Legacy Framework Status**: **React Native / Expo Completely Removed**  
@@ -80,6 +80,9 @@
 | AES-256-GCM Encrypted Backup | `VERIFIED` | `lib/src/features/settings/services/backup_service.dart`, `settings_screen.dart` | OWASP PBKDF2 600,000 iterations, unique 128-bit salt and 12-byte nonce. |
 | Safe Restore with Rollback | `VERIFIED` | `lib/src/features/settings/services/backup_service.dart`, `settings_screen.dart` | In-memory decompression, authentication, atomic database transaction replace. |
 | Reminders (अनुस्मारक) | `VERIFIED` | `lib/src/features/reminders/presentation/reminders_screen.dart` | Track upcoming planned transactions and ceremonies. |
+| Animated Splash Screen | `VERIFIED` | `lib/src/features/splash/presentation/splash_screen.dart` | Deep navy canvas, official brand symbol, fade & spring animation, auto-routing. |
+| 3-Stage Onboarding Walkthrough | `VERIFIED` | `lib/src/features/onboarding/presentation/onboarding_screen.dart` | Culturally authentic carousel, Mila/Diya separation, offline privacy, SQLite persistence. |
+| Official Brand Logo & Symbols | `VERIFIED` | `lib/src/shared/widgets/app_logo.dart`, `assets/brand/` | Vector CustomPainter + raster asset fallback, lockup variants (vertical, horizontal, symbol). |
 
 ---
 

@@ -17,6 +17,8 @@ import '../../features/entries/presentation/entry_detail_screen.dart';
 import '../../features/reports/presentation/reports_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/reminders/presentation/reminders_screen.dart';
+import '../../features/splash/presentation/splash_screen.dart';
+import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../core/localization/presentation/language_selector_screen.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../features/settings/presentation/theme_gallery_screen.dart';
@@ -62,7 +64,7 @@ const List<TabItemData> appTabs = [
 /// Declarative GoRouter configuration
 final GoRouter appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: '/',
+  initialLocation: '/splash',
   routes: [
     // ShellRoute hosting the FloatingPillTabBar on mobile
     ShellRoute(
@@ -245,6 +247,19 @@ final GoRouter appRouter = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       path: '/reminders',
       builder: (context, state) => const RemindersScreen(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/splash',
+      builder: (context, state) => const SplashScreen(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/onboarding',
+      builder: (context, state) {
+        final isFromSettings = state.uri.queryParameters['fromSettings'] == 'true';
+        return OnboardingScreen(isFromSettings: isFromSettings);
+      },
     ),
   ],
 );

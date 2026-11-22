@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../domain/entities/entities.dart';
+import '../../../domain/enums/transaction_enums.dart';
 import '../../../shared/widgets/express_squish.dart';
 import '../../../app/app_providers.dart';
 

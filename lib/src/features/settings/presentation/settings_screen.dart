@@ -92,6 +92,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       trailing: Icon(Icons.chevron_right, color: textSecondary),
                       onTap: widget.onOpenLanguageSelector,
                     ),
+                    Divider(height: 1, color: cardBorder),
+                    ListTile(
+                      leading: const Icon(Icons.auto_stories_outlined, color: AppColors.terracotta),
+                      title: Text(l10n.onboardingAppTour, style: TextStyle(fontWeight: FontWeight.w600, color: textPrimary)),
+                      subtitle: Text('ऐप का परिचय और मार्गदर्शन देखें', style: TextStyle(color: textSecondary, fontSize: 12)),
+                      trailing: Icon(Icons.chevron_right, color: textSecondary),
+                      onTap: () => context.push('/onboarding?fromSettings=true'),
+                    ),
                   ],
                 ),
 

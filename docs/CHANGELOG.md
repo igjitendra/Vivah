@@ -5,6 +5,34 @@
 
 ---
 
+## [1.4.4] — 2026-11-22
+
+### Added
+- **Official Brand Logo & Symbols System (`AppLogo`, `AppSymbol`)**:
+  - Implemented `VyavahaarSymbolPainter`: pure Flutter resolution-independent vector rendering of the Open Ledger Bahi + Terracotta Checkmark symbol with zero external dependencies.
+  - Implemented `AppSymbol`: standalone brand icon with automatic fallback to high-resolution asset PNGs.
+  - Implemented `AppLogo`: full brand lockup with multiple layout variants (`vertical`, `horizontal`, `compactHeader`, `symbolOnly`) and theme support (`darkCanvas`, `lightCanvas`).
+  - Integrated `AppSymbol` directly into `DashboardScreen` header, replacing generic icons.
+- **Animated Splash Screen (`SplashScreen`)**:
+  - Fullscreen Deep Navy (`#1F3352`) background with subtle radial gradient aura.
+  - Smooth 1200ms fade-in and spring scale animation of the official Vyavahaar logo lockup.
+  - Bottom "100% ऑफ़लाइन और सुरक्षित" trust pill and status indicator.
+  - Intelligent first-launch routing: checks SQLite `SettingsRepository` for `'onboarding_completed'`. Routes to `/onboarding` on first launch or directly to `/` (Dashboard) for returning users.
+- **3-Stage Cultural Onboarding Walkthrough (`OnboardingScreen`)**:
+  - Culturally resonant, beautifully crafted 3-slide interactive walkthrough:
+    - *Slide 1 (पारिवारिक उत्सवों का सच्चा साथी)*: Traditional Indian digital bahi khata, strict separation of Mila (Received) & Diya (Given), cash vs physical gift tracking.
+    - *Slide 2 (रिश्तों का मान-सम्मान)*: Family goodwill, zero commercial debt mindset, pre-ceremony budget planning.
+    - *Slide 3 (पूर्णतः ऑफ़लाइन और निजी)*: 100% offline privacy guarantee, AES-256-GCM encryption, PDF/CSV reports, and direct 1-tap language switch chip.
+  - Smooth page dots indicator, skip action ("छोड़ें"), and tactile `ExpressSquish` "आगे बढ़ें" / "शुरू करें" CTA button.
+  - Automatically persists `'onboarding_completed' = 'true'` in SQLite on completion or skip.
+  - Re-accessible at any time from **Settings ➔ Display & Preferences ➔ ऐप परिचय (ऑनबोर्डिंग)** via `/onboarding?fromSettings=true`.
+- **Navigation & Multilingual Integration**:
+  - Configured `initialLocation: '/splash'` in `appRouter` (`app_router.dart`).
+  - Added new localized strings across `app_en.arb`, `app_hi.arb`, and `app_ur.arb` with complete key parity.
+  - Verified with 22/22 multilingual automated tests and 14/14 SQLite architecture stress tests.
+
+---
+
 ## [1.4.3] — 2026-11-22
 
 ### Added

@@ -97,3 +97,37 @@ Vyavahaar incorporates fluid spring physics and tactile scale gestures directly 
 - `AppSpacing.lg`: `20dp`
 - `AppSpacing.xl`: `24dp`
 - `AppSpacing.floatingTabBottomPadding`: `95dp` (ensures content is never obscured by the floating navigation pill).
+
+---
+
+## 5. Brand Identity, Logo, Splash & Onboarding Specifications
+
+### 5.1 Official Brand Symbol Geometry & `AppSymbol`
+- **Concept**: Open Ledger (पारंपरिक बही) + Integrated Verified Checkmark (✓).
+- **Implementation**: Pure Flutter vector `VyavahaarSymbolPainter` (zero external dependencies) with fallback to `assets/brand/vyavahaar-symbol-48.png` and `vyavahaar-icon-512.png`.
+- **Anatomy**:
+  - Left Page Base: Warm Cream (`#F4EFE7`)
+  - Left Page Accent Layer: Terracotta (`#C05A2B`)
+  - Right Page Base: Warm Cream (`#F4EFE7`)
+  - Spine Crease: Deep Navy (`#1F3352`, opacity 0.3)
+  - Integrated Checkmark: Terracotta (`#C05A2B`)
+
+### 5.2 App Logo Lockups (`AppLogo`)
+- **`AppLogoVariant.vertical`**: Hero stack used in Splash and Onboarding. Circular elevated symbol card (`BorderRadius.circular(circle)`), Devanagari wordmark "व्यवहार" in 36pt extra-bold, and pill-wrapped cultural tagline "रिश्तों का हिसाब, हमेशा याद।".
+- **`AppLogoVariant.horizontal` / `compactHeader`**: Used in Dashboard header and top app bars. Symbol icon badge alongside horizontal typography.
+- **`AppLogoVariant.symbolOnly`**: Isolated vector mark for avatars and compact chips.
+- **Theming**: Supports `AppLogoTheme.darkCanvas` (for Deep Navy canvases) and `AppLogoTheme.lightCanvas` (for Warm Cream / white backgrounds).
+
+### 5.3 Splash Screen Design Specs
+- **Canvas**: Fullscreen Deep Navy (`#1F3352`) background with subtle radial gradient aura (`#2A436D` to `#1F3352`).
+- **Motion**: 1200ms `AnimationController` with smooth fade (`Curves.easeIn`) and subtle spring scale (`0.88` to `1.0` via `Curves.easeOutBack`).
+- **Trust Badge**: Floating pill container (`#1AF4EFE7`) with `Icons.verified_user_outlined` and "100% ऑफ़लाइन और सुरक्षित".
+- **Timing & Transitions**: Graceful 1.8-second minimum display; automatically transitions to `/onboarding` (first launch) or `/` (returning user).
+
+### 5.4 Onboarding Screen Design Specs
+- **Layout**: Top app bar with `AppSymbol` + "व्यवहार" title on left, tactile "छोड़ें" (Skip) pill on right; middle responsive `PageView`; bottom navigation bar with animated pill dots indicator and tactile `ExpressSquish` CTA.
+- **Slides**:
+  1. *Slide 1 (Digital Bahi Khata)*: Blue-tinted book icon container (`#EBF3FC`), Mila/Diya separation badge, cash & physical gifts highlight points.
+  2. *Slide 2 (Cultural Dignity & Zero Debt)*: Terracotta-tinted goodwill icon (`#FBECE5`), mutual respect badge, budget planning highlight points.
+  3. *Slide 3 (100% Offline & Private)*: Green-tinted security shield (`#E2F5EB`), zero internet/zero login badge, AES-256 encryption highlight points, and quick language switch chip.
+- **Colors & Cards**: Cards with `cardBg` (`Colors.white` / `#1E293B`), subtle border (`#E2E8F0` / `#334155`), and elevated shadow. CTA button transitions from Deep Navy (`#1F3352`) to Terracotta (`#C05A2B`) on the final slide ("शुरू करें").

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
+import '../data/database/sqlite_loader.dart';
 import 'app.dart';
 
 /// Clean application bootstrap ensuring all asynchronous foundations
@@ -14,7 +14,7 @@ Future<void> bootstrap() async {
       WidgetsFlutterBinding.ensureInitialized();
 
       // Ensure SQLite native library is loaded correctly across all Android versions
-      await applyWorkaroundToOpenSqlite3OnOldAndroidVersions();
+      await initSqlitePlatform();
 
       // Configure global error listeners
       FlutterError.onError = (FlutterErrorDetails details) {

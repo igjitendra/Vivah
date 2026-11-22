@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
-import '../../../app/app_providers.dart';
+import '../../../shared/widgets/express_squish.dart';
+import '../../entries/providers/entries_providers.dart';
 import '../services/pdf_service.dart';
 import '../services/csv_service.dart';
 
-/// Reports & Data Export Screen
+/// Screen offering PDF Ledger Printing (A4) and Excel/CSV Export
+/// Fully theme-adaptive with tactile ExpressCard design.
 class ReportsScreen extends ConsumerStatefulWidget {
   const ReportsScreen({super.key});
 
@@ -20,32 +22,46 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final entriesAsync = ref.watch(entriesListProvider(null));
     final l10n = context.l10n;
 
+    final scaffoldBg = theme.scaffoldBackgroundColor;
+    final headerBg = isDark ? theme.colorScheme.surface : theme.colorScheme.secondary;
+    final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
+    final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
+    final textPrimary = theme.colorScheme.onSurface;
+    final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final primaryAccent = theme.colorScheme.primary;
+
     return Scaffold(
-      backgroundColor: AppColors.warmCream,
+      backgroundColor: scaffoldBg,
       appBar: AppBar(
-        title: Text(l10n.reports, style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: AppColors.deepNavy,
+        title: Text(l10n.reports, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+        backgroundColor: headerBg,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isGenerating
-          ? const Center(child: CircularProgressIndicator(color: AppColors.terracotta))
+          ? Center(child: CircularProgressIndicator(color: primaryAccent))
           : entriesAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator(color: AppColors.terracotta)),
-              error: (err, stack) => Center(child: Text('${l10n.errorGeneric}: $err')),
+              loading: () => Center(child: CircularProgressIndicator(color: primaryAccent)),
+              error: (err, stack) => Center(child: Text('${l10n.errorGeneric}: $err', style: const TextStyle(color: Colors.red))),
               data: (entries) {
                 return ListView(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   children: [
-                    // A. PDF Section
+                    // A. Complete Ledger PDF
                     _buildReportTile(
                       title: l10n.completeLedgerPdf,
                       subtitle: l10n.completeLedgerPdfSubtitle,
                       icon: Icons.picture_as_pdf,
-                      iconColor: AppColors.terracotta,
+                      iconColor: primaryAccent,
+                      cardBg: cardBg,
+                      cardBorder: cardBorder,
+                      textPrimary: textPrimary,
+                      textSecondary: textSecondary,
                       onTap: () async {
                         setState(() => _isGenerating = true);
                         try {
@@ -69,6 +85,10 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                       subtitle: l10n.receivedOnlyPdfSubtitle,
                       icon: Icons.arrow_downward,
                       iconColor: AppColors.milaGreen,
+                      cardBg: cardBg,
+                      cardBorder: cardBorder,
+                      textPrimary: textPrimary,
+                      textSecondary: textSecondary,
                       onTap: () async {
                         setState(() => _isGenerating = true);
                         try {
@@ -93,6 +113,10 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                       subtitle: l10n.givenOnlyPdfSubtitle,
                       icon: Icons.arrow_upward,
                       iconColor: AppColors.diyaRed,
+                      cardBg: cardBg,
+                      cardBorder: cardBorder,
+                      textPrimary: textPrimary,
+                      textSecondary: textSecondary,
                       onTap: () async {
                         setState(() => _isGenerating = true);
                         try {
@@ -116,7 +140,11 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                       title: l10n.csvExport,
                       subtitle: l10n.csvExportSubtitle,
                       icon: Icons.table_chart_outlined,
-                      iconColor: AppColors.deepNavy,
+                      iconColor: isDark ? const Color(0xFF38BDF8) : headerBg,
+                      cardBg: cardBg,
+                      cardBorder: cardBorder,
+                      textPrimary: textPrimary,
+                      textSecondary: textSecondary,
                       onTap: () async {
                         setState(() => _isGenerating = true);
                         try {
@@ -139,24 +167,27 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     required String subtitle,
     required IconData icon,
     required Color iconColor,
+    required Color cardBg,
+    required Color cardBorder,
+    required Color textPrimary,
+    required Color textSecondary,
     required VoidCallback onTap,
   }) {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.cardBorder),
-      ),
+    return ExpressCard(
+      padding: EdgeInsets.zero,
+      radius: 16,
+      color: cardBg,
+      borderColor: cardBorder,
       elevation: 0,
-      color: AppColors.white,
+      onTap: onTap,
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: iconColor.withOpacity(0.12),
+          backgroundColor: iconColor.withValues(alpha: 0.15),
           child: Icon(icon, color: iconColor),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-        subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.mutedText)),
-        trailing: const Icon(Icons.share, color: AppColors.mutedText),
-        onTap: onTap,
+        title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: textPrimary)),
+        subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: textSecondary)),
+        trailing: Icon(Icons.share, color: textSecondary),
       ),
     );
   }

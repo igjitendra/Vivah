@@ -71,8 +71,13 @@ When undertaking specific tasks, AI agents and developers must consult the follo
 
 ---
 
-## 📝 Mandatory Documentation Update Rules
+## 📝 Mandatory Documentation Update Rules (अनिवार्य दस्तावेजीकरण नियम)
 
-1. **Documentation Changes With Code**: Any code change affecting schema, routes, domain logic, or dependencies requires updating the corresponding documentation in the same commit.
-2. **Zero Assumptions on Status**: Features can only be marked `VERIFIED` when automated test scripts or physical verification logs exist.
-3. **Prevent Drift**: Review [`PROJECT_STATUS.md`](PROJECT_STATUS.md) and [`CHANGELOG.md`](CHANGELOG.md) after every meaningful task.
+1. **Mandatory Sync for Design, Working, Backend & Features**:
+   - 🎨 **Design Changes** (UI, colors, typography, components, layouts, navigation) ➔ [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md), [`UI_UX_GUIDELINES.md`](UI_UX_GUIDELINES.md), [`NAVIGATION.md`](NAVIGATION.md)
+   - ⚙️ **Working Changes** (business logic, domain rules, calculations, offline flow, user flows) ➔ [`DOMAIN_RULES.md`](DOMAIN_RULES.md), [`ARCHITECTURE.md`](ARCHITECTURE.md), [`USER_FLOWS.md`](USER_FLOWS.md)
+   - 🗄️ **Backend Changes** (Drift/SQLite schema, tables, DAOs, queries, migrations) ➔ [`DATABASE_SCHEMA.md`](DATABASE_SCHEMA.md), [`FLUTTER_MIGRATION_ARCHITECTURE.md`](FLUTTER_MIGRATION_ARCHITECTURE.md), [`BACKUP_RESTORE.md`](BACKUP_RESTORE.md)
+   - 🚀 **Features Changes** (new capabilities, modified features, implementation status) ➔ [`FEATURES.md`](FEATURES.md), [`PROJECT_STATUS.md`](PROJECT_STATUS.md), [`PRODUCT_REQUIREMENTS.md`](PRODUCT_REQUIREMENTS.md), [`ROADMAP.md`](ROADMAP.md)
+2. **Always Update Changelog**: Any meaningful change must be logged in [`CHANGELOG.md`](CHANGELOG.md).
+3. **Zero Assumptions on Status**: Features can only be marked `VERIFIED` when automated test scripts or physical verification logs exist.
+4. **Prevent Drift**: Review [`PROJECT_STATUS.md`](PROJECT_STATUS.md) and verify all internal links after every task.

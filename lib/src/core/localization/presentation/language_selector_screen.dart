@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../constants/app_colors.dart';
 import '../../constants/app_spacing.dart';
-import '../app_localizations.dart';
 import '../language_registry.dart';
 import '../locale_notifier.dart';
-import '../models/language_spec.dart';
-import '../unicode_search_utils.dart';
+import '../app_localizations.dart';
+import '../../../shared/widgets/express_squish.dart';
 
-/// Language Selection Screen
-/// Allows user to choose their preferred Indian language with native typography.
+/// Screen allowing users to switch between pure English and all 22 Eighth-Schedule Indian languages.
+/// Fully theme-adaptive with search and instant reactive app re-render.
 class LanguageSelectorScreen extends ConsumerStatefulWidget {
   const LanguageSelectorScreen({super.key});
 
@@ -27,15 +25,34 @@ class _LanguageSelectorScreenState extends ConsumerState<LanguageSelectorScreen>
     super.dispose();
   }
 
+  bool _matchesQuery(List<String> values, String query) {
+    if (query.isEmpty) return true;
+    final cleanQuery = query.toLowerCase().trim();
+    for (final val in values) {
+      if (val.toLowerCase().contains(cleanQuery)) return true;
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final currentLocale = ref.watch(localeProvider);
     final allLanguages = LanguageRegistry.instance.getAllLanguages();
     final l10n = context.l10n;
 
+    final scaffoldBg = theme.scaffoldBackgroundColor;
+    final headerBg = isDark ? theme.colorScheme.surface : theme.colorScheme.secondary;
+    final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
+    final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
+    final searchBg = isDark ? const Color(0xFF161A24) : const Color(0xFFF1F5F9);
+    final textPrimary = theme.colorScheme.onSurface;
+    final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final primaryAccent = theme.colorScheme.primary;
+
     final filteredLanguages = allLanguages.where((lang) {
-      if (_searchQuery.isEmpty) return true;
-      return UnicodeSearchUtils.matchesAny([
+      return _matchesQuery([
         lang.nameNative,
         lang.nameEnglish,
         lang.languageCode,
@@ -44,53 +61,57 @@ class _LanguageSelectorScreenState extends ConsumerState<LanguageSelectorScreen>
     }).toList();
 
     return Scaffold(
-      backgroundColor: AppColors.warmCream,
+      backgroundColor: scaffoldBg,
       appBar: AppBar(
         title: Text(
           l10n.selectLanguageTitle,
           style: const TextStyle(
-            color: AppColors.white,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 20,
           ),
         ),
-        backgroundColor: AppColors.deepNavy,
+        backgroundColor: headerBg,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Column(
         children: [
           // Search Bar
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
-            color: AppColors.white,
-            child: TextField(
-              controller: _searchController,
-              onChanged: (val) {
-                setState(() {
-                  _searchQuery = val;
-                });
-              },
-              decoration: InputDecoration(
-                hintText: l10n.searchLanguageHint,
-                prefixIcon: const Icon(Icons.search, color: AppColors.mutedText),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, color: AppColors.mutedText),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {
-                            _searchQuery = '';
-                          });
-                        },
-                      )
-                    : null,
-                filled: true,
-                fillColor: AppColors.warmCream,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide.none,
+            decoration: BoxDecoration(
+              color: cardBg,
+              border: Border(bottom: BorderSide(color: cardBorder, width: 1)),
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: searchBg,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: cardBorder),
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (val) => setState(() => _searchQuery = val),
+                style: TextStyle(fontSize: 14, color: textPrimary),
+                decoration: InputDecoration(
+                  hintText: l10n.searchLanguageHint,
+                  hintStyle: TextStyle(fontSize: 13, color: textSecondary),
+                  prefixIcon: Icon(Icons.search, color: textSecondary, size: 20),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(Icons.clear, color: textSecondary, size: 18),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                          },
+                        )
+                      : null,
+                  filled: false,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
                 ),
               ),
             ),
@@ -100,12 +121,12 @@ class _LanguageSelectorScreenState extends ConsumerState<LanguageSelectorScreen>
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
-            color: AppColors.warmCream,
+            color: isDark ? const Color(0xFF131722) : const Color(0xFFF8FAFC),
             child: Text(
               l10n.scheduledLanguagesSubtitle(allLanguages.length - 1),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: AppColors.mutedText,
+                color: textSecondary,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -115,20 +136,20 @@ class _LanguageSelectorScreenState extends ConsumerState<LanguageSelectorScreen>
           Expanded(
             child: ListView.separated(
               itemCount: filteredLanguages.length,
-              separatorBuilder: (context, index) => const Divider(height: 1, indent: 16, endIndent: 16),
+              separatorBuilder: (context, index) => Divider(height: 1, indent: 16, endIndent: 16, color: cardBorder),
               itemBuilder: (context, index) {
                 final lang = filteredLanguages[index];
                 final isSelected = (currentLocale.languageCode == lang.languageCode &&
                     (lang.scriptCode == null || currentLocale.scriptCode == lang.scriptCode));
 
                 return ListTile(
-                  tileColor: isSelected ? AppColors.white : Colors.transparent,
+                  tileColor: isSelected ? (isDark ? const Color(0xFF1E2638) : const Color(0xFFF1F5F9)) : Colors.transparent,
                   leading: CircleAvatar(
-                    backgroundColor: isSelected ? AppColors.terracotta : AppColors.cardBorder,
+                    backgroundColor: isSelected ? primaryAccent : (isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0)),
                     child: Text(
                       lang.nameNative.isNotEmpty ? lang.nameNative.characters.first : lang.nameEnglish[0],
                       style: TextStyle(
-                        color: isSelected ? AppColors.white : AppColors.deepNavy,
+                        color: isSelected ? Colors.white : textPrimary,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
@@ -139,9 +160,9 @@ class _LanguageSelectorScreenState extends ConsumerState<LanguageSelectorScreen>
                       Text(
                         lang.nameNative,
                         style: TextStyle(
-                          fontSize: 17,
+                          fontSize: 16,
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                          color: isSelected ? AppColors.terracotta : AppColors.textPrimary,
+                          color: isSelected ? primaryAccent : textPrimary,
                         ),
                       ),
                       if (lang.isRtl) ...[
@@ -149,12 +170,12 @@ class _LanguageSelectorScreenState extends ConsumerState<LanguageSelectorScreen>
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: AppColors.cardBorder,
+                            color: cardBorder,
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text(
+                          child: Text(
                             'RTL',
-                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textPrimary),
                           ),
                         ),
                       ],
@@ -163,12 +184,12 @@ class _LanguageSelectorScreenState extends ConsumerState<LanguageSelectorScreen>
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: AppColors.cardBorder,
+                            color: cardBorder,
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             lang.scriptCode!,
-                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: textSecondary),
                           ),
                         ),
                       ],
@@ -176,14 +197,14 @@ class _LanguageSelectorScreenState extends ConsumerState<LanguageSelectorScreen>
                   ),
                   subtitle: Text(
                     '${lang.nameEnglish} • ${lang.bcp47Tag}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors.mutedText,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: textSecondary,
                     ),
                   ),
                   trailing: isSelected
-                      ? const Icon(Icons.check_circle, color: AppColors.terracotta)
-                      : const Icon(Icons.chevron_right, color: AppColors.cardBorder),
+                      ? Icon(Icons.check_circle, color: primaryAccent)
+                      : Icon(Icons.chevron_right, color: textSecondary),
                   onTap: () async {
                     await ref.read(localeProvider.notifier).setLanguage(lang);
                     if (context.mounted) {
@@ -191,7 +212,7 @@ class _LanguageSelectorScreenState extends ConsumerState<LanguageSelectorScreen>
                         SnackBar(
                           content: Text(l10n.languageChangedTo('${lang.nameNative} (${lang.nameEnglish})')),
                           duration: const Duration(seconds: 2),
-                          backgroundColor: AppColors.deepNavy,
+                          backgroundColor: primaryAccent,
                         ),
                       );
                       Navigator.of(context).pop();

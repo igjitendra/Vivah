@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
+import '../widgets/express_squish.dart';
 
 class TabItemData {
   final String label;
@@ -16,7 +16,7 @@ class TabItemData {
   });
 }
 
-/// Floating Pill Bottom Navigation Bar (Expanding Chip design) for Mobile
+/// Floating Pill Bottom Navigation Bar with tactile spring physics (InlitX/streak inspired)
 class FloatingPillTabBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTabSelected;
@@ -31,8 +31,16 @@ class FloatingPillTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final double bottomInset = MediaQuery.of(context).padding.bottom;
     final double bottomMargin = (bottomInset > 0 ? bottomInset : 12.0) + 6.0;
+
+    final barBg = isDark ? const Color(0xFF161A24) : Colors.white;
+    final barBorder = isDark ? const Color(0xFF262C3D) : const Color(0xFFE2E8F0);
+    final activeBg = theme.colorScheme.primary;
+    final activeFg = theme.colorScheme.onPrimary;
+    final inactiveFg = isDark ? const Color(0xFF8895AA) : const Color(0xFF64748B);
 
     return Positioned(
       left: 16,
@@ -41,16 +49,16 @@ class FloatingPillTabBar extends StatelessWidget {
       child: Center(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 420),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.surfaceWhite,
-            borderRadius: AppRadius.roundedPill,
-            border: Border.all(color: AppColors.borderLight),
-            boxShadow: const [
+            color: barBg,
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: barBorder, width: 1),
+            boxShadow: [
               BoxShadow(
-                color: AppColors.shadow,
+                color: isDark ? Colors.black45 : const Color(0x1E0F172A),
                 blurRadius: 18,
-                offset: Offset(0, 6),
+                offset: const Offset(0, 6),
               ),
             ],
           ),
@@ -61,34 +69,34 @@ class FloatingPillTabBar extends StatelessWidget {
               final TabItemData item = items[index];
 
               if (isFocused) {
-                // Expanding chip active tab
-                return GestureDetector(
+                // Expanding active chip with spring squish
+                return ExpressSquish(
+                  scale: 0.94,
                   onTap: () => onTabSelected(index),
-                  behavior: HitTestBehavior.opaque,
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeInOut,
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOutCubic,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
                     decoration: BoxDecoration(
-                      color: AppColors.terracotta,
-                      borderRadius: AppRadius.roundedChip,
-                      boxShadow: const [
+                      color: activeBg,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
                         BoxShadow(
-                          color: Color(0x40C05A2B),
-                          blurRadius: 6,
-                          offset: Offset(0, 3),
+                          color: activeBg.withValues(alpha: 0.35),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(item.activeIcon, size: 19, color: AppColors.surfaceWhite),
+                        Icon(item.activeIcon, size: 19, color: activeFg),
                         const SizedBox(width: 6),
                         Text(
                           item.label,
-                          style: const TextStyle(
-                            color: AppColors.surfaceWhite,
+                          style: TextStyle(
+                            color: activeFg,
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.2,
@@ -100,16 +108,16 @@ class FloatingPillTabBar extends StatelessWidget {
                 );
               }
 
-              // Inactive compact tab
-              return GestureDetector(
+              // Inactive tab with spring squish
+              return ExpressSquish(
+                scale: 0.90,
                 onTap: () => onTabSelected(index),
-                behavior: HitTestBehavior.opaque,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
                   child: Icon(
                     item.inactiveIcon,
                     size: 22,
-                    color: AppColors.textSecondary,
+                    color: inactiveFg,
                   ),
                 ),
               );

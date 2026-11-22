@@ -6,10 +6,11 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
-import '../../../domain/enums/transaction_enums.dart';
-import '../../../app/app_providers.dart';
+import '../../../shared/widgets/express_squish.dart';
+import '../providers/ledger_providers.dart';
 
-/// Modern Material 3 Card-Based Ledger / Bahi-Khata Screen
+/// Modern Material 3 Ledger (बही) Screen
+/// Fully theme-adaptive with search pill, direction segment filters, and tactile cards.
 class LedgerScreen extends ConsumerStatefulWidget {
   final VoidCallback onNewEntry;
   final ValueChanged<String>? onOpenEntryDetail;
@@ -25,8 +26,8 @@ class LedgerScreen extends ConsumerStatefulWidget {
 }
 
 class _LedgerScreenState extends ConsumerState<LedgerScreen> {
-  final TextEditingController _searchController = TextEditingController();
   TransactionDirection? _selectedDirection;
+  final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
   @override
@@ -37,34 +38,64 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final l10n = context.l10n;
     final entriesAsync = ref.watch(entriesListProvider(_selectedDirection));
 
+    final scaffoldBg = theme.scaffoldBackgroundColor;
+    final headerBg = isDark ? theme.colorScheme.surface : theme.colorScheme.secondary;
+    final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
+    final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
+    final textPrimary = theme.colorScheme.onSurface;
+    final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final searchBg = isDark ? const Color(0xFF161A24) : const Color(0xFFF1F5F9);
+    final primaryAccent = theme.colorScheme.primary;
+
     return Scaffold(
-      backgroundColor: AppColors.warmCream,
+      backgroundColor: scaffoldBg,
       appBar: AppBar(
         title: Text(
           l10n.ledgerTitle,
           style: const TextStyle(
-            color: AppColors.surfaceWhite,
+            color: Colors.white,
             fontWeight: FontWeight.w800,
             fontSize: 20,
             letterSpacing: 0.3,
           ),
         ),
-        backgroundColor: AppColors.deepNavy,
+        backgroundColor: headerBg,
         elevation: 0,
       ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 75),
-        child: FloatingActionButton.extended(
-          onPressed: widget.onNewEntry,
-          backgroundColor: AppColors.terracotta,
-          elevation: 3,
-          icon: const Icon(Icons.add_card, color: AppColors.surfaceWhite, size: 20),
-          label: Text(
-            l10n.newTransaction,
-            style: const TextStyle(color: AppColors.surfaceWhite, fontWeight: FontWeight.bold),
+        child: ExpressSquish(
+          scale: 0.94,
+          onTap: widget.onNewEntry,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            decoration: BoxDecoration(
+              color: primaryAccent,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryAccent.withValues(alpha: 0.4),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.add_card, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.newTransaction,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -73,30 +104,30 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
           // Filter Chips & Search Bar Header
           Container(
             padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.sm),
-            decoration: const BoxDecoration(
-              color: AppColors.surfaceWhite,
-              border: Border(bottom: BorderSide(color: AppColors.borderLight, width: 1)),
+            decoration: BoxDecoration(
+              color: cardBg,
+              border: Border(bottom: BorderSide(color: cardBorder, width: 1)),
             ),
             child: Column(
               children: [
                 // 1. Material 3 Search Bar Pill
                 Container(
                   decoration: BoxDecoration(
-                    color: AppColors.warmCream,
+                    color: searchBg,
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: AppColors.borderLight),
+                    border: Border.all(color: cardBorder),
                   ),
                   child: TextField(
                     controller: _searchController,
                     onChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
-                    style: const TextStyle(fontSize: 14),
+                    style: TextStyle(fontSize: 14, color: textPrimary),
                     decoration: InputDecoration(
                       hintText: l10n.searchLedgerHint,
-                      hintStyle: const TextStyle(fontSize: 13, color: AppColors.textMuted),
-                      prefixIcon: const Icon(Icons.search, color: AppColors.deepNavy, size: 20),
+                      hintStyle: TextStyle(fontSize: 13, color: textSecondary),
+                      prefixIcon: Icon(Icons.search, color: textSecondary, size: 20),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.clear, color: AppColors.textMuted, size: 18),
+                              icon: Icon(Icons.clear, color: textSecondary, size: 18),
                               onPressed: () {
                                 _searchController.clear();
                                 setState(() => _searchQuery = '');
@@ -106,6 +137,8 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                       filled: false,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
                       border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
                     ),
                   ),
                 ),
@@ -120,7 +153,11 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                       isSelected: _selectedDirection == null,
                       onTap: () => setState(() => _selectedDirection = null),
                       icon: Icons.filter_list,
-                      activeColor: AppColors.deepNavy,
+                      activeColor: isDark ? const Color(0xFF38BDF8) : headerBg,
+                      cardBg: cardBg,
+                      cardBorder: cardBorder,
+                      textPrimary: textPrimary,
+                      textSecondary: textSecondary,
                     ),
                     const SizedBox(width: 8),
                     _buildFilterChip(
@@ -129,6 +166,10 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                       onTap: () => setState(() => _selectedDirection = TransactionDirection.received),
                       icon: Icons.arrow_downward,
                       activeColor: AppColors.milaGreen,
+                      cardBg: cardBg,
+                      cardBorder: cardBorder,
+                      textPrimary: textPrimary,
+                      textSecondary: textSecondary,
                     ),
                     const SizedBox(width: 8),
                     _buildFilterChip(
@@ -137,6 +178,10 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                       onTap: () => setState(() => _selectedDirection = TransactionDirection.given),
                       icon: Icons.arrow_upward,
                       activeColor: AppColors.diyaRed,
+                      cardBg: cardBg,
+                      cardBorder: cardBorder,
+                      textPrimary: textPrimary,
+                      textSecondary: textSecondary,
                     ),
                   ],
                 ),
@@ -144,18 +189,32 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
             ),
           ),
 
-          // Entries List View
+          // 3. Transactions List View
           Expanded(
             child: entriesAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator(color: AppColors.terracotta)),
-              error: (err, stack) => Center(child: Text('${l10n.errorGeneric}: $err')),
+              loading: () => Center(child: CircularProgressIndicator(color: primaryAccent)),
+              error: (err, _) => Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Text(
+                    '${l10n.errorGeneric}: $err',
+                    style: const TextStyle(color: AppColors.diyaRed),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
               data: (entries) {
+                // Apply Search Query filter
                 final filtered = entries.where((e) {
                   if (_searchQuery.isEmpty) return true;
-                  final matchName = (e.personName ?? '').toLowerCase().contains(_searchQuery);
-                  final matchVillage = (e.personAddress ?? '').toLowerCase().contains(_searchQuery);
-                  final matchEvent = (e.eventTitle ?? '').toLowerCase().contains(_searchQuery);
-                  return matchName || matchVillage || matchEvent;
+                  final name = e.personName?.toLowerCase() ?? '';
+                  final village = e.personAddress?.toLowerCase() ?? '';
+                  final event = e.eventTitle?.toLowerCase() ?? '';
+                  final notes = e.notes?.toLowerCase() ?? '';
+                  return name.contains(_searchQuery) ||
+                      village.contains(_searchQuery) ||
+                      event.contains(_searchQuery) ||
+                      notes.contains(_searchQuery);
                 }).toList();
 
                 if (filtered.isEmpty) {
@@ -163,38 +222,57 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(AppSpacing.xl),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: AppColors.surfaceWhite,
+                              color: cardBg,
                               shape: BoxShape.circle,
-                              border: Border.all(color: AppColors.borderLight),
+                              border: Border.all(color: cardBorder),
                             ),
-                            child: const Icon(Icons.receipt_long_outlined, size: 48, color: AppColors.textMuted),
+                            child: Icon(Icons.receipt_long_outlined, size: 48, color: textSecondary.withValues(alpha: 0.6)),
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            l10n.noTransactionsFound,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
+                            _searchQuery.isNotEmpty ? l10n.noResultsFound : l10n.noEntriesYet,
+                            style: TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w700,
+                              color: textPrimary,
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.terracotta,
-                              foregroundColor: AppColors.surfaceWhite,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                            ),
-                            onPressed: widget.onNewEntry,
-                            icon: const Icon(Icons.add, size: 18),
-                            label: Text(l10n.newTransaction),
+                          const SizedBox(height: 6),
+                          Text(
+                            _searchQuery.isNotEmpty ? l10n.tryDifferentSearch : l10n.recordFirstTransaction,
+                            style: TextStyle(fontSize: 13, color: textSecondary),
+                            textAlign: TextAlign.center,
                           ),
+                          if (_searchQuery.isEmpty) ...[
+                            const SizedBox(height: 16),
+                            ExpressSquish(
+                              scale: 0.95,
+                              onTap: widget.onNewEntry,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: primaryAccent,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.add, color: Colors.white, size: 18),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      l10n.newTransaction,
+                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -202,16 +280,25 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.only(
-                    left: AppSpacing.md,
-                    right: AppSpacing.md,
-                    top: AppSpacing.md,
-                    bottom: AppSpacing.floatingTabBottomPadding,
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.md,
+                    AppSpacing.sm,
+                    AppSpacing.md,
+                    AppSpacing.floatingTabBottomPadding + 20,
                   ),
                   itemCount: filtered.length,
                   itemBuilder: (context, index) {
                     final entry = filtered[index];
-                    return _buildTransactionCard(context, entry);
+                    return _buildTransactionCard(
+                      context,
+                      entry,
+                      cardBg: cardBg,
+                      cardBorder: cardBorder,
+                      textPrimary: textPrimary,
+                      textSecondary: textSecondary,
+                      searchBg: searchBg,
+                      isDark: isDark,
+                    );
                   },
                 );
               },
@@ -228,45 +315,40 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
     required VoidCallback onTap,
     required IconData icon,
     required Color activeColor,
+    required Color cardBg,
+    required Color cardBorder,
+    required Color textPrimary,
+    required Color textSecondary,
   }) {
     return Expanded(
-      child: GestureDetector(
+      child: ExpressSquish(
+        scale: 0.94,
         onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+        child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? activeColor : AppColors.surfaceWhite,
-            borderRadius: BorderRadius.circular(14),
+            color: isSelected ? activeColor : cardBg,
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isSelected ? activeColor : AppColors.borderLight,
-              width: 1.2,
+              color: isSelected ? activeColor : cardBorder,
+              width: 1,
             ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: activeColor.withValues(alpha: 0.25),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 icon,
-                size: 13,
-                color: isSelected ? AppColors.surfaceWhite : AppColors.textSecondary,
+                size: 14,
+                color: isSelected ? Colors.white : textSecondary,
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 5),
               Text(
                 label,
                 style: TextStyle(
-                  color: isSelected ? AppColors.surfaceWhite : AppColors.textPrimary,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                   fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                  color: isSelected ? Colors.white : textPrimary,
                 ),
               ),
             ],
@@ -276,184 +358,190 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
     );
   }
 
-  Widget _buildTransactionCard(BuildContext context, TransactionEntry entry) {
+  Widget _buildTransactionCard(
+    BuildContext context,
+    TransactionEntry entry, {
+    required Color cardBg,
+    required Color cardBorder,
+    required Color textPrimary,
+    required Color textSecondary,
+    required Color searchBg,
+    required bool isDark,
+  }) {
     final l10n = context.l10n;
     final isReceived = entry.direction == TransactionDirection.received;
     final themeColor = isReceived ? AppColors.milaGreen : AppColors.diyaRed;
-    final themeSoftColor = isReceived ? AppColors.milaGreenSoft : AppColors.diyaRedSoft;
+    final themeSoftColor = isReceived
+        ? (isDark ? const Color(0xFF1B3D27) : AppColors.milaGreenSoft)
+        : (isDark ? const Color(0xFF451E22) : AppColors.diyaRedSoft);
 
     final personName = entry.personName ?? l10n.unknownPerson;
     final initial = personName.isNotEmpty ? personName.characters.first : '?';
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm + 2),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.cardBorder),
-      ),
-      elevation: 0,
-      color: AppColors.surfaceWhite,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm + 2),
+      child: ExpressCard(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        radius: 16,
+        color: cardBg,
+        borderColor: cardBorder,
+        elevation: 0,
         onTap: () => widget.onOpenEntryDetail?.call(entry.id),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Direction Avatar with initials & arrow badge
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  CircleAvatar(
-                    radius: 22,
-                    backgroundColor: themeSoftColor,
-                    child: Text(
-                      initial,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: themeColor,
-                      ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Direction Avatar with initials & arrow badge
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                CircleAvatar(
+                  radius: 22,
+                  backgroundColor: themeSoftColor,
+                  child: Text(
+                    initial,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: themeColor,
                     ),
                   ),
-                  Positioned(
-                    bottom: -2,
-                    right: -2,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: themeColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 1.5),
-                      ),
-                      child: Icon(
-                        isReceived ? Icons.arrow_downward : Icons.arrow_upward,
-                        size: 9,
-                        color: Colors.white,
-                      ),
+                ),
+                Positioned(
+                  bottom: -2,
+                  right: -2,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: themeColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: cardBg, width: 1.5),
                     ),
+                    child: Icon(
+                      isReceived ? Icons.arrow_downward : Icons.arrow_upward,
+                      size: 9,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(width: AppSpacing.md),
+
+            // Details Column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    personName,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      color: textPrimary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${entry.personRelationship ?? l10n.relativeDefault}${entry.personAddress != null && entry.personAddress!.isNotEmpty ? ' • ${entry.personAddress}' : ''}',
+                    style: TextStyle(color: textSecondary, fontSize: 12),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      if (entry.eventTitle != null && entry.eventTitle!.isNotEmpty) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: searchBg,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.celebration_outlined, size: 10, color: themeColor),
+                              const SizedBox(width: 3),
+                              Text(
+                                entry.eventTitle!,
+                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: textPrimary),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                      ],
+                      Text(
+                        VyavahaarDateUtils.formatIsoDate(entry.transactionDate, l10n.locale.languageCode),
+                        style: TextStyle(fontSize: 11, color: textSecondary),
+                      ),
+                    ],
                   ),
                 ],
               ),
+            ),
 
-              const SizedBox(width: AppSpacing.md),
+            const SizedBox(width: 8),
 
-              // Details Column
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      personName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                        color: AppColors.textPrimary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+            // Amount & Items Column
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  entry.amountPaise != null
+                      ? CurrencyUtils.formatPaise(entry.amountPaise!)
+                      : l10n.giftItem,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: themeColor,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                if (entry.items.isNotEmpty) ...[
+                  const SizedBox(height: 3),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                    decoration: BoxDecoration(
+                      color: searchBg,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: cardBorder),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${entry.personRelationship ?? l10n.relativeDefault}${entry.personAddress != null && entry.personAddress!.isNotEmpty ? ' • ${entry.personAddress}' : ''}',
-                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (entry.eventTitle != null && entry.eventTitle!.isNotEmpty) ...[
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                            decoration: BoxDecoration(
-                              color: AppColors.warmCream,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.celebration_outlined, size: 10, color: AppColors.terracotta),
-                                const SizedBox(width: 3),
-                                Text(
-                                  entry.eventTitle!,
-                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                        ],
+                        Icon(Icons.card_giftcard, size: 11, color: textSecondary),
+                        const SizedBox(width: 3),
                         Text(
-                          VyavahaarDateUtils.formatIsoDate(entry.transactionDate),
-                          style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                          '${entry.items.length}',
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textSecondary),
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(width: 8),
-
-              // Amount & Items Column
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    entry.amountPaise != null
-                        ? CurrencyUtils.formatPaise(entry.amountPaise!)
-                        : l10n.giftItem,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 16,
-                      color: themeColor,
-                      letterSpacing: -0.3,
+                  ),
+                ],
+                if (entry.isPlanned) ...[
+                  const SizedBox(height: 3),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF3B2912) : AppColors.plannedAmberSoft,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      l10n.statusPlanned,
+                      style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.plannedAmber),
                     ),
                   ),
-                  if (entry.items.isNotEmpty) ...[
-                    const SizedBox(height: 3),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                      decoration: BoxDecoration(
-                        color: AppColors.warmCream,
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: AppColors.borderLight),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.card_giftcard, size: 11, color: AppColors.textSecondary),
-                          const SizedBox(width: 3),
-                          Text(
-                            '${entry.items.length}',
-                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  if (entry.isPlanned) ...[
-                    const SizedBox(height: 3),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                      decoration: BoxDecoration(
-                        color: AppColors.plannedAmberSoft,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        l10n.statusPlanned,
-                        style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.plannedAmber),
-                      ),
-                    ),
-                  ],
                 ],
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
     );

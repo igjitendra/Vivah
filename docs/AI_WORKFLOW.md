@@ -76,10 +76,14 @@ After writing code, the AI agent must:
 - [ ] Run database architecture stress tests: `python3 scripts/test-database-architecture.py` (ensure 14/14 pass).
 - [ ] Run multilingual localization tests: `python3 scripts/test-multilingual-architecture.py` (ensure 22/22 pass).
 - [ ] Run `flutter test` when local Flutter toolchain is present.
-- [ ] Update `docs/PROJECT_STATUS.md` with verified status changes.
-- [ ] Update `docs/CHANGELOG.md` with a summary of changes.
-- [ ] Update `docs/FEATURES.md` if feature scope changed.
-- [ ] Update `docs/KNOWN_ISSUES.md` if a bug was fixed or discovered.
+
+### Mandatory Documentation Sync Matrix (Design, Working, Backend, Features):
+Whenever changes occur, the corresponding documentation must be updated in the same task:
+- [ ] **Design (डिज़ाइन)**: Update [`docs/DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md), [`docs/UI_UX_GUIDELINES.md`](UI_UX_GUIDELINES.md), and [`docs/NAVIGATION.md`](NAVIGATION.md) if UI, colors, typography, layout, or navigation changed.
+- [ ] **Working (कार्यप्रणाली / लॉजिक)**: Update [`docs/DOMAIN_RULES.md`](DOMAIN_RULES.md), [`docs/ARCHITECTURE.md`](ARCHITECTURE.md), and [`docs/USER_FLOWS.md`](USER_FLOWS.md) if business logic, calculations, domain rules, or user flows changed.
+- [ ] **Backend (बैकएंड / डेटाबेस)**: Update [`docs/DATABASE_SCHEMA.md`](DATABASE_SCHEMA.md), [`docs/FLUTTER_MIGRATION_ARCHITECTURE.md`](FLUTTER_MIGRATION_ARCHITECTURE.md), and [`docs/BACKUP_RESTORE.md`](BACKUP_RESTORE.md) if Drift/SQLite schemas, DAOs, migrations, or tables changed.
+- [ ] **Features (फ़ीचर्स)**: Update [`docs/FEATURES.md`](FEATURES.md), [`docs/PROJECT_STATUS.md`](PROJECT_STATUS.md), [`docs/PRODUCT_REQUIREMENTS.md`](PRODUCT_REQUIREMENTS.md), and [`docs/ROADMAP.md`](ROADMAP.md) if features or their statuses changed.
+- [ ] **Changelog & Issues**: Always append modifications to [`docs/CHANGELOG.md`](CHANGELOG.md), and [`docs/KNOWN_ISSUES.md`](KNOWN_ISSUES.md) if bugs are resolved or identified.
 - [ ] Verify that all internal relative markdown links are valid.
 
 ---

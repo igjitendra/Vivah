@@ -2,7 +2,7 @@
 
 > **CRITICAL MANDATORY INSTRUCTION:**  
 > Before making ANY code modification, read this `AGENTS.md` file, [`docs/README.md`](docs/README.md), [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md), [`docs/PLATFORM_STRATEGY.md`](docs/PLATFORM_STRATEGY.md), and the relevant subject-specific documentation.  
-> After every meaningful code modification, update all affected documentation files in the same task. Never leave documentation outdated intentionally.
+> **DOCUMENTATION RULE (अनिवार्य नियम):** जब भी **Design**, **Working** (business logic/flow), **Backend** (database/schema), या **Features** में कोई भी बदलाव हो, तो संबंधित `.md` फ़ाइल में उसी task में लिखना/अपडेट करना अनिवार्य है। Never leave documentation outdated.
 
 ---
 
@@ -92,12 +92,28 @@
    - `python3 scripts/test-multilingual-architecture.py` (22/22 tests)
    - `flutter test` (CI verified)
 3. If UI changed, verify responsive layouts across mobile and desktop breakpoints.
-4. Update affected documentation in the same task:
-   - [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md)
-   - [`docs/CHANGELOG.md`](docs/CHANGELOG.md)
-   - [`docs/PLATFORM_STRATEGY.md`](docs/PLATFORM_STRATEGY.md) (if platform scope changed)
-   - [`docs/FEATURES.md`](docs/FEATURES.md) (if feature scope changed)
-   - [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) (if a bug was fixed or discovered)
+4. **Mandatory Documentation Update Checklist (दस्तावेजीकरण चेकलिस्ट)**:
+   Whenever changes occur, update the corresponding `.md` documentation files in `./docs/` immediately:
+   - 🎨 **Design Changes** (UI, colors, typography, layout, widgets, navigation):
+     * [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md)
+     * [`docs/UI_UX_GUIDELINES.md`](docs/UI_UX_GUIDELINES.md)
+     * [`docs/NAVIGATION.md`](docs/NAVIGATION.md)
+   - ⚙️ **Working Changes** (business logic, domain rules, offline flow, state management, validations):
+     * [`docs/DOMAIN_RULES.md`](docs/DOMAIN_RULES.md)
+     * [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+     * [`docs/USER_FLOWS.md`](docs/USER_FLOWS.md)
+   - 🗄️ **Backend Changes** (Drift/SQLite schema, tables, columns, DAOs, migrations, queries):
+     * [`docs/DATABASE_SCHEMA.md`](docs/DATABASE_SCHEMA.md)
+     * [`docs/FLUTTER_MIGRATION_ARCHITECTURE.md`](docs/FLUTTER_MIGRATION_ARCHITECTURE.md)
+     * [`docs/BACKUP_RESTORE.md`](docs/BACKUP_RESTORE.md)
+   - 🚀 **Feature Changes** (new features, feature scope/edits, requirements, phase status):
+     * [`docs/FEATURES.md`](docs/FEATURES.md)
+     * [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md)
+     * [`docs/PRODUCT_REQUIREMENTS.md`](docs/PRODUCT_REQUIREMENTS.md)
+     * [`docs/ROADMAP.md`](docs/ROADMAP.md)
+   - 📝 **All Meaningful Changes**:
+     * [`docs/CHANGELOG.md`](docs/CHANGELOG.md)
+     * [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) (if bugs are discovered or fixed)
 5. Review internal links and ensure zero contradictions across documentation.
 
 ---

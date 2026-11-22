@@ -288,6 +288,27 @@ class ThemePalette {
     ],
   );
 
+  static const ThemePalette highContrast = ThemePalette(
+    id: 'high_contrast',
+    name: 'High Contrast',
+    nameHindi: 'हाई कंट्रास्ट',
+    isDark: true,
+    primary: Color(0xFFFACC15),
+    secondary: Color(0xFFFFFFFF),
+    background: Color(0xFF000000),
+    surface: Color(0xFF121212),
+    cardBorder: Color(0xFF333333),
+    textPrimary: Color(0xFFFFFFFF),
+    textSecondary: Color(0xFFA3A3A3),
+    previewSwatches: [
+      Color(0xFFFACC15),
+      Color(0xFFFFFFFF),
+      Color(0xFFEF4444),
+      Color(0xFF3B82F6),
+      Color(0xFF10B981),
+    ],
+  );
+
   static const ThemePalette amberNight = ThemePalette(
     id: 'amber_night',
     name: 'Amber Night',
@@ -306,6 +327,27 @@ class ThemePalette {
       Color(0xFF10B981),
       Color(0xFF38BDF8),
       Color(0xFFA855F7),
+    ],
+  );
+
+  static const ThemePalette mocha = ThemePalette(
+    id: 'mocha',
+    name: 'Mocha',
+    nameHindi: 'मोका (Mocha)',
+    isDark: true,
+    primary: Color(0xFFCBA6F7),
+    secondary: Color(0xFFF38BA8),
+    background: Color(0xFF1E1E2E),
+    surface: Color(0xFF313244),
+    cardBorder: Color(0xFF45475A),
+    textPrimary: Color(0xFFCDD6F4),
+    textSecondary: Color(0xFFA6ADC8),
+    previewSwatches: [
+      Color(0xFFCBA6F7),
+      Color(0xFFF38BA8),
+      Color(0xFFA6E3A1),
+      Color(0xFF89B4FA),
+      Color(0xFFFAB387),
     ],
   );
 
@@ -330,24 +372,24 @@ class ThemePalette {
     ],
   );
 
-  static const ThemePalette dracula = ThemePalette(
-    id: 'dracula',
-    name: 'Dracula',
-    nameHindi: 'ड्रेकुला (Dracula)',
+  static const ThemePalette aurora = ThemePalette(
+    id: 'aurora',
+    name: 'Aurora',
+    nameHindi: 'ऑरोरा (Aurora)',
     isDark: true,
-    primary: Color(0xFFBD93F9),
-    secondary: Color(0xFFFF79C6),
-    background: Color(0xFF282A36),
-    surface: Color(0xFF383A59),
-    cardBorder: Color(0xFF6272A4),
-    textPrimary: Color(0xFFF8F8F2),
-    textSecondary: Color(0xFF6272A4),
+    primary: Color(0xFF10B981),
+    secondary: Color(0xFF2DD4BF),
+    background: Color(0xFF06181C),
+    surface: Color(0xFF0F292F),
+    cardBorder: Color(0xFF173C44),
+    textPrimary: Color(0xFFECFDF5),
+    textSecondary: Color(0xFF6EE7B7),
     previewSwatches: [
-      Color(0xFFBD93F9),
-      Color(0xFFFF79C6),
-      Color(0xFF50FA7B),
-      Color(0xFF8BE9FD),
-      Color(0xFFFFB86C),
+      Color(0xFF10B981),
+      Color(0xFF2DD4BF),
+      Color(0xFF38BDF8),
+      Color(0xFF818CF8),
+      Color(0xFFF43F5E),
     ],
   );
 
@@ -369,6 +411,90 @@ class ThemePalette {
       Color(0xFFA3BE8C),
       Color(0xFFEBCB8B),
       Color(0xFFBF616A),
+    ],
+  );
+
+  static const ThemePalette dracula = ThemePalette(
+    id: 'dracula',
+    name: 'Dracula',
+    nameHindi: 'ड्रेकुला (Dracula)',
+    isDark: true,
+    primary: Color(0xFFBD93F9),
+    secondary: Color(0xFFFF79C6),
+    background: Color(0xFF282A36),
+    surface: Color(0xFF383A59),
+    cardBorder: Color(0xFF6272A4),
+    textPrimary: Color(0xFFF8F8F2),
+    textSecondary: Color(0xFF6272A4),
+    previewSwatches: [
+      Color(0xFFBD93F9),
+      Color(0xFFFF79C6),
+      Color(0xFF50FA7B),
+      Color(0xFF8BE9FD),
+      Color(0xFFFFB86C),
+    ],
+  );
+
+  static const ThemePalette velvet = ThemePalette(
+    id: 'velvet',
+    name: 'Velvet',
+    nameHindi: 'वेलवेट (Velvet)',
+    isDark: true,
+    primary: Color(0xFFF472B6),
+    secondary: Color(0xFFA855F7),
+    background: Color(0xFF180C17),
+    surface: Color(0xFF281426),
+    cardBorder: Color(0xFF3D1F3A),
+    textPrimary: Color(0xFFFDF2F8),
+    textSecondary: Color(0xFFF472B6),
+    previewSwatches: [
+      Color(0xFFF472B6),
+      Color(0xFFA855F7),
+      Color(0xFFC084FC),
+      Color(0xFFFB7185),
+      Color(0xFF38BDF8),
+    ],
+  );
+
+  static const ThemePalette deepOcean = ThemePalette(
+    id: 'deep_ocean',
+    name: 'Deep Ocean',
+    nameHindi: 'डीप ओशन',
+    isDark: true,
+    primary: Color(0xFF38BDF8),
+    secondary: Color(0xFF0284C7),
+    background: Color(0xFF050F1A),
+    surface: Color(0xFF0C1E33),
+    cardBorder: Color(0xFF162E4C),
+    textPrimary: Color(0xFFF0F9FF),
+    textSecondary: Color(0xFF7DD3FC),
+    previewSwatches: [
+      Color(0xFF38BDF8),
+      Color(0xFF0284C7),
+      Color(0xFF06B6D4),
+      Color(0xFF3B82F6),
+      Color(0xFF10B981),
+    ],
+  );
+
+  static const ThemePalette ember = ThemePalette(
+    id: 'ember',
+    name: 'Ember',
+    nameHindi: 'एम्बर (Ember)',
+    isDark: true,
+    primary: Color(0xFFF97316),
+    secondary: Color(0xFFEA580C),
+    background: Color(0xFF140C08),
+    surface: Color(0xFF24160F),
+    cardBorder: Color(0xFF382318),
+    textPrimary: Color(0xFFFFF7ED),
+    textSecondary: Color(0xFFFB923C),
+    previewSwatches: [
+      Color(0xFFF97316),
+      Color(0xFFEA580C),
+      Color(0xFFEF4444),
+      Color(0xFFFBBF24),
+      Color(0xFFA855F7),
     ],
   );
 
@@ -400,8 +526,8 @@ class ThemePalette {
     isDark: true,
     primary: Color(0xFFFB7185),
     secondary: Color(0xFFF43F5E),
-    background: Color(0xFF1A0E1A),
-    surface: Color(0xFF2D162B),
+    background: Color(0xFF1C0C18),
+    surface: Color(0xFF2C1426),
     cardBorder: Color(0xFF482045),
     textPrimary: Color(0xFFFFF1F2),
     textSecondary: Color(0xFFFDA4AF),
@@ -411,6 +537,27 @@ class ThemePalette {
       Color(0xFFFBBF24),
       Color(0xFF38BDF8),
       Color(0xFFA855F7),
+    ],
+  );
+
+  static const ThemePalette solarizedDark = ThemePalette(
+    id: 'solarized_dark',
+    name: 'Solarized Dark',
+    nameHindi: 'सोलराइज़्ड डार्क',
+    isDark: true,
+    primary: Color(0xFF268BD2),
+    secondary: Color(0xFF2AA198),
+    background: Color(0xFF00212B),
+    surface: Color(0xFF002B36),
+    cardBorder: Color(0xFF073642),
+    textPrimary: Color(0xFF93A1A1),
+    textSecondary: Color(0xFF586E75),
+    previewSwatches: [
+      Color(0xFF268BD2),
+      Color(0xFF2AA198),
+      Color(0xFF859900),
+      Color(0xFFB58900),
+      Color(0xFFCB4B16),
     ],
   );
 
@@ -430,12 +577,19 @@ class ThemePalette {
     obsidian,
     graphite,
     midnight,
+    highContrast,
     amberNight,
+    mocha,
     neonCity,
-    dracula,
+    aurora,
     nord,
+    dracula,
+    velvet,
+    deepOcean,
+    ember,
     forest,
     sunset,
+    solarizedDark,
   ];
 
   static ThemePalette getById(String id, {bool fallbackDark = false}) {

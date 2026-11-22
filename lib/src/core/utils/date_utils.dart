@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
 
-/// Date utility for Hindi Devanagari calendar formatting
+/// Date utility for multilingual calendar formatting (Hindi, English, Urdu)
 class AppDateUtils {
   AppDateUtils._();
 
@@ -19,13 +19,43 @@ class AppDateUtils {
     'दिसंबर'
   ];
 
+  static const List<String> englishMonths = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
+  ];
+
+  static const List<String> urduMonths = [
+    'جنوری',
+    'فروری',
+    'مارچ',
+    'اپریل',
+    'مئی',
+    'جون',
+    'جولائی',
+    'اگست',
+    'ستمبر',
+    'اکتوبر',
+    'نومبر',
+    'دسمبر'
+  ];
+
   /// Returns today's date formatted as YYYY-MM-DD
   static String getTodayIsoString() {
     return DateFormat('yyyy-MM-dd').format(DateTime.now());
   }
 
-  /// Formats date string into authentic Hindi date string, e.g. "22 नवंबर 2026"
-  static String formatHindiDate(dynamic dateInput) {
+  /// Formats date string into authentic localized date string
+  static String formatLocalizedDate(dynamic dateInput, [String? localeCode]) {
     if (dateInput == null) return '';
     DateTime date;
     if (dateInput is DateTime) {
@@ -41,15 +71,27 @@ class AppDateUtils {
     }
 
     final int day = date.day;
-    final String monthName = hindiMonths[date.month - 1];
+    final int monthIndex = date.month - 1;
     final int year = date.year;
 
-    return '$day $monthName $year';
+    if (localeCode == 'en') {
+      return '$day ${englishMonths[monthIndex]} $year';
+    } else if (localeCode == 'ur') {
+      return '$day ${urduMonths[monthIndex]} $year';
+    }
+    return '$day ${hindiMonths[monthIndex]} $year';
   }
 
-  /// Formats date string into readable date string
-  static String formatIsoDate(dynamic dateInput) => formatHindiDate(dateInput);
+  /// Formats date string into authentic Hindi date string, e.g. "22 नवंबर 2026"
+  static String formatHindiDate(dynamic dateInput) {
+    return formatLocalizedDate(dateInput, 'hi');
+  }
+
+  /// Formats date string into readable date string respecting locale
+  static String formatIsoDate(dynamic dateInput, [String? localeCode]) =>
+      formatLocalizedDate(dateInput, localeCode);
 }
 
 /// Compatibility alias for screens referencing VyavahaarDateUtils
 typedef VyavahaarDateUtils = AppDateUtils;
+

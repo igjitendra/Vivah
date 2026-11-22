@@ -5,6 +5,61 @@
 
 ---
 
+## [1.4.3] — 2026-11-22
+
+### Added
+- **Full Pixel-Perfect Theme Gallery (थीम गैलरी)**:
+  - Implemented 3-mode switcher (`Auto (System)`, `Light`, `Dark`) with active purple border and subtle glow.
+  - Curated 8 Light Themes: `Porcelain`, `Lavender`, `Sky`, `Sakura`, `Mint`, `Linen`, `Paper`, `Solarized Light`.
+  - Curated 17 Dark Themes: `Midnight Aurora`, `Obsidian`, `Graphite`, `Midnight`, `High Contrast`, `Amber Night`, `Mocha`, `Neon City`, `Aurora`, `Nord`, `Dracula`, `Velvet`, `Deep Ocean`, `Ember`, `Forest`, `Sunset`, `Solarized Dark`.
+  - Realistic card mockup previews with primary line, accent pill, and 5-swatch palette circles.
+  - Star badges on default favorite themes (`Porcelain`, `Midnight Aurora`).
+- **Tactile ExpressSquish & ExpressCard Motion (InlitX/streak Design System)**:
+  - Added `ExpressSquish` spring bounce animation (`ExpressSpring` curve with stiffness 380, damping 0.58).
+  - Added `ExpressCard` with hairline border and smooth 16-24dp rounded corners.
+  - Interactive tabs, theme cards, transaction cards, and action buttons wrapped in tactile squish.
+- **Complete End-to-End Dynamic Theming**:
+  - Eliminated all hardcoded background and surface colors across all screens (`DashboardScreen`, `LedgerScreen`, `AddEntryScreen`, `EntryDetailScreen`, `PeopleListScreen`, `PersonDetailScreen`, `AddPersonScreen`, `EventsListScreen`, `EventDetailScreen`, `AddEventScreen`, `SettingsScreen`, `ThemeGalleryScreen`, `LanguageSelectorScreen`, `ReportsScreen`, `RemindersScreen`, `FloatingPillTabBar`).
+  - All screens react dynamically to active light and dark palettes.
+- **Persistent Theme Preferences**:
+  - `ThemeNotifier` loads and saves `app_theme_mode`, `app_theme_light_palette`, and `app_theme_dark_palette` directly in SQLite `SettingsRepository`.
+- **SQLite Isolate Native Binding Fix**:
+  - Bound `@pragma('vm:entry-point') _isolateSetup` with `applyWorkaroundToOpenSqlite3OnOldAndroidVersions()` in `app_database.dart` ensuring background Drift isolates load SQLite native `.so` libraries reliably across all Android architectures.
+
+---
+
+## [1.4.2] — 2026-11-22
+
+### Added
+- **Dynamic Quick Shagun Amounts (त्वरित शगुन राशि चिप्स)**:
+  - Added 1-tap quick Shagun amount chips (`₹101, ₹251, ₹501, ₹1,100, ₹2,100, ₹5,100, ₹11,000`) in `AddEntryScreen` for fast cultural recording.
+- **Dynamic Relationship Suggestions (रिश्तेदारी सुझाव)**:
+  - Added kinship quick-selection chips (`मामा, चाचा, ताऊ, बुआ, मौसी, फूफा, जीजा, साला, समधी, मित्र, पड़ोसी`) in `AddPersonScreen` with localized support (Hindi, English, Urdu).
+- **Dynamic Custom Event Ceremonies (कस्टम कार्यक्रम प्रकार)**:
+  - Added custom ceremony input and tags (`जन्मदिन, नामकरण, जनेऊ / उपनयन, छठी, गोद भराई, सत्संग, रिटायरमेंट, श्राद्ध`) in `AddEventScreen` when `EventType.other` is selected.
+- **Dynamic Physical Gift Items & Units (भौतिक उपहार व इकाइयाँ)**:
+  - Added interactive dialog and list to record physical gifts with custom units (`संख्या, ग्राम, तोला, पीस, थान / मीटर, किलो, डिब्बा`) and isolated estimated values in `AddEntryScreen`.
+- **Dynamic Transaction Status & Historical/Future Date Picker**:
+  - Unlocked `TransactionStatus` selection (Recorded vs Planned) and dynamic date picker in `AddEntryScreen` allowing entries on any date.
+- **Locale-Aware Dynamic Calendar Date Formatting**:
+  - Updated `AppDateUtils.formatIsoDate` to dynamically render month names matching the active language (Hindi, English, Urdu) across all screens.
+
+---
+
+## [1.4.1] — 2026-11-22
+
+### Added
+- **Mandatory 4-Pillar Documentation Synchronization Rules (अनिवार्य दस्तावेजीकरण नियम)**:
+  - Formally established and codified mandatory documentation synchronization rules across `GEMINI.md`, `CLAUDE.md`, `AGENTS.md`, `docs/AI_WORKFLOW.md`, and `docs/README.md`.
+  - Mapped all future development modifications into 4 explicit categories with their corresponding `.md` documentation files:
+    - **Design (डिज़ाइन)**: `docs/DESIGN_SYSTEM.md`, `docs/UI_UX_GUIDELINES.md`, `docs/NAVIGATION.md`
+    - **Working (कार्यप्रणाली / लॉजिक)**: `docs/DOMAIN_RULES.md`, `docs/ARCHITECTURE.md`, `docs/USER_FLOWS.md`
+    - **Backend (बैकएंड / डेटाबेस)**: `docs/DATABASE_SCHEMA.md`, `docs/FLUTTER_MIGRATION_ARCHITECTURE.md`, `docs/BACKUP_RESTORE.md`
+    - **Features (फ़ीचर्स)**: `docs/FEATURES.md`, `docs/PROJECT_STATUS.md`, `docs/PRODUCT_REQUIREMENTS.md`, `docs/ROADMAP.md`
+  - Required that every AI agent and developer update the corresponding `.md` file in the same task before work is deemed complete.
+
+---
+
 ## [1.4.0] — 2026-11-21
 
 ### Added

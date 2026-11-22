@@ -29,7 +29,7 @@
   - Personal info: Name, village, relationship tag, phone number, notes.
   - Reciprocal balance sheet: Total cash received and total cash given to this person.
   - Complete history: Chronological list of every transaction, gift, and event shared with this person.
-- **Add Person** (`add_person_screen.dart`): Form with validation for name, village, relationship, and optional phone.
+- **Add Person** (`add_person_screen.dart`): Form with validation for name, village, relationship, and optional phone. Includes dynamic 1-tap relationship suggestion chips (*Mama, Chacha, Bua, Mausi, Jija, Sala, Samdhi, Mitra, Padosi*) localized across Hindi, English, and Urdu.
 
 ### 1.4 Events Management (`lib/src/features/events/presentation/`)
 - **Events Directory** (`events_list_screen.dart`): Lists all family ceremonies with event type badges (*Shaadi, Tilak, Mundan, etc.*) and event dates.
@@ -37,15 +37,16 @@
   - Event title, type, date, venue, and description.
   - Event-specific totals: Total Mila and Total Diya (never combined or netted), and number of entries.
   - Complete guest list and gifts received/given during this specific event.
-- **Add Event** (`add_event_screen.dart`): Form with title, event type picker, date picker, and venue.
+- **Add Event** (`add_event_screen.dart`): Form with title, event type picker, date picker, and venue. When `EventType.other` is selected, provides dynamic custom ceremony input and quick-selection tags (*Janmadin, Namkaran, Janeu/Upanayana, Chhathi, Godh Bharai, Satsang, Retirement, Shradh*).
 
 ### 1.5 Transaction Entry & Detail (`lib/src/features/entries/presentation/`)
 - **Add Transaction** (`add_entry_screen.dart`):
   - Dual Direction: One-tap toggle between *Mila* (Received) and *Diya* (Given).
   - Status Selector: Choose between *Darj Kiya Gaya* (`recorded`) and *Yojana* (`planned`).
-  - Amount Input: Real-time rupee formatting with integer paise validation.
+  - Amount Input & Quick Shagun: Real-time rupee formatting with integer paise validation and 1-tap dynamic cultural Shagun amount chips (*₹101, ₹251, ₹501, ₹1,100, ₹2,100, ₹5,100, ₹11,000*).
+  - Flexible Date Picker: Ability to record past or future transactions dynamically.
   - Counterparty & Event Selectors: Pick from existing people/events.
-  - Physical Gift Items: Add multiple items with item name, quantity, unit, and optional estimated valuation.
+  - Physical Gift Items & Units: Add multiple items with item name, quantity, dynamic cultural unit picker (*संख्या, ग्राम, तोला, पीस, थान/मीटर, किलो, डिब्बा*), and optional estimated valuation.
 - **Transaction Detail** (`entry_detail_screen.dart`):
   - View full details, relative profile link, event link, items list.
   - Mark planned transactions as recorded.

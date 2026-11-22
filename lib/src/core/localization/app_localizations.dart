@@ -93,6 +93,16 @@ class AppLocalizations {
   String giftItemsWithCount(int count) => isEnglish
       ? 'Gift items ($count)'
       : (isUrdu ? 'تحفے کی اشیاء ($count)' : 'भेंट की गई वस्तुएं ($count)');
+  String get quickShagun => isEnglish ? 'Quick Shagun' : (isUrdu ? 'فوری شگون' : 'त्वरित शगुन');
+  String get addItem => isEnglish ? 'Add Gift Item' : (isUrdu ? 'تحفہ شامل کریں' : 'भेंट/सामान जोड़ें');
+  String get itemName => isEnglish ? 'Item Name' : (isUrdu ? 'شے کا نام' : 'सामान का नाम');
+  String get itemNameHint => isEnglish ? 'e.g. Gold ring, Saree, Sweets' : (isUrdu ? 'مثال: سونے کی انگوٹھی، ساڑھی' : 'उदा. सोने की अंगूठी, साड़ी, मिठाई');
+  String get quantity => isEnglish ? 'Quantity' : (isUrdu ? 'مقدار' : 'मात्रा');
+  String get unit => isEnglish ? 'Unit' : (isUrdu ? 'اکائی' : 'इकाई');
+  String get customCeremony => isEnglish ? 'Custom Ceremony' : (isUrdu ? 'دیگر تقریب' : 'कस्टम कार्यक्रम');
+  String get customCeremonyHint => isEnglish ? 'e.g. Birthday, Naming Ceremony, Upanayana' : (isUrdu ? 'مثال: سالگرہ، نام رکھنے کی تقریب' : 'उदा. जन्मदिन, नामकरण, जनेऊ');
+  String get suggestedRelationshipsTitle => isEnglish ? 'Common Relationships' : (isUrdu ? 'عام رشتے' : 'सामान्य संबंध');
+  String get suggestedCeremoniesTitle => isEnglish ? 'Popular Ceremonies' : (isUrdu ? 'مشہور تقاریب' : 'लोकप्रिय कार्यक्रम');
 
   // People & Relatives
   String get peopleTitle => isEnglish ? 'People & Relatives' : (isUrdu ? 'لوگ اور رشتہ دار' : 'लोग व रिश्तेदार');

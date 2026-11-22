@@ -5,39 +5,68 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/utils/date_utils.dart';
-import '../../../app/app_providers.dart';
 import '../../../data/database/app_database.dart';
+import '../../../shared/widgets/express_squish.dart';
+import '../../entries/providers/entries_providers.dart';
 
-/// Reminders Screen (अनुस्मारक - आगामी व्यवहार)
+/// Screen managing reminders for upcoming shagun, bahi deadlines, and family ceremonies.
+/// Fully theme-adaptive with Material 3 styling and tactile feedback.
 class RemindersScreen extends ConsumerWidget {
   const RemindersScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final db = ref.watch(databaseProvider);
     final l10n = context.l10n;
 
+    final scaffoldBg = theme.scaffoldBackgroundColor;
+    final headerBg = isDark ? theme.colorScheme.surface : theme.colorScheme.secondary;
+    final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
+    final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
+    final textPrimary = theme.colorScheme.onSurface;
+    final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final primaryAccent = theme.colorScheme.primary;
+
     return Scaffold(
-      backgroundColor: AppColors.warmCream,
+      backgroundColor: scaffoldBg,
       appBar: AppBar(
         title: Text(
           l10n.remindersTitle,
-          style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
         ),
-        backgroundColor: AppColors.deepNavy,
+        backgroundColor: headerBg,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.terracotta,
-        child: const Icon(Icons.add, color: AppColors.white),
-        onPressed: () => _showAddReminderDialog(context, db, l10n),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: ExpressSquish(
+          scale: 0.94,
+          onTap: () => _showAddReminderDialog(context, db, l10n, cardBg, textPrimary, primaryAccent),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: primaryAccent,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: primaryAccent.withValues(alpha: 0.4),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Icon(Icons.add, color: Colors.white, size: 24),
+          ),
+        ),
       ),
       body: StreamBuilder<List<ReminderRow>>(
         stream: db.remindersDao.watchAllReminders(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.terracotta));
+            return Center(child: CircularProgressIndicator(color: primaryAccent));
           }
 
           final reminders = snapshot.data ?? [];
@@ -46,16 +75,16 @@ class RemindersScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.notifications_none, size: 64, color: AppColors.mutedText.withValues(alpha: 0.5)),
+                  Icon(Icons.notifications_none, size: 64, color: textSecondary.withValues(alpha: 0.4)),
                   const SizedBox(height: 12),
                   Text(
                     l10n.noReminders,
-                    style: const TextStyle(fontSize: 16, color: AppColors.mutedText, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 16, color: textPrimary, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     l10n.noRemindersSubtitle,
-                    style: const TextStyle(fontSize: 13, color: AppColors.mutedText),
+                    style: TextStyle(fontSize: 13, color: textSecondary),
                   ),
                 ],
               ),
@@ -74,7 +103,10 @@ class RemindersScreen extends ConsumerWidget {
                 background: Container(
                   alignment: Alignment.centerRight,
                   padding: const EdgeInsets.only(right: 20),
-                  color: Colors.red,
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                   child: const Icon(Icons.delete, color: Colors.white),
                 ),
                 onDismissed: (_) {
@@ -83,12 +115,15 @@ class RemindersScreen extends ConsumerWidget {
                     SnackBar(content: Text(l10n.reminderDeleted)),
                   );
                 },
-                child: Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 1,
+                child: ExpressCard(
+                  padding: EdgeInsets.zero,
+                  radius: 14,
+                  color: cardBg,
+                  borderColor: cardBorder,
+                  elevation: 0,
                   child: CheckboxListTile(
                     value: item.isCompleted,
-                    activeColor: AppColors.forestGreen,
+                    activeColor: AppColors.milaGreen,
                     onChanged: (val) {
                       db.remindersDao.markCompleted(item.id, val ?? false);
                     },
@@ -97,21 +132,21 @@ class RemindersScreen extends ConsumerWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         decoration: item.isCompleted ? TextDecoration.lineThrough : null,
-                        color: item.isCompleted ? AppColors.mutedText : AppColors.darkSlate,
+                        color: item.isCompleted ? textSecondary : textPrimary,
                       ),
                     ),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${l10n.datePrefix}${VyavahaarDateUtils.formatIsoDate(item.reminderDate)}',
-                          style: const TextStyle(fontSize: 12, color: AppColors.mutedText),
+                          '${l10n.datePrefix}${VyavahaarDateUtils.formatIsoDate(item.reminderDate, l10n.locale.languageCode)}',
+                          style: TextStyle(fontSize: 12, color: textSecondary),
                         ),
                         if (item.notes != null && item.notes!.isNotEmpty) ...[
                           const SizedBox(height: 2),
                           Text(
                             item.notes!,
-                            style: const TextStyle(fontSize: 12, color: AppColors.mutedText),
+                            style: TextStyle(fontSize: 12, color: textSecondary),
                           ),
                         ],
                       ],
@@ -126,7 +161,14 @@ class RemindersScreen extends ConsumerWidget {
     );
   }
 
-  void _showAddReminderDialog(BuildContext context, AppDatabase db, AppLocalizations l10n) {
+  void _showAddReminderDialog(
+    BuildContext context,
+    AppDatabase db,
+    AppLocalizations l10n,
+    Color cardBg,
+    Color textPrimary,
+    Color primaryAccent,
+  ) {
     final titleController = TextEditingController();
     final notesController = TextEditingController();
     DateTime selectedDate = DateTime.now().add(const Duration(days: 1));
@@ -135,13 +177,16 @@ class RemindersScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(l10n.newReminder),
+          backgroundColor: cardBg,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(l10n.newReminder, style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold)),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: titleController,
+                  style: TextStyle(color: textPrimary),
                   decoration: InputDecoration(
                     labelText: l10n.reminderTitleLabel,
                     hintText: l10n.reminderTitleHint,
@@ -150,8 +195,11 @@ class RemindersScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.calendar_today, color: AppColors.terracotta),
-                  title: Text('${l10n.datePrefix}${VyavahaarDateUtils.formatIsoDate(selectedDate.toIso8601String().substring(0, 10))}'),
+                  leading: Icon(Icons.calendar_today, color: primaryAccent),
+                  title: Text(
+                    '${l10n.datePrefix}${VyavahaarDateUtils.formatIsoDate(selectedDate.toIso8601String().substring(0, 10), l10n.locale.languageCode)}',
+                    style: TextStyle(color: textPrimary, fontSize: 14),
+                  ),
                   trailing: TextButton(
                     onPressed: () async {
                       final picked = await showDatePicker(
@@ -164,12 +212,13 @@ class RemindersScreen extends ConsumerWidget {
                         setState(() => selectedDate = picked);
                       }
                     },
-                    child: Text(l10n.changeDate),
+                    child: Text(l10n.changeDate, style: TextStyle(color: primaryAccent)),
                   ),
                 ),
                 const SizedBox(height: 8),
                 TextField(
                   controller: notesController,
+                  style: TextStyle(color: textPrimary),
                   decoration: InputDecoration(
                     labelText: l10n.notesOptional,
                     hintText: l10n.notesOptionalHint,
@@ -185,7 +234,7 @@ class RemindersScreen extends ConsumerWidget {
               child: Text(l10n.cancel),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.terracotta),
+              style: ElevatedButton.styleFrom(backgroundColor: primaryAccent),
               onPressed: () async {
                 final title = titleController.text.trim();
                 if (title.isEmpty) return;
@@ -203,7 +252,7 @@ class RemindersScreen extends ConsumerWidget {
                   Navigator.pop(ctx);
                 }
               },
-              child: Text(l10n.save, style: const TextStyle(color: AppColors.white)),
+              child: Text(l10n.save, style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),

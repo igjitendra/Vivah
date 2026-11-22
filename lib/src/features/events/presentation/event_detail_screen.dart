@@ -10,8 +10,10 @@ import '../../../domain/entities/entities.dart';
 import '../../../domain/enums/transaction_enums.dart';
 import '../../../app/app_providers.dart';
 import '../../../shared/widgets/direction_badge.dart';
+import '../../../shared/widgets/express_squish.dart';
 
 /// Event Details Screen (कार्यक्रम विवरण एवं लेन-देन सूची)
+/// Fully theme-adaptive with celebration summary and transaction timeline.
 class EventDetailScreen extends ConsumerWidget {
   final String eventId;
 
@@ -19,48 +21,79 @@ class EventDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final eventsRepo = ref.watch(eventsRepositoryProvider);
     final entriesRepo = ref.watch(entriesRepositoryProvider);
     final l10n = context.l10n;
 
+    final scaffoldBg = theme.scaffoldBackgroundColor;
+    final headerBg = isDark ? theme.colorScheme.surface : theme.colorScheme.secondary;
+    final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
+    final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
+    final textPrimary = theme.colorScheme.onSurface;
+    final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final primaryAccent = theme.colorScheme.primary;
+
     return Scaffold(
-      backgroundColor: AppColors.warmCream,
+      backgroundColor: scaffoldBg,
       appBar: AppBar(
         title: Text(
           l10n.eventDetails,
-          style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
         ),
-        backgroundColor: AppColors.deepNavy,
+        backgroundColor: headerBg,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete_outline, color: AppColors.white),
+            icon: const Icon(Icons.delete_outline, color: Colors.white),
             tooltip: l10n.deleteEvent,
-            onPressed: () => _confirmArchiveEvent(context, ref, l10n),
+            onPressed: () => _confirmArchiveEvent(context, ref, l10n, cardBg, textPrimary, primaryAccent),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/entry/new?eventId=$eventId'),
-        backgroundColor: AppColors.terracotta,
-        icon: const Icon(Icons.add, color: AppColors.white),
-        label: Text(
-          l10n.recordNewTransaction,
-          style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: ExpressSquish(
+          scale: 0.94,
+          onTap: () => context.push('/entry/new?eventId=$eventId'),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            decoration: BoxDecoration(
+              color: primaryAccent,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryAccent.withValues(alpha: 0.4),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.add, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.recordNewTransaction,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
       body: FutureBuilder<Event?>(
         future: eventsRepo.getEventById(eventId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.terracotta),
-            );
+            return Center(child: CircularProgressIndicator(color: primaryAccent));
           }
           final event = snapshot.data;
           if (event == null) {
-            return Center(child: Text(l10n.eventNotFound));
+            return Center(child: Text(l10n.eventNotFound, style: TextStyle(color: textPrimary)));
           }
 
           return StreamBuilder<List<TransactionEntry>>(
@@ -86,7 +119,7 @@ class EventDetailScreen extends ConsumerWidget {
                   // Event Header Card
                   Container(
                     width: double.infinity,
-                    color: AppColors.deepNavy,
+                    color: headerBg,
                     padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,14 +129,14 @@ class EventDetailScreen extends ConsumerWidget {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: AppColors.gold.withValues(alpha: 0.2),
+                                color: primaryAccent.withValues(alpha: 0.25),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: AppColors.gold, width: 1),
+                                border: Border.all(color: primaryAccent.withValues(alpha: 0.5), width: 1),
                               ),
                               child: Text(
                                 l10n.eventTypeLabel(event.eventType),
                                 style: const TextStyle(
-                                  color: AppColors.gold,
+                                  color: Colors.white,
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -111,9 +144,9 @@ class EventDetailScreen extends ConsumerWidget {
                             ),
                             const Spacer(),
                             Text(
-                              VyavahaarDateUtils.formatIsoDate(event.eventDate),
-                              style: const TextStyle(
-                                color: AppColors.mutedText,
+                              VyavahaarDateUtils.formatIsoDate(event.eventDate, l10n.locale.languageCode),
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.75),
                                 fontSize: 13,
                               ),
                             ),
@@ -123,7 +156,7 @@ class EventDetailScreen extends ConsumerWidget {
                         Text(
                           event.title,
                           style: const TextStyle(
-                            color: AppColors.white,
+                            color: Colors.white,
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
                           ),
@@ -132,11 +165,11 @@ class EventDetailScreen extends ConsumerWidget {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              const Icon(Icons.location_on_outlined, size: 16, color: AppColors.mutedText),
+                              Icon(Icons.location_on_outlined, size: 16, color: Colors.white.withValues(alpha: 0.75)),
                               const SizedBox(width: 4),
                               Text(
                                 event.venue!,
-                                style: const TextStyle(color: AppColors.mutedText, fontSize: 13),
+                                style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 13),
                               ),
                             ],
                           ),
@@ -145,7 +178,7 @@ class EventDetailScreen extends ConsumerWidget {
                           const SizedBox(height: 6),
                           Text(
                             event.notes!,
-                            style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
+                            style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 12),
                           ),
                         ],
                       ],
@@ -161,8 +194,11 @@ class EventDetailScreen extends ConsumerWidget {
                           child: _SummaryBox(
                             title: l10n.totalReceived,
                             amountPaise: receivedPaise,
-                            accentColor: AppColors.forestGreen,
+                            accentColor: AppColors.milaGreen,
                             icon: Icons.south_west,
+                            cardBg: cardBg,
+                            cardBorder: cardBorder,
+                            textSecondary: textSecondary,
                           ),
                         ),
                         const SizedBox(width: AppSpacing.md),
@@ -170,8 +206,11 @@ class EventDetailScreen extends ConsumerWidget {
                           child: _SummaryBox(
                             title: l10n.totalGiven,
                             amountPaise: givenPaise,
-                            accentColor: AppColors.terracotta,
+                            accentColor: AppColors.diyaRed,
                             icon: Icons.north_east,
+                            cardBg: cardBg,
+                            cardBorder: cardBorder,
+                            textSecondary: textSecondary,
                           ),
                         ),
                       ],
@@ -186,11 +225,11 @@ class EventDetailScreen extends ConsumerWidget {
                       children: [
                         Text(
                           l10n.eventTransactions,
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.darkSlate),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textPrimary),
                         ),
                         Text(
                           '${l10n.total}: ${entries.length}',
-                          style: const TextStyle(fontSize: 13, color: AppColors.mutedText),
+                          style: TextStyle(fontSize: 13, color: textSecondary),
                         ),
                       ],
                     ),
@@ -203,41 +242,55 @@ class EventDetailScreen extends ConsumerWidget {
                         ? Center(
                             child: Text(
                               l10n.noTransactionsForEvent,
-                              style: const TextStyle(color: AppColors.mutedText),
+                              style: TextStyle(color: textSecondary),
                             ),
                           )
                         : ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(AppSpacing.md, 4, AppSpacing.md, 80),
+                            padding: const EdgeInsets.fromLTRB(AppSpacing.md, 4, AppSpacing.md, 90),
                             itemCount: entries.length,
                             separatorBuilder: (_, __) => const SizedBox(height: 8),
                             itemBuilder: (context, index) {
                               final item = entries[index];
-                              return Card(
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                elevation: 1,
-                                child: ListTile(
-                                  onTap: () => context.push('/entry/${item.id}'),
-                                  leading: DirectionBadge(direction: item.direction),
-                                  title: Text(
-                                    item.personName ?? l10n.unknownPerson,
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  subtitle: Text(
-                                    '${VyavahaarDateUtils.formatIsoDate(item.transactionDate)}${item.items.isNotEmpty ? ' • ${item.items.length} ${l10n.items}' : ''}',
-                                    style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
-                                  ),
-                                  trailing: Text(
-                                    item.amountPaise != null
-                                        ? CurrencyUtils.formatPaiseToRupees(item.amountPaise!)
-                                        : l10n.giftItem,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      color: item.direction == TransactionDirection.received
-                                          ? AppColors.forestGreen
-                                          : AppColors.terracotta,
+                              return ExpressCard(
+                                padding: const EdgeInsets.all(AppSpacing.md),
+                                radius: 14,
+                                color: cardBg,
+                                borderColor: cardBorder,
+                                elevation: 0,
+                                onTap: () => context.push('/entry/${item.id}'),
+                                child: Row(
+                                  children: [
+                                    DirectionBadge(direction: item.direction),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            item.personName ?? l10n.unknownPerson,
+                                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: textPrimary),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            '${VyavahaarDateUtils.formatIsoDate(item.transactionDate, l10n.locale.languageCode)}${item.items.isNotEmpty ? ' • ${item.items.length} ${l10n.items}' : ''}',
+                                            style: TextStyle(color: textSecondary, fontSize: 12),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
+                                    Text(
+                                      item.amountPaise != null
+                                          ? CurrencyUtils.formatPaiseToRupees(item.amountPaise!)
+                                          : l10n.giftItem,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: item.direction == TransactionDirection.received
+                                            ? AppColors.milaGreen
+                                            : AppColors.diyaRed,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               );
                             },
@@ -252,19 +305,21 @@ class EventDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _confirmArchiveEvent(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
+  void _confirmArchiveEvent(BuildContext context, WidgetRef ref, AppLocalizations l10n, Color cardBg, Color textPrimary, Color primaryAccent) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.confirmDeleteEventTitle),
-        content: Text(l10n.confirmDeleteEventBody),
+        backgroundColor: cardBg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(l10n.confirmDeleteEventTitle, style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold)),
+        content: Text(l10n.confirmDeleteEventBody, style: TextStyle(color: textPrimary)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(l10n.cancel),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.terracotta),
+            style: ElevatedButton.styleFrom(backgroundColor: primaryAccent),
             onPressed: () async {
               Navigator.pop(ctx);
               await ref.read(eventsRepositoryProvider).archiveEvent(eventId);
@@ -272,7 +327,7 @@ class EventDetailScreen extends ConsumerWidget {
                 Navigator.pop(context);
               }
             },
-            child: Text(l10n.delete, style: const TextStyle(color: AppColors.white)),
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -285,12 +340,18 @@ class _SummaryBox extends StatelessWidget {
   final int amountPaise;
   final Color accentColor;
   final IconData icon;
+  final Color cardBg;
+  final Color cardBorder;
+  final Color textSecondary;
 
   const _SummaryBox({
     required this.title,
     required this.amountPaise,
     required this.accentColor,
     required this.icon,
+    required this.cardBg,
+    required this.cardBorder,
+    required this.textSecondary,
   });
 
   @override
@@ -298,16 +359,9 @@ class _SummaryBox extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border(left: BorderSide(color: accentColor, width: 4)),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.cardShadow,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,7 +373,7 @@ class _SummaryBox extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(fontSize: 12, color: AppColors.mutedText, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 12, color: textSecondary, fontWeight: FontWeight.w600),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),

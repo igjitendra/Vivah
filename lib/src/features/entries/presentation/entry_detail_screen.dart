@@ -7,36 +7,50 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
-import '../../../domain/enums/transaction_enums.dart';
-import '../../../app/app_providers.dart';
 import '../../../shared/widgets/direction_badge.dart';
+import '../../../shared/widgets/express_squish.dart';
+import '../providers/entries_providers.dart';
 
-/// Transaction Detail & Actions Screen
+/// Screen displaying complete details for a single transaction entry.
+/// Fully theme-adaptive with Material 3 cards and tactile feedback.
 class EntryDetailScreen extends ConsumerWidget {
   final String entryId;
 
-  const EntryDetailScreen({super.key, required this.entryId});
+  const EntryDetailScreen({
+    super.key,
+    required this.entryId,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final entriesRepo = ref.watch(entriesRepositoryProvider);
     final l10n = context.l10n;
 
+    final scaffoldBg = theme.scaffoldBackgroundColor;
+    final headerBg = isDark ? theme.colorScheme.surface : theme.colorScheme.secondary;
+    final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
+    final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
+    final textPrimary = theme.colorScheme.onSurface;
+    final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final primaryAccent = theme.colorScheme.primary;
+
     return Scaffold(
-      backgroundColor: AppColors.warmCream,
+      backgroundColor: scaffoldBg,
       appBar: AppBar(
         title: Text(
           l10n.transactionDetails,
-          style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
         ),
-        backgroundColor: AppColors.deepNavy,
+        backgroundColor: headerBg,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete_outline, color: AppColors.white),
+            icon: const Icon(Icons.delete_outline, color: Colors.white),
             tooltip: l10n.deleteTransaction,
-            onPressed: () => _confirmArchiveEntry(context, ref, l10n),
+            onPressed: () => _confirmArchiveEntry(context, ref, l10n, cardBg, textPrimary, primaryAccent),
           ),
         ],
       ),
@@ -44,204 +58,205 @@ class EntryDetailScreen extends ConsumerWidget {
         future: entriesRepo.getEntryById(entryId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.terracotta));
+            return Center(child: CircularProgressIndicator(color: primaryAccent));
           }
           final entry = snapshot.data;
           if (entry == null) {
-            return Center(child: Text(l10n.noTransactionsFound));
+            return Center(child: Text(l10n.noTransactionsFound, style: TextStyle(color: textPrimary)));
           }
 
           final isReceived = entry.direction == TransactionDirection.received;
-          final accentColor = isReceived ? AppColors.forestGreen : AppColors.terracotta;
+          final accentColor = isReceived ? AppColors.milaGreen : AppColors.diyaRed;
 
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.md),
             children: [
               // Amount & Direction Card
-              Card(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                elevation: 2,
-                child: Container(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border(left: BorderSide(color: accentColor, width: 6)),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          DirectionBadge(direction: entry.direction),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
+              ExpressCard(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                radius: 18,
+                color: cardBg,
+                borderColor: cardBorder,
+                elevation: 1,
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        DirectionBadge(direction: entry.direction),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: entry.isCompleted
+                                ? AppColors.milaGreen.withValues(alpha: 0.15)
+                                : (entry.isPlanned ? Colors.amber.shade100 : Colors.red.shade100),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            entry.isCompleted
+                                ? l10n.statusRecorded
+                                : (entry.isPlanned ? l10n.statusPlanned : l10n.statusCancelled),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
                               color: entry.isCompleted
-                                  ? AppColors.forestGreen.withValues(alpha: 0.1)
-                                  : (entry.isPlanned ? Colors.amber.shade100 : Colors.red.shade100),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              entry.isCompleted
-                                  ? l10n.statusRecorded
-                                  : (entry.isPlanned ? l10n.statusPlanned : l10n.statusCancelled),
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: entry.isCompleted
-                                    ? AppColors.forestGreen
-                                    : (entry.isPlanned ? Colors.amber.shade900 : Colors.red.shade800),
-                              ),
+                                  ? AppColors.milaGreen
+                                  : (entry.isPlanned ? Colors.amber.shade900 : Colors.red.shade800),
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        entry.amountPaise != null
-                            ? CurrencyUtils.formatPaiseToRupees(entry.amountPaise!)
-                            : l10n.itemOnly,
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: accentColor,
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      entry.amountPaise != null
+                          ? CurrencyUtils.formatPaiseToRupees(entry.amountPaise!)
+                          : l10n.itemOnly,
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: accentColor,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        isReceived ? l10n.received : l10n.given,
-                        style: const TextStyle(fontSize: 14, color: AppColors.mutedText),
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      isReceived ? l10n.received : l10n.given,
+                      style: TextStyle(fontSize: 14, color: textSecondary),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
 
               // Relative & Event Association Card
-              Card(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 1,
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  child: Column(
-                    children: [
+              ExpressCard(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                radius: 16,
+                color: cardBg,
+                borderColor: cardBorder,
+                elevation: 0,
+                child: Column(
+                  children: [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: CircleAvatar(
+                        backgroundColor: primaryAccent.withValues(alpha: 0.18),
+                        child: Icon(Icons.person, color: primaryAccent),
+                      ),
+                      title: Text(
+                        entry.personName ?? l10n.unknownPerson,
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: textPrimary),
+                      ),
+                      subtitle: Text(
+                        entry.personRelationship ?? l10n.relativeDefault,
+                        style: TextStyle(color: textSecondary),
+                      ),
+                      trailing: Icon(Icons.chevron_right, color: textSecondary),
+                      onTap: () => context.push('/person/${entry.personId}'),
+                    ),
+                    if (entry.eventId != null) ...[
+                      Divider(color: cardBorder),
                       ListTile(
                         contentPadding: EdgeInsets.zero,
-                        leading: const CircleAvatar(
-                          backgroundColor: AppColors.sand,
-                          child: Icon(Icons.person, color: AppColors.deepNavy),
+                        leading: CircleAvatar(
+                          backgroundColor: primaryAccent.withValues(alpha: 0.18),
+                          child: Icon(Icons.event, color: primaryAccent),
                         ),
                         title: Text(
-                          entry.personName ?? l10n.unknownPerson,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          entry.eventTitle ?? l10n.eventsTitle,
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: textPrimary),
                         ),
-                        subtitle: Text(
-                          entry.personRelationship ?? l10n.relativeDefault,
-                          style: const TextStyle(color: AppColors.mutedText),
-                        ),
-                        trailing: const Icon(Icons.chevron_right, color: AppColors.mutedText),
-                        onTap: () => context.push('/person/${entry.personId}'),
+                        subtitle: Text(l10n.familyEvent, style: TextStyle(color: textSecondary)),
+                        trailing: Icon(Icons.chevron_right, color: textSecondary),
+                        onTap: () => context.push('/event/${entry.eventId}'),
                       ),
-                      if (entry.eventId != null) ...[
-                        const Divider(),
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: const CircleAvatar(
-                            backgroundColor: AppColors.sand,
-                            child: Icon(Icons.event, color: AppColors.deepNavy),
-                          ),
-                          title: Text(
-                            entry.eventTitle ?? l10n.eventsTitle,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          subtitle: Text(l10n.familyEvent, style: const TextStyle(color: AppColors.mutedText)),
-                          trailing: const Icon(Icons.chevron_right, color: AppColors.mutedText),
-                          onTap: () => context.push('/event/${entry.eventId}'),
-                        ),
-                      ],
                     ],
-                  ),
+                  ],
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
 
               // Date & Mode Card
-              Card(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 1,
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  child: Column(
-                    children: [
+              ExpressCard(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                radius: 16,
+                color: cardBg,
+                borderColor: cardBorder,
+                elevation: 0,
+                child: Column(
+                  children: [
+                    _DetailRow(
+                      icon: Icons.calendar_today,
+                      label: l10n.transactionDate,
+                      value: VyavahaarDateUtils.formatIsoDate(entry.transactionDate, l10n.locale.languageCode),
+                      textPrimary: textPrimary,
+                      textSecondary: textSecondary,
+                    ),
+                    Divider(height: 20, color: cardBorder),
+                    _DetailRow(
+                      icon: Icons.category,
+                      label: l10n.type,
+                      value: entry.transactionType == TransactionType.cash
+                          ? l10n.cash
+                          : (entry.transactionType == TransactionType.item
+                              ? l10n.itemOnly
+                              : l10n.cashAndItem),
+                      textPrimary: textPrimary,
+                      textSecondary: textSecondary,
+                    ),
+                    if (entry.notes != null && entry.notes!.isNotEmpty) ...[
+                      Divider(height: 20, color: cardBorder),
                       _DetailRow(
-                        icon: Icons.calendar_today,
-                        label: l10n.transactionDate,
-                        value: VyavahaarDateUtils.formatIsoDate(entry.transactionDate),
+                        icon: Icons.note_outlined,
+                        label: l10n.notes,
+                        value: entry.notes!,
+                        textPrimary: textPrimary,
+                        textSecondary: textSecondary,
                       ),
-                      const Divider(height: 20),
-                      _DetailRow(
-                        icon: Icons.category,
-                        label: l10n.type,
-                        value: entry.transactionType == TransactionType.cash
-                            ? l10n.cash
-                            : (entry.transactionType == TransactionType.item
-                                ? l10n.itemOnly
-                                : l10n.cashAndItem),
-                      ),
-                      if (entry.notes != null && entry.notes!.isNotEmpty) ...[
-                        const Divider(height: 20),
-                        _DetailRow(
-                          icon: Icons.note_outlined,
-                          label: l10n.notes,
-                          value: entry.notes!,
-                        ),
-                      ],
                     ],
-                  ),
+                  ],
                 ),
               ),
 
               // Physical Gift Items List (if any)
               if (entry.items.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.md),
-                Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 1,
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.card_giftcard, size: 20, color: AppColors.deepNavy),
-                            const SizedBox(width: 8),
-                            Text(
-                              l10n.giftItemsWithCount(entry.items.length),
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ExpressCard(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  radius: 16,
+                  color: cardBg,
+                  borderColor: cardBorder,
+                  elevation: 0,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.card_giftcard, size: 20, color: primaryAccent),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.giftItemsWithCount(entry.items.length),
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textPrimary),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      ...entry.items.map((it) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('• ${it.itemName} (${it.quantity.toInt()} ${it.unit ?? ''})',
+                                    style: TextStyle(fontSize: 14, color: textPrimary)),
+                                if (it.estimatedValuePaise != null)
+                                  Text(
+                                    '${l10n.estimated}: ${CurrencyUtils.formatPaiseToRupees(it.estimatedValuePaise!)}',
+                                    style: TextStyle(color: textSecondary, fontSize: 12),
+                                  ),
+                              ],
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        ...entry.items.map((it) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text('• ${it.itemName} (${it.quantity.toInt()} ${it.unit ?? ''})',
-                                      style: const TextStyle(fontSize: 14)),
-                                  if (it.estimatedValuePaise != null)
-                                    Text(
-                                      '${l10n.estimated}: ${CurrencyUtils.formatPaiseToRupees(it.estimatedValuePaise!)}',
-                                      style: const TextStyle(color: AppColors.mutedText, fontSize: 12),
-                                    ),
-                                ],
-                              ),
-                            )),
-                      ],
-                    ),
+                          )),
+                    ],
                   ),
                 ),
               ],
@@ -249,41 +264,41 @@ class EntryDetailScreen extends ConsumerWidget {
               // Actions for Planned Transactions
               if (entry.isPlanned) ...[
                 const SizedBox(height: AppSpacing.lg),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.forestGreen,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  icon: const Icon(Icons.check_circle_outline, color: AppColors.white),
-                  label: Text(
-                    l10n.markRecorded,
-                    style: const TextStyle(color: AppColors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  onPressed: () async {
+                ExpressSquish(
+                  scale: 0.96,
+                  onTap: () async {
                     await entriesRepo.markPlannedEntryRecorded(entry.id);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.markedRecordedSuccess)),
+                        SnackBar(content: Text(l10n.markedRecordedSuccess), backgroundColor: AppColors.milaGreen),
                       );
                       context.pop();
                     }
                   },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    decoration: BoxDecoration(
+                      color: AppColors.milaGreen,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.check_circle_outline, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.markRecorded,
+                          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 10),
-                OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red.shade700,
-                    side: BorderSide(color: Colors.red.shade400),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  icon: const Icon(Icons.cancel_outlined),
-                  label: Text(
-                    l10n.cancelPlan,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  onPressed: () async {
+                ExpressSquish(
+                  scale: 0.96,
+                  onTap: () async {
                     await entriesRepo.cancelPlannedEntry(entry.id);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -292,6 +307,26 @@ class EntryDetailScreen extends ConsumerWidget {
                       context.pop();
                     }
                   },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.red.shade400),
+                    ),
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.cancel_outlined, color: Colors.red.shade700),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.cancelPlan,
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red.shade700),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
               const SizedBox(height: 40),
@@ -302,19 +337,21 @@ class EntryDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _confirmArchiveEntry(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
+  void _confirmArchiveEntry(BuildContext context, WidgetRef ref, AppLocalizations l10n, Color cardBg, Color textPrimary, Color primaryAccent) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.confirmDeleteTransactionTitle),
-        content: Text(l10n.confirmDeleteTransaction),
+        backgroundColor: cardBg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(l10n.confirmDeleteTransactionTitle, style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold)),
+        content: Text(l10n.confirmDeleteTransaction, style: TextStyle(color: textPrimary)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(l10n.cancel),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.terracotta),
+            style: ElevatedButton.styleFrom(backgroundColor: primaryAccent),
             onPressed: () async {
               Navigator.pop(ctx);
               await ref.read(entriesRepositoryProvider).archiveEntry(entryId);
@@ -322,7 +359,7 @@ class EntryDetailScreen extends ConsumerWidget {
                 Navigator.pop(context);
               }
             },
-            child: Text(l10n.delete, style: const TextStyle(color: AppColors.white)),
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -334,11 +371,15 @@ class _DetailRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
+  final Color textPrimary;
+  final Color textSecondary;
 
   const _DetailRow({
     required this.icon,
     required this.label,
     required this.value,
+    required this.textPrimary,
+    required this.textSecondary,
   });
 
   @override
@@ -346,16 +387,16 @@ class _DetailRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 20, color: AppColors.mutedText),
+        Icon(icon, size: 20, color: textSecondary),
         const SizedBox(width: 12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: AppColors.mutedText)),
+            Text(label, style: TextStyle(fontSize: 12, color: textSecondary)),
             const SizedBox(height: 2),
             Text(
               value,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.darkSlate),
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: textPrimary),
             ),
           ],
         ),

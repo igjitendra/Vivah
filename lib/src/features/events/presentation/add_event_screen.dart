@@ -7,6 +7,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/enums/transaction_enums.dart';
 import '../../../shared/widgets/express_squish.dart';
+import '../../../shared/widgets/express_button.dart';
 import '../../../app/app_providers.dart';
 
 /// Modern Screen for creating a new auspicious family event (शादी, मुंडन, आदि)
@@ -223,28 +224,14 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  ExpressSquish(
-                    scale: 0.96,
-                    onTap: _saveEvent,
-                    child: Container(
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: primaryAccent,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: primaryAccent.withValues(alpha: 0.35),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        l10n.saveEvent,
-                        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ),
+                  ExpressButton(
+                    label: l10n.saveEvent,
+                    icon: Icons.calendar_today,
+                    tone: ExpressTone.filled,
+                    tint: primaryAccent,
+                    expand: true,
+                    isLoading: _isSaving,
+                    onPressed: _saveEvent,
                   ),
                 ],
               ),

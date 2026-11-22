@@ -5,6 +5,50 @@
 
 ---
 
+## [1.4.7] — 2026-11-22
+
+### Added
+- **InlitX/streak Redesign of 'Add Entry' Screen (नया व्यवहार दर्ज करें)**:
+  - **Tactile Mila / Diya Switcher**: Smooth spring animation with positive emerald and terracotta glow, icons, and cultural guidance subtitles.
+  - **Searchable Relative Picker Sheet**: Interactive modal bottom sheet with search-as-you-type, avatar badges, and relationship chips.
+  - **Inline Quick Relative Creator**: `+ नया व्यक्ति जोड़ें` sheet directly inside the transaction form, instantly creating and selecting a relative without leaving the screen.
+  - **Hero Rupee Amount Card with Words Preview**: Large ₹ typography and dynamic real-time amount in words (`CurrencyUtils.formatRupeesInWords`) in Hindi and English.
+  - **Quick Shagun Denomination Chips**: Traditional Indian amounts (`₹101`, `₹251`, `₹501`, `₹1,100`, `₹2,100`, `₹5,100`, `₹11,000`) and quick increment pills (`+₹100`, `+₹500`, `+₹1000`).
+  - **Tactile 3-Pill Transaction Type Selector**: Cash, Gift, and Cash & Gift modes with instant suggested gift chips (Gold ring, silver coin, clothes, utensils, sweets).
+  - **Smart Date Presets**: 1-tap "आज" (Today), "कल" (Yesterday), and custom date picker.
+  - **Ceremony Notes & Quick Tags**: 1-tap cultural tags (विवाह शगुन, भात / मायरा, दिखावा / टीका, गृह प्रवेश, मुंडन संस्कार, जन्मदिन).
+  - **Zero Hardcoded Strings**: Full key parity across English, Hindi, and Urdu.
+
+---
+
+## [1.4.6] — 2026-11-22
+
+### Added
+- **Complete Family & Clan Management System (परिवार एवं कुल प्रबंधन प्रणाली)**:
+  - Integrated full UI support for `Families` in `PeopleListScreen` via tab switcher (`लोग` vs `परिवार`).
+  - Added "+ नया परिवार जोड़ें" dialog with name, description/village, and notes with reactive SQLite persistence.
+  - Added family membership inspection sheet displaying all relatives belonging to a family.
+  - Linked family association dropdown in `AddPersonScreen` ensuring every relative can be grouped by clan/family.
+  - Added `activeFamiliesListProvider` reactive stream in `app_providers.dart`.
+- **Comprehensive Visual Insights & Analytics in Reports (सांख्यिकी एवं विज़ुअल अंतर्दृष्टि)**:
+  - Added financial overview cards (*Kul Mila* and *Kul Diya* with counts and strict non-netting).
+  - Added Top Shagun Transactions cards displaying the highest received and given transactions.
+  - Added Event-wise Activity breakdown showing transactional totals per ceremony.
+- **Advanced Ledger Filter & Sorting System (बही उन्नत फ़िल्टर व सॉर्टिंग)**:
+  - Integrated modal filter sheet with Event dropdown, Transaction Type chips (*Cash, Item, Both*), Status chips (*Recorded, Planned*), and 4 Sort options (*Newest, Oldest, Amount High-to-Low, Amount Low-to-High*).
+  - Added active filter badge counter on filter icon and interactive dismissible filter tags row.
+- **Full-Lifecycle Entity Editing & Management (संपूर्ण संपादन एवं प्रबंधन प्रणाली)**:
+  - **Person Management (`PersonDetailScreen`)**:
+    - Added "Edit Person" dialog allowing updates to Name, Relationship, Village/Address, Phone, Family association, and Notes with atomic SQLite persistence.
+    - Added "Delete Person" with relational integrity guard: prevents deletion if recorded transactions exist, or safely soft-archives if clean.
+    - Added dynamic family/clan badge displaying the relative's clan (*e.g. शर्मा परिवार*).
+  - **Event Management (`EventDetailScreen`)**:
+    - Added "Edit Event" dialog allowing updates to Event Title, Ceremony Type, Date (with picker), Venue, and Notes.
+  - **Transaction Management (`EntryDetailScreen`)**:
+    - Added "Edit Transaction" dialog allowing updates to Amount, Transaction Date, and Notes with atomic multi-item consistency.
+
+---
+
 ## [1.4.5] — 2026-11-22
 
 ### Added
@@ -87,25 +131,6 @@
   - `ThemeNotifier` loads and saves `app_theme_mode`, `app_theme_light_palette`, and `app_theme_dark_palette` directly in SQLite `SettingsRepository`.
 - **SQLite Isolate Native Binding Fix**:
   - Bound `@pragma('vm:entry-point') _isolateSetup` with `applyWorkaroundToOpenSqlite3OnOldAndroidVersions()` in `app_database.dart` ensuring background Drift isolates load SQLite native `.so` libraries reliably across all Android architectures.
-
----
-
-## [1.4.3] — 2026-11-22
-
-### Added
-- **Complete Family & Clan Management System (परिवार एवं कुल प्रबंधन प्रणाली)**:
-  - Integrated full UI support for `Families` in `PeopleListScreen` via tab switcher (`लोग` vs `परिवार`).
-  - Added "+ नया परिवार जोड़ें" dialog with name, description/village, and notes.
-  - Added family membership inspection sheet showing all relatives belonging to a family.
-  - Linked family association dropdown in `AddPersonScreen` ensuring every relative can be grouped by clan/family.
-  - Added `activeFamiliesListProvider` reactive stream in `app_providers.dart`.
-- **Comprehensive Visual Insights & Analytics in Reports (सांख्यिकी एवं विज़ुअल अंतर्दृष्टि)**:
-  - Added financial overview cards (*Kul Mila* and *Kul Diya* with counts).
-  - Added Top Shagun Transactions cards displaying the highest received and given transactions.
-  - Added Event-wise Activity breakdown showing transactional totals per ceremony.
-- **Advanced Ledger Filter & Sorting System (बही उन्नत फ़िल्टर व सॉर्टिंग)**:
-  - Integrated modal filter sheet with Event dropdown, Transaction Type chips (*Cash, Item, Both*), Status chips (*Recorded, Planned*), and 4 Sort options (*Newest, Oldest, Amount High-to-Low, Amount Low-to-High*).
-  - Added active filter badge counter on filter icon and interactive dismissible filter tags row.
 
 ---
 

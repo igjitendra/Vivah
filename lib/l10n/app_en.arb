@@ -191,5 +191,26 @@
   "onboardingAppTour": "App Tour & Onboarding",
   "@onboardingAppTour": {
     "description": "Settings label to review onboarding"
-  }
+  },
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "customDate": "Pick Date",
+  "searchRelativeHint": "Search by name, relation or village...",
+  "quickAddRelative": "+ New Relative",
+  "change": "Change",
+  "selectRelativeTapHint": "Tap to choose or create a person *",
+  "shagunReceivedSubtitle": "Money / Gift received from relative",
+  "shagunGivenSubtitle": "Money / Gift given to relative",
+  "amountInWords": "Amount in words",
+  "quickGiftsTitle": "Suggested Gifts",
+  "quickNotesTitle": "Quick Tags",
+  "selectPersonError": "Please select a person",
+  "addAtLeastOneItemError": "Please add at least 1 item",
+  "relativeSavedSuccess": "Person added successfully",
+  "personFullName": "Full Name *",
+  "personFullNameHint": "e.g. Ramesh Sharma",
+  "relationship": "Relationship",
+  "villageOrCity": "Village / City",
+  "villageOrCityHint": "e.g. Rampur, Jaipur",
+  "optionalField": "Optional"
 }

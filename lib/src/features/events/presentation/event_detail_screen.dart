@@ -13,14 +13,184 @@ import '../../../shared/widgets/direction_badge.dart';
 import '../../../shared/widgets/express_squish.dart';
 
 /// Event Details Screen (कार्यक्रम विवरण एवं लेन-देन सूची)
-/// Fully theme-adaptive with celebration summary and transaction timeline.
-class EventDetailScreen extends ConsumerWidget {
+/// Fully theme-adaptive with celebration summary, event editing, and transaction timeline.
+class EventDetailScreen extends ConsumerStatefulWidget {
   final String eventId;
 
   const EventDetailScreen({super.key, required this.eventId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<EventDetailScreen> createState() => _EventDetailScreenState();
+}
+
+class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
+  int _refreshKey = 0;
+
+  void _showEditEventDialog(BuildContext context, Event event, AppLocalizations l10n) {
+    final titleController = TextEditingController(text: event.title);
+    final venueController = TextEditingController(text: event.venue ?? '');
+    final notesController = TextEditingController(text: event.notes ?? '');
+    EventType selectedType = event.eventType;
+    String selectedDate = event.eventDate;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(l10n.editEvent, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.eventName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: titleController,
+                  decoration: InputDecoration(
+                    filled: true,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(l10n.eventType, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<EventType>(
+                  value: selectedType,
+                  items: EventType.values.map((t) => DropdownMenuItem(value: t, child: Text(t.labelHindi))).toList(),
+                  onChanged: (val) => setDialogState(() => selectedType = val ?? EventType.other),
+                  decoration: InputDecoration(
+                    filled: true,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(l10n.eventDate, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 6),
+                GestureDetector(
+                  onTap: () async {
+                    final now = DateTime.now();
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.tryParse(selectedDate) ?? now,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) {
+                      setDialogState(() => selectedDate = picked.toIso8601String().split('T').first);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF161A24) : const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(selectedDate, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        const Icon(Icons.calendar_month, size: 18, color: AppColors.terracotta),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(l10n.eventLocation, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: venueController,
+                  decoration: InputDecoration(
+                    filled: true,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(l10n.notes, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: notesController,
+                  maxLines: 2,
+                  decoration: InputDecoration(
+                    filled: true,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.cancel),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.terracotta),
+              onPressed: () async {
+                final title = titleController.text.trim();
+                if (title.isEmpty) return;
+
+                final repo = ref.read(eventsRepositoryProvider);
+                final updated = Event(
+                  id: event.id,
+                  title: title,
+                  eventType: selectedType,
+                  eventDate: selectedDate,
+                  venue: venueController.text.trim().isNotEmpty ? venueController.text.trim() : null,
+                  notes: notesController.text.trim().isNotEmpty ? notesController.text.trim() : null,
+                  createdAt: event.createdAt,
+                  updatedAt: DateTime.now(),
+                );
+
+                await repo.updateEvent(updated);
+
+                if (mounted) {
+                  Navigator.pop(ctx);
+                  setState(() => _refreshKey++);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l10n.eventUpdatedSuccess), backgroundColor: AppColors.milaGreen),
+                  );
+                }
+              },
+              child: Text(l10n.save, style: const TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _confirmArchiveEvent(BuildContext context, WidgetRef ref, AppLocalizations l10n, Color cardBg, Color textPrimary, Color primaryAccent) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cardBg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(l10n.confirmDeleteEventTitle, style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold)),
+        content: Text(l10n.confirmDeleteEventBody, style: TextStyle(color: textPrimary)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: primaryAccent),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await ref.read(eventsRepositoryProvider).archiveEvent(widget.eventId);
+              if (context.mounted) {
+                Navigator.pop(context);
+              }
+            },
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final eventsRepo = ref.watch(eventsRepositoryProvider);
@@ -36,6 +206,7 @@ class EventDetailScreen extends ConsumerWidget {
     final primaryAccent = theme.colorScheme.primary;
 
     return Scaffold(
+      key: ValueKey(_refreshKey),
       backgroundColor: scaffoldBg,
       appBar: AppBar(
         title: Text(
@@ -45,19 +216,12 @@ class EventDetailScreen extends ConsumerWidget {
         backgroundColor: headerBg,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete_outline, color: Colors.white),
-            tooltip: l10n.deleteEvent,
-            onPressed: () => _confirmArchiveEvent(context, ref, l10n, cardBg, textPrimary, primaryAccent),
-          ),
-        ],
       ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 16),
         child: ExpressSquish(
           scale: 0.94,
-          onTap: () => context.push('/entry/new?eventId=$eventId'),
+          onTap: () => context.push('/entry/new?eventId=${widget.eventId}'),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             decoration: BoxDecoration(
@@ -86,7 +250,7 @@ class EventDetailScreen extends ConsumerWidget {
         ),
       ),
       body: FutureBuilder<Event?>(
-        future: eventsRepo.getEventById(eventId),
+        future: eventsRepo.getEventById(widget.eventId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator(color: primaryAccent));
@@ -97,7 +261,7 @@ class EventDetailScreen extends ConsumerWidget {
           }
 
           return StreamBuilder<List<TransactionEntry>>(
-            stream: entriesRepo.watchEntries(eventId: eventId),
+            stream: entriesRepo.watchEntries(eventId: widget.eventId),
             builder: (context, entriesSnap) {
               final entries = entriesSnap.data ?? [];
 
@@ -125,16 +289,41 @@ class EventDetailScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                event.title,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.edit_outlined, color: Colors.white, size: 20),
+                              tooltip: l10n.editEvent,
+                              onPressed: () => _showEditEventDialog(context, event, l10n),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline, color: Colors.white, size: 20),
+                              tooltip: l10n.deleteEvent,
+                              onPressed: () => _confirmArchiveEvent(context, ref, l10n, cardBg, textPrimary, primaryAccent),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: primaryAccent.withValues(alpha: 0.25),
+                                color: Colors.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: primaryAccent.withValues(alpha: 0.5), width: 1),
                               ),
                               child: Text(
-                                l10n.eventTypeLabel(event.eventType),
+                                event.eventType.labelHindi,
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 12,
@@ -145,27 +334,18 @@ class EventDetailScreen extends ConsumerWidget {
                             const Spacer(),
                             Text(
                               VyavahaarDateUtils.formatIsoDate(event.eventDate, l10n.locale.languageCode),
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.75),
+                              style: const TextStyle(
+                                color: AppColors.mutedText,
                                 fontSize: 13,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          event.title,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
                         if (event.venue != null && event.venue!.isNotEmpty) ...[
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 6),
                           Row(
                             children: [
-                              Icon(Icons.location_on_outlined, size: 16, color: Colors.white.withValues(alpha: 0.75)),
+                              const Icon(Icons.location_on, size: 14, color: AppColors.terracotta),
                               const SizedBox(width: 4),
                               Text(
                                 event.venue!,
@@ -185,7 +365,7 @@ class EventDetailScreen extends ConsumerWidget {
                     ),
                   ),
 
-                  // Event Stats Cards (Received vs Given - Never Netted)
+                  // Event Stats Passbook
                   Padding(
                     padding: const EdgeInsets.all(AppSpacing.md),
                     child: Row(
@@ -194,20 +374,20 @@ class EventDetailScreen extends ConsumerWidget {
                           child: _SummaryBox(
                             title: l10n.totalReceived,
                             amountPaise: receivedPaise,
-                            accentColor: AppColors.milaGreen,
-                            icon: Icons.south_west,
+                            accentColor: AppColors.forestGreen,
+                            icon: Icons.south_west_rounded,
                             cardBg: cardBg,
                             cardBorder: cardBorder,
                             textSecondary: textSecondary,
                           ),
                         ),
-                        const SizedBox(width: AppSpacing.md),
+                        const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: _SummaryBox(
                             title: l10n.totalGiven,
                             amountPaise: givenPaise,
                             accentColor: AppColors.diyaRed,
-                            icon: Icons.north_east,
+                            icon: Icons.north_east_rounded,
                             cardBg: cardBg,
                             cardBorder: cardBorder,
                             textSecondary: textSecondary,
@@ -217,36 +397,49 @@ class EventDetailScreen extends ConsumerWidget {
                     ),
                   ),
 
-                  // Section Title
+                  // Transactions List Heading
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 4),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          l10n.eventTransactions,
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textPrimary),
+                          l10n.transactions,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: textPrimary,
+                          ),
                         ),
                         Text(
-                          '${l10n.total}: ${entries.length}',
-                          style: TextStyle(fontSize: 13, color: textSecondary),
+                          '${entries.length} ${l10n.items}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: textSecondary,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 4),
 
-                  // Transactions List
+                  // Transactions Timeline
                   Expanded(
                     child: entries.isEmpty
                         ? Center(
-                            child: Text(
-                              l10n.noTransactionsForEvent,
-                              style: TextStyle(color: textSecondary),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.receipt_long_outlined, size: 48, color: textSecondary.withValues(alpha: 0.5)),
+                                const SizedBox(height: 8),
+                                Text(
+                                  l10n.noTransactionsFound,
+                                  style: TextStyle(color: textSecondary, fontSize: 14),
+                                ),
+                              ],
                             ),
                           )
                         : ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(AppSpacing.md, 4, AppSpacing.md, 90),
+                            padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, 80),
                             itemCount: entries.length,
                             separatorBuilder: (_, __) => const SizedBox(height: 8),
                             itemBuilder: (context, index) {
@@ -284,9 +477,9 @@ class EventDetailScreen extends ConsumerWidget {
                                           : l10n.giftItem,
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                        fontSize: 15,
                                         color: item.direction == TransactionDirection.received
-                                            ? AppColors.milaGreen
+                                            ? AppColors.forestGreen
                                             : AppColors.diyaRed,
                                       ),
                                     ),
@@ -301,35 +494,6 @@ class EventDetailScreen extends ConsumerWidget {
             },
           );
         },
-      ),
-    );
-  }
-
-  void _confirmArchiveEvent(BuildContext context, WidgetRef ref, AppLocalizations l10n, Color cardBg, Color textPrimary, Color primaryAccent) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: cardBg,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(l10n.confirmDeleteEventTitle, style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold)),
-        content: Text(l10n.confirmDeleteEventBody, style: TextStyle(color: textPrimary)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.cancel),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: primaryAccent),
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await ref.read(eventsRepositoryProvider).archiveEvent(eventId);
-              if (context.mounted) {
-                Navigator.pop(context);
-              }
-            },
-            child: Text(l10n.delete, style: const TextStyle(color: Colors.white)),
-          ),
-        ],
       ),
     );
   }

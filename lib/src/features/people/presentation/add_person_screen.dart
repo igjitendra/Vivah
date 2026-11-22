@@ -6,6 +6,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../shared/widgets/express_squish.dart';
+import '../../../shared/widgets/express_button.dart';
 import '../../../app/app_providers.dart';
 
 /// Modern Screen for adding a new relative or acquaintance
@@ -214,28 +215,14 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  ExpressSquish(
-                    scale: 0.96,
-                    onTap: _savePerson,
-                    child: Container(
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: primaryAccent,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: primaryAccent.withValues(alpha: 0.35),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        l10n.savePerson,
-                        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ),
+                  ExpressButton(
+                    label: l10n.savePerson,
+                    icon: Icons.person_add_alt_1,
+                    tone: ExpressTone.filled,
+                    tint: primaryAccent,
+                    expand: true,
+                    isLoading: _isSaving,
+                    onPressed: _savePerson,
                   ),
                 ],
               ),

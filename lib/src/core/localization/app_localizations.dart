@@ -23,6 +23,28 @@ class AppLocalizations {
   bool get isEnglish => locale.languageCode == 'en';
   bool get isUrdu => locale.languageCode == 'ur';
 
+
+  String get today => isEnglish ? 'Today' : (isUrdu ? 'آج' : 'आज');
+  String get yesterday => isEnglish ? 'Yesterday' : (isUrdu ? 'کل' : 'कल');
+  String get customDate => isEnglish ? 'Pick Date' : (isUrdu ? 'کیلنڈر' : 'कैलेंडर');
+  String get searchRelativeHint => isEnglish ? 'Search by name, relation or village...' : (isUrdu ? 'نام، رشتہ یا گاؤں سے تلاش کریں...' : 'नाम, रिश्ता या गाँव से खोजें...');
+  String get quickAddRelative => isEnglish ? '+ New Relative' : (isUrdu ? '+ نیا شخص شامل کریں' : '+ नया व्यक्ति जोड़ें');
+  String get selectRelativeTapHint => isEnglish ? 'Tap to choose or create a person *' : (isUrdu ? 'شخص منتخب کرنے کے لیے ٹیپ کریں *' : 'व्यक्ति या रिश्तेदार चुनने के लिए टैप करें *');
+  String get shagunReceivedSubtitle => isEnglish ? 'Money / Gift received from relative' : (isUrdu ? 'خاندان سے تحفہ یا رقم ملی' : 'पारिवारिक शगुन / न्योता प्राप्त हुआ');
+  String get shagunGivenSubtitle => isEnglish ? 'Money / Gift given to relative' : (isUrdu ? 'رشتہ داروں کو دیا گیا شگون' : 'रिश्तेदारी में दिया गया शगुन / भेंट');
+  String get amountInWords => isEnglish ? 'Amount in words' : (isUrdu ? 'الفاظ میں رقم' : 'शब्दों में राशि');
+  String get quickGiftsTitle => isEnglish ? 'Suggested Gifts' : (isUrdu ? 'تجویز کردہ تحائف' : 'सुझाए गए उपहार');
+  String get quickNotesTitle => isEnglish ? 'Quick Tags' : (isUrdu ? 'فوری ٹیگز' : 'त्वरित टैग');
+  String get selectPersonError => isEnglish ? 'Please select a person' : (isUrdu ? 'برائے مہربانی شخص منتخب کریں' : 'कृपया व्यक्ति या रिश्तेदार चुनें');
+  String get addAtLeastOneItemError => isEnglish ? 'Please add at least 1 item' : (isUrdu ? 'کم از کم 1 شے شامل کریں' : 'कम से कम 1 सामान जोड़ें');
+  String get relativeSavedSuccess => isEnglish ? 'Person added successfully' : (isUrdu ? 'شخص کامیابی سے شامل ہو گیا' : 'व्यक्ति सफलतापूर्वक जोड़ा गया');
+  String get personFullName => isEnglish ? 'Full Name *' : (isUrdu ? 'پورا نام *' : 'पूरा नाम *');
+  String get personFullNameHint => isEnglish ? 'e.g. Ramesh Sharma' : (isUrdu ? 'مثال: رمیش شرما' : 'उदा. रमेश शर्मा');
+  String get relationship => isEnglish ? 'Relationship' : (isUrdu ? 'رشتہ' : 'रिश्ता / संबंध');
+  String get villageOrCity => isEnglish ? 'Village / City' : (isUrdu ? 'گاؤں / شہر' : 'गाँव / शहर');
+  String get villageOrCityHint => isEnglish ? 'e.g. Rampur, Jaipur' : (isUrdu ? 'مثال: رام پور' : 'उदा. रामपुर, जयपुर');
+  String get optionalField => isEnglish ? 'Optional' : (isUrdu ? 'اختیاری' : 'ऐच्छिक');
+
   // App Identity
   String get appName => isEnglish ? 'Vyavahaar' : (isUrdu ? 'ویوہار' : 'व्यवहार');
   String get appTagline => isEnglish
@@ -52,6 +74,7 @@ class AppLocalizations {
   // Ledger / Transactions
   String get ledgerTitle => isEnglish ? 'Ledger' : (isUrdu ? 'بہی کھاتہ' : 'बही-खाता');
   String get newTransaction => isEnglish ? 'New Transaction' : (isUrdu ? 'نیا لین دین' : 'नया व्यवहार');
+  String get transactions => isEnglish ? 'Transactions' : (isUrdu ? 'لین دین' : 'व्यवहार');
   String get recordNewTransaction => isEnglish ? 'Record New Transaction' : (isUrdu ? 'نیا لین دین درج کریں' : 'नया व्यवहार दर्ज करें');
   String get searchLedgerHint => isEnglish ? 'Search person, village or event...' : (isUrdu ? 'شخص، گاؤں یا تقریب تلاش کریں...' : 'व्यक्ति, गाँव या कार्यक्रम खोजें...');
   String get noTransactionsFound => isEnglish ? 'No transactions found' : (isUrdu ? 'کوئی لین دین نہیں ملا' : 'कोई व्यवहार नहीं मिला');
@@ -128,6 +151,20 @@ class AppLocalizations {
   String get personNotFound => isEnglish ? 'Person not found' : (isUrdu ? 'شخص نہیں ملا' : 'व्यक्ति नहीं मिला');
   String get personSavedSuccess => isEnglish ? 'Person saved successfully' : (isUrdu ? 'شخص کامیابی سے محفوظ ہو گیا' : 'व्यक्ति सफलतापूर्वक सहेजा गया');
   String get noPeopleFound => isEnglish ? 'No people found' : (isUrdu ? 'کوئی شخص نہیں ملا' : 'कोई व्यक्ति नहीं मिला');
+  String get editPerson => isEnglish ? 'Edit Person' : (isUrdu ? 'شخص ترمیم کریں' : 'व्यक्ति संपादित करें');
+  String get editEvent => isEnglish ? 'Edit Event' : (isUrdu ? 'تقریب ترمیم کریں' : 'कार्यक्रम संपादित करें');
+  String get editTransaction => isEnglish ? 'Edit Transaction' : (isUrdu ? 'لین دین ترمیم کریں' : 'व्यवहार संपादित करें');
+  String get deletePerson => isEnglish ? 'Delete Person' : (isUrdu ? 'شخص حذف کریں' : 'व्यक्ति हटाएं');
+  String get confirmDeletePersonTitle => isEnglish ? 'Delete Person?' : (isUrdu ? 'کیا شخص حذف کریں؟' : 'व्यक्ति हटाएं?');
+  String get cannotDeletePersonWithTransactions => isEnglish
+      ? 'Cannot delete person with recorded transactions.'
+      : (isUrdu ? 'لین دین والے شخص کو حذف نہیں کیا جا سکتا۔' : 'जिन व्यक्तियों के साथ लेनदेन दर्ज हैं, उन्हें हटाया नहीं जा सकता।');
+  String get confirmDeletePerson => isEnglish
+      ? 'Are you sure you want to delete this person?'
+      : (isUrdu ? 'کیا آپ واقعی اس شخص کو حذف کرنا چاہتے ہیں؟' : 'क्या आप वाकई इस व्यक्ति को हटाना चाहते हैं?');
+  String get personUpdatedSuccess => isEnglish ? 'Person updated successfully' : (isUrdu ? 'شخص کامیابی سے اپ ڈیٹ ہو گیا' : 'व्यक्ति विवरण सफलतापूर्वक अपडेट हुआ');
+  String get eventUpdatedSuccess => isEnglish ? 'Event updated successfully' : (isUrdu ? 'تقریب کامیابی سے اپ ڈیٹ ہو گئی' : 'कार्यक्रम सफलतापूर्वक अपडेट हुआ');
+  String get transactionUpdatedSuccess => isEnglish ? 'Transaction updated successfully' : (isUrdu ? 'لین دین کامیابی سے اپ ڈیٹ ہو گیا' : 'व्यवहार सफलतापूर्वक अपडेट हुआ');
 
   // Families / Clan System
   String get familiesTitle => isEnglish ? 'Families & Clans' : (isUrdu ? 'خاندان' : 'परिवार व कुल');
@@ -284,6 +321,7 @@ class AppLocalizations {
   String get reminderTitleLabel => isEnglish ? 'Title *' : (isUrdu ? 'عنوان *' : 'शीर्षक *');
   String get reminderTitleHint => isEnglish ? 'e.g. Wedding gift follow-up' : (isUrdu ? 'مثال: شادی کا تحفہ' : 'उदा. शादी में शगुन देना है');
   String get changeDate => isEnglish ? 'Change' : (isUrdu ? 'تبدیل کریں' : 'बदलें');
+  String get change => changeDate;
   String get notesOptional => isEnglish ? 'Notes (Optional)' : (isUrdu ? 'نوٹس (اختیاری)' : 'टिप्पणी (वैकल्पिक)');
   String get notesOptionalHint => isEnglish ? 'Add extra details' : (isUrdu ? 'اضافی تفصیلات لکھیں' : 'अतिरिक्त विवरण लिखें');
 

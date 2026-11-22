@@ -72,3 +72,21 @@ Produces optimized APKs per ABI (`app-arm64-v8a-release.apk`, `app-armeabi-v7a-r
   - Short Description: रिश्तों का हिसाब, हमेशा याद। शादी, तिलक और पारिवारिक आयोजनों का डिजिटल बही खाता।
   - Full Description: Highlight offline-first, PDF reports, AES-256-GCM backup, and zero commercial debt framing.
 - [ ] **Screenshots**: High-res screenshots featuring the Redesigned Home Screen, Bahi Khata, Person History, and Hindi PDF preview.
+
+---
+
+## 5. Native Android Runner & Security Hardening (`android/`)
+
+The Android platform runner is fully configured under `android/`:
+1. **Runner Configuration**:
+   - `android/settings.gradle.kts`: Declares `rootProject.name = "vyavahaar"`.
+   - `android/app/build.gradle.kts`: Configured with `namespace = "com.vyavahaar.app"`, `applicationId = "com.vyavahaar.app"`, `minSdk = 26`, `targetSdk = 35`, Java 11 compatibility with core library desugaring (`desugar_jdk_libs:2.1.5`).
+2. **Security & Financial Privacy Bridge**:
+   - `android/app/src/main/kotlin/com/vyavahaar/app/MainActivity.kt`: Extends `FlutterFragmentActivity` and registers the `vyavahaar/security` MethodChannel.
+   - Calling `setSecure(true)` dynamically applies `WindowManager.LayoutParams.FLAG_SECURE` to the window, preventing screenshots and screen recordings while viewing sensitive family financial transactions.
+3. **100% Offline Manifest Hardening**:
+   - `android/app/src/main/AndroidManifest.xml`: Strips `INTERNET` and `ACCESS_NETWORK_STATE` via `tools:node="remove"`.
+   - App label set to `व्यवहार`.
+   - Launch background set to Deep Navy `#1F3352` (`@color/brand_navy`) for zero-flicker transitions into Flutter's `SplashScreen`.
+4. **Data Backup & Transfer Policies**:
+   - `android/app/src/main/res/xml/backup_rules.xml` and `data_extraction_rules.xml`: Exclude cloud uploads while permitting secure local device-to-device transfers of `vyavahaar.db` and preferences.

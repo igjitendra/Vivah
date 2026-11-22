@@ -130,3 +130,9 @@
 - **Principle of Least Privilege**: Zero internet permission (`android.permission.INTERNET` not requested or used).
 - **Offline Cryptography**: AES-256-GCM authenticated encryption with PBKDF2 (600,000 iterations) for local user backups.
 - **DPDP Act 2023 & COPPA Compliant**: Full privacy rights and zero collection across all age demographics.
+
+### 1.13 Native Android Runner & Hardware Security (`android/`)
+- **Package Configuration**: Identifiers unified to `com.vyavahaar.app`, `minSdk = 26`, `targetSdk = 35`, Java 11 desugaring.
+- **Privacy Window Flag (`FLAG_SECURE`)**: Native MethodChannel `vyavahaar/security` allowing runtime toggling of `FLAG_SECURE` to block screenshots and screen recordings of family financial ledgers.
+- **Zero-Network Hardening**: AndroidManifest strictly removes `INTERNET` and `ACCESS_NETWORK_STATE` permissions via `tools:node="remove"`.
+- **Local Data Extraction Policies**: Local device transfer rules for `vyavahaar.db` without cloud exposure.

@@ -126,3 +126,28 @@ flowchart TD
     CommitTx --> RefreshUI[Refresh All App Screens & Show Success SnackBar]
     RefreshUI --> End([Restore Complete])
 ```
+
+---
+
+## 5. PC Desktop Dual-Pane Master-Detail Journey (डेस्कटॉप स्प्लिट-व्यू कार्यप्रवाह)
+
+```mermaid
+flowchart TD
+    Launch[User launches on PC Desktop / Wide Screen >= 900dp] --> NavRail[ExpressNavRail Visible on Left]
+    NavRail --> SelectLedger[Click Bahi Khata or Press Ctrl+2]
+    
+    subgraph DualPaneLayout [Dual-Pane Split Layout]
+        direction LR
+        MasterPane["Master List Pane (440dp)\n• Search bar & filter pills\n• Scrollable transaction cards\n• Active item highlighted"]
+        Divider["Vertical Divider"]
+        DetailPane["Detail View Pane (Expanded)\n• Full transaction analysis\n• Physical items & notes\n• Edit / Delete / Print actions"]
+        
+        MasterPane --- Divider --- DetailPane
+    end
+    
+    SelectLedger --> DualPaneLayout
+    DetailPane -->|No Item Selected| EmptyState["EmptyDetailPane\nBrand Symbol + 'Select an entry to view details'\nCtrl+N • Ctrl+F • F1"]
+    MasterPane -->|Click Entry Card| LoadDetail["Load EntryDetailScreen(showBackButton: false)\nHighlight Card with 2dp Border"]
+    LoadDetail --> DetailPane
+    DetailPane -->|Delete Entry or Close| EmptyState
+```

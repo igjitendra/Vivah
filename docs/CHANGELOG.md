@@ -5,6 +5,23 @@
 
 ---
 
+## [1.4.9] — 2026-11-22
+
+### Added
+- **Native Android Platform Project (`android/`)**:
+  - Full Flutter Android platform runner configured under `android/`:
+    - `namespace = "com.vyavahaar.app"` and `applicationId = "com.vyavahaar.app"`.
+    - Android 15 ready: `compileSdk = 35`, `targetSdk = 35`, `minSdk = 26`, Java 11 with core library desugaring.
+    - `MainActivity.kt` extending `FlutterFragmentActivity` with `vyavahaar/security` MethodChannel for toggling `FLAG_SECURE` privacy mode.
+    - Zero-network manifest hardening: explicitly strips `INTERNET` and `ACCESS_NETWORK_STATE` permissions via `tools:node="remove"`.
+    - Cleaned launcher colors, Deep Navy `#1F3352` cold-start splash drawable, and local backup/extraction rules.
+- **Form Action Migration to ExpressButton**:
+  - Fully migrated save action buttons in `AddEntryScreen`, `AddPersonScreen`, and `AddEventScreen` to `ExpressButton` (`filled` tone with tactile squish, morphing squircle radii, and loading states).
+- **Responsive Desktop Dual-Pane Master-Detail View**:
+  - Activated responsive dual-pane split view (`splitWidth = 900.0`, `paneWidth = 440.0`) for `LedgerScreen`, `PeopleListScreen`, and `EventsListScreen`.
+  - Added tactile active selection indicator on master list cards (highlighted `2.0dp` accent border, elevated tone, and spring squish).
+  - Implemented `EmptyDetailPane` (`lib/src/shared/widgets/empty_detail_pane.dart`) with official brand watermark, Devanagari labels, and hardware shortcut cheat sheet.
+
 ## [1.4.8] — 2026-11-22
 
 ### Added

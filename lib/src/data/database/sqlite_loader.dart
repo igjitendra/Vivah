@@ -31,6 +31,10 @@ void setupSqliteLoader() {
 
     // 2. Extracted private storage library paths (for extracted packaging)
     for (final candidate in [
+      '/data/data/com.procsctools.vyavahaar/lib/libsqlite3.so',
+      '/data/user/0/com.procsctools.vyavahaar/lib/libsqlite3.so',
+      '/data/data/com.vyavahaar.app/lib/libsqlite3.so',
+      '/data/user/0/com.vyavahaar.app/lib/libsqlite3.so',
       '/data/data/com.vyavahaar.vyavahaar/lib/libsqlite3.so',
       '/data/user/0/com.vyavahaar.vyavahaar/lib/libsqlite3.so',
     ]) {

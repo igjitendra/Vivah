@@ -187,6 +187,7 @@ class _EntryDetailScreenState extends ConsumerState<EntryDetailScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final entriesRepo = ref.watch(entriesRepositoryProvider);
+    final peopleRepo = ref.watch(peopleRepositoryProvider);
     final l10n = context.l10n;
 
     final scaffoldBg = theme.scaffoldBackgroundColor;
@@ -347,16 +348,26 @@ class _EntryDetailScreenState extends ConsumerState<EntryDetailScreen> {
                         trailing: Icon(Icons.chevron_right, color: textSecondary),
                         onTap: () => context.push('/people/${entry.personId}'),
                       ),
-                      if (entry.personPhone != null) ...[
-                        const Divider(height: 12),
-                        Row(
-                          children: [
-                            const Icon(Icons.phone, size: 16, color: AppColors.mutedText),
-                            const SizedBox(width: 8),
-                            Text(entry.personPhone!, style: TextStyle(color: textSecondary, fontSize: 14)),
-                          ],
-                        ),
-                      ],
+                      FutureBuilder<Person?>(
+                        future: peopleRepo.getPersonById(entry.personId),
+                        builder: (context, personSnapshot) {
+                          final phone = personSnapshot.data?.phoneNumber;
+                          if (phone == null || phone.isEmpty) return const SizedBox.shrink();
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Divider(height: 12),
+                              Row(
+                                children: [
+                                  const Icon(Icons.phone, size: 16, color: AppColors.mutedText),
+                                  const SizedBox(width: 8),
+                                  Text(phone, style: TextStyle(color: textSecondary, fontSize: 14)),
+                                ],
+                              ),
+                            ],
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),

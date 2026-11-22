@@ -66,3 +66,29 @@ appRouter (GoRouter) - initialLocation: '/splash'
   - **Mobile (< 600dp)**: Standard touch layout with bottom `FloatingPillTabBar`.
   - **Tablet (600dp - 1024dp)**: Adaptive split view with navigation rail.
   - **Desktop (≥ 1024dp)**: Multi-column responsive layout with persistent navigation drawer, wide transaction tables, and side-by-side transaction details.
+
+---
+
+## 4. InlitX/streak PC Desktop Navigation Rail & Keyboard Shortcuts
+
+### 4.1 ShellRoute Adaptive Navigation
+In `lib/src/app/router/app_router.dart`, `ShellRoute` dynamically detects screen width using `hasSideRail(context)` (`width >= 640dp`):
+- **Desktop / Wide Screens (`>= 640dp`)**: Renders `ExpressNavRail` on the left with brand header, interactive hover states, tooltips, and keyboard shortcuts button, placing page content in `Expanded(child: child)`.
+- **Mobile (< 640dp)**: Renders the approved floating pill navigation bar (`FloatingPillTabBar`) anchored to the bottom.
+
+### 4.2 Hardware Keyboard Shortcuts (`AppShortcuts`)
+- **Source**: `lib/src/core/shortcuts/app_shortcuts.dart`, `lib/src/core/shortcuts/shortcuts_sheet.dart`
+- Installed at application root in `lib/src/app/app.dart`.
+- List of supported desktop shortcuts:
+  | Shortcut | Action | Description |
+  | :--- | :--- | :--- |
+  | `Ctrl + 1` / `⌘1` | Tab 1 | Navigate to Home Dashboard (`/`) |
+  | `Ctrl + 2` / `⌘2` | Tab 2 | Navigate to Bahi Khata Ledger (`/bahi`) |
+  | `Ctrl + 3` / `⌘3` | Tab 3 | Navigate to Events Directory (`/events`) |
+  | `Ctrl + 4` / `⌘4` | Tab 4 | Navigate to People Directory (`/people`) |
+  | `Ctrl + 5` / `⌘5` | Tab 5 | Navigate to Settings (`/settings`) |
+  | `Ctrl + N` / `⌘N` | New Entry | Open Add Transaction Screen (`/entry/new`) |
+  | `Ctrl + F` / `⌘F` | Search | Open Ledger with search focus |
+  | `Ctrl + ,` / `⌘,` | Settings | Open Settings Screen |
+  | `F1` or `Ctrl + /` | Help | Open Keyboard Shortcuts Guide Sheet |
+  | `Esc` | Back / Dismiss | Pop current fullscreen screen or dialog |

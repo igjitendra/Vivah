@@ -5,6 +5,40 @@
 
 ---
 
+## [1.4.5] — 2026-11-22
+
+### Added
+- **InlitX/streak UI/UX Buttons, Typography Scale & Motion**:
+  - Implemented `ExpressButton` (`lib/src/shared/widgets/express_button.dart`):
+    - Tones: `filled`, `tonal`, and `ghost`.
+    - Dynamic tactile bouncy scale down to `0.94` on tap with `Express.fast` and spring bounce on release with `Express.bouncy`.
+    - Morphing corner radius: rests at capsule shape (`height / 2`), morphing smoothly into rounded squircle (`14dp`) on press.
+    - Compact (`40dp`) and regular (`52dp`) height modes.
+  - Implemented `ExpressIconButton`: 40dp squircle tactile icon button with desktop hover state and spring squish.
+  - Implemented `ExpressType` (`lib/src/core/theme/express_type.dart`):
+    - Exact typography scale from InlitX/streak (display 57/45/36, headline 32/28/24, title 22/16/14, body 16/14/12, label 14/12/11).
+    - Optimized for Noto Sans Devanagari and multilingual Indic scripts.
+- **InlitX/streak PC Desktop Software Architecture**:
+  - Implemented `responsive.dart` (`lib/src/core/utils/responsive.dart`):
+    - Exact streak breakpoints (`phoneWidth = 560.0`, `railWidth = 640.0`, `splitWidth = 900.0`, `wideWidth = 1060.0`, `paneWidth = 480.0`).
+    - Helper queries: `hasSideRail(context)`, `isWideLayout(context)`, `isCompactRail(context)`.
+  - Implemented `ExpressNavRail` (`lib/src/shared/navigation/express_nav_rail.dart`):
+    - Dedicated desktop side navigation rail with brand header, interactive mouse hover highlights, active squircle pills, and tooltips in compact mode.
+    - Integrated seamlessly into GoRouter `ShellRoute`: automatically displays `ExpressNavRail` on PC desktop/tablet (`>=640dp`) and `FloatingPillTabBar` on mobile (<640dp).
+  - Implemented Hardware Keyboard Shortcuts (`AppShortcuts` & `ShortcutsSheet`):
+    - Global keyboard handler: `Ctrl+1..5` tab switching, `Ctrl+N` new transaction, `Ctrl+F` search, `Ctrl+,` settings, `F1` or `Ctrl+/` shortcuts modal, and `Esc` dismiss.
+    - Installed at root in `lib/src/app/app.dart`.
+- **Native PC Desktop Runners (Windows & Linux)**:
+  - Added native Windows x64 C++ runner project (`windows/`):
+    - `windows/runner/main.cpp` with single-instance mutex (`VyavahaarSingleInstance`).
+    - Per-Monitor V2 DPI scaling manifest (`runner.exe.manifest`).
+    - Windows Inno Setup installer script (`windows/installer.iss`) for standalone setup distribution.
+  - Added native Linux GTK+ C++ runner project (`linux/`):
+    - `linux/runner/main.cc` and `my_application.cc` with window state restoration and header bar.
+    - Standard XDG Desktop specification: `linux/com.igjitendra.vyavahaar.desktop`.
+
+---
+
 ## [1.4.4] — 2026-11-22
 
 ### Added

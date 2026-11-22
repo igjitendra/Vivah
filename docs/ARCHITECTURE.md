@@ -120,3 +120,22 @@ Vyavahaar maintains a 100% offline-first onboarding lifecycle:
    - If not set or `null`: Navigates to `/onboarding`.
 4. **Completion & Dismissal**: Completing the 3-slide walkthrough or tapping "छोड़ें" (Skip) writes `'onboarding_completed' = 'true'` via `SettingsRepository.setSetting()`, atomically persisting the state to local SQLite.
 5. **Re-tour Mechanism**: The onboarding tour can be re-launched from Settings with `?fromSettings=true` without affecting previous user preferences.
+
+---
+
+## 5. Multi-Platform PC Software Architecture (Windows & Linux Native Runners)
+
+Vyavahaar implements native PC software capabilities directly modeled on InlitX/streak:
+1. **Windows Native Runner (`windows/`)**:
+   - Win32 C++ runtime (`windows/runner/main.cpp`, `flutter_window.cpp`, `win32_window.cpp`).
+   - Single-Instance Mutex: `::CreateMutexW(nullptr, TRUE, L"VyavahaarSingleInstance")` activates and restores the existing window if already open.
+   - Per-Monitor V2 DPI awareness via `runner.exe.manifest`.
+   - Windows installer scripting: Inno Setup `windows/installer.iss` producing standalone x64 setup executables.
+2. **Linux Native Runner (`linux/`)**:
+   - GTK+ 3.0 C++ runtime (`linux/runner/main.cc`, `my_application.cc`).
+   - Window size and state restoration (`window_delete_cb`, `size_window`).
+   - Standard XDG Desktop file specification: `linux/com.igjitendra.vyavahaar.desktop`.
+3. **Adaptive UI Layer**:
+   - Detects screen modality via `lib/src/core/utils/responsive.dart`.
+   - Adapts between floating pill mobile navigation and `ExpressNavRail` side rail on desktop.
+   - Hardware keyboard listener intercepts desktop shortcuts (`Ctrl+1..5`, `Ctrl+N`, `Ctrl+F`, `F1`, `Esc`) through `AppShortcuts`.

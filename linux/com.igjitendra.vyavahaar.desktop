@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=व्यवहार (Vyavahaar)
+Comment=रिश्तों का हिसाब, हमेशा याद। 100% Offline Digital Family Ledger
+Exec=vyavahaar
+Icon=com.igjitendra.vyavahaar
+Terminal=false
+Categories=Office;Finance;Utility;
+Keywords=ledger;vyavahaar;bahi;khata;family;gift;shagun;
+StartupWMClass=com.igjitendra.vyavahaar

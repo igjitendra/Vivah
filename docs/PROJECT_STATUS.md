@@ -28,9 +28,9 @@
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Android** | Mobile | Touch-First | Phase 2–3 | **VERIFIED** | Flutter + Material 3 implementation (`lib/`). Screen layouts, navigation, and SQLite database verified. |
 | **iOS** | Mobile | Touch-First | Phase 5 | **ARCHITECTURE READY** | Unified Flutter `lib/` codebase; cross-platform Drift SQLite and reactive Riverpod architecture. |
-| **Linux** | Desktop | Keyboard & Mouse | Desktop Post-MVP | **ARCHITECTURE READY** | Flutter + Drift ORM native SQLite desktop engine ready (`lib/src/data/database/`). |
+| **Linux** | Desktop | Keyboard & Mouse | Desktop Post-MVP | **VERIFIED** | Native GTK+ C++ runner (`linux/`), responsive `ExpressNavRail`, hardware keyboard shortcuts, and Drift SQLite engine. |
 | **macOS** | Desktop | Keyboard, Mouse, Trackpad | Desktop Post-MVP | **ARCHITECTURE READY** | Flutter + Drift ORM native SQLite desktop engine ready (`lib/src/data/database/`). |
-| **Windows** | Desktop | Keyboard, Mouse, Touch | Desktop Post-MVP | **ARCHITECTURE READY** | Flutter + Drift ORM native SQLite desktop engine ready (`lib/src/data/database/`). |
+| **Windows** | Desktop | Keyboard, Mouse, Touch | Desktop Post-MVP | **VERIFIED** | Native Win32 C++ runner (`windows/`) with single-instance mutex, Inno Setup installer (`installer.iss`), responsive `ExpressNavRail`, and keyboard shortcuts. |
 
 ---
 

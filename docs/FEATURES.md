@@ -100,3 +100,19 @@
     3. *पूर्णतः ऑफ़लाइन और निजी*: Zero cloud, military-grade AES-256 encryption, PDF/CSV exports, and 1-tap language switch chip.
   - Tactile navigation with `ExpressSquish`, animated dot indicator, skip action, and atomic SQLite persistence.
   - Re-accessible at any time from Settings Screen.
+
+### 1.11 PC Desktop Software & InlitX/streak Express Architecture
+- **InlitX/streak UI/UX Buttons (`ExpressButton`, `ExpressIconButton`)**:
+  - Filled, tonal, and ghost tones with dynamic tactile bouncy scale (`0.94` to `1.0`).
+  - Morphing border radius (`height / 2` resting to `14dp` pressed).
+  - Compact (40dp) and regular (52dp) height modes.
+- **ExpressType Typography Scale**:
+  - Full display (57/45/36), headline (32/28/24), title (22/16/14), body (16/14/12), label (14/12/11) scale.
+- **PC Desktop Navigation Rail (`ExpressNavRail`)**:
+  - Responsive desktop side rail for screens `>=640dp`.
+  - Brand header with `AppSymbol`, mouse hover animations, and active state squircle pills.
+- **Hardware Keyboard Shortcuts (`AppShortcuts`)**:
+  - `Ctrl+1..5` tab switching, `Ctrl+N` new transaction, `Ctrl+F` search, `Ctrl+,` settings, `F1` shortcuts sheet dialog, and `Esc` back.
+- **Native PC Desktop Runners**:
+  - Native Windows x64 C++ runner (`windows/`) with single-instance mutex and Inno Setup installer.
+  - Native Linux GTK+ C++ runner (`linux/`) with window state persistence and XDG desktop entry.

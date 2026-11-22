@@ -131,3 +131,33 @@ Vyavahaar incorporates fluid spring physics and tactile scale gestures directly 
   2. *Slide 2 (Cultural Dignity & Zero Debt)*: Terracotta-tinted goodwill icon (`#FBECE5`), mutual respect badge, budget planning highlight points.
   3. *Slide 3 (100% Offline & Private)*: Green-tinted security shield (`#E2F5EB`), zero internet/zero login badge, AES-256 encryption highlight points, and quick language switch chip.
 - **Colors & Cards**: Cards with `cardBg` (`Colors.white` / `#1E293B`), subtle border (`#E2E8F0` / `#334155`), and elevated shadow. CTA button transitions from Deep Navy (`#1F3352`) to Terracotta (`#C05A2B`) on the final slide ("शुरू करें").
+
+---
+
+## 6. InlitX/streak UI/UX Buttons, Typography Scale & PC Desktop Rail
+
+### 6.1 ExpressButton & ExpressIconButton Architecture
+- **Source**: `lib/src/shared/widgets/express_button.dart`
+- **Visual Tones**:
+  - `ExpressTone.filled`: High-contrast solid accent canvas (Terracotta / Deep Navy) with white text and elevation.
+  - `ExpressTone.tonal`: Subtle tinted container (12%–22% opacity) with colored text.
+  - `ExpressTone.ghost`: Transparent background with border, ideal for secondary modal actions and filters.
+- **Dynamic Tactile Physics**:
+  - Scale down to `0.94` on tap down, springing back to `1.0` on release using `Express.bouncy` (`ratio: 0.58, stiffness: 380`).
+  - **Morphing Border Radius**: Rest at full pill shape (`height / 2`), morphing smoothly into rounded squircle (`14dp` to `16dp`) on press.
+  - Heights: Compact (`40dp`, horizontal pad `16dp`, label `13.5sp`) vs Regular (`52dp`, horizontal pad `22dp`, label `15sp`).
+- **`ExpressIconButton`**: 40dp squircle icon button with mouse hover highlight and bouncy tap scale.
+
+### 6.2 ExpressType Typography Scale (Streak-Aligned)
+- **Source**: `lib/src/core/theme/express_type.dart`
+- Display: `displayLarge` (57sp, -0.25 spacing), `displayMedium` (45sp), `displaySmall` (36sp).
+- Headline: `headlineLarge` (32sp), `headlineMedium` (28sp), `headlineSmall` (24sp) with weight 700.
+- Title: `titleLarge` (22sp), `titleMedium` (16sp), `titleSmall` (14sp) with weight 800.
+- Body: `bodyLarge` (16sp), `bodyMedium` (14sp), `bodySmall` (12sp) with weight 500.
+- Label: `labelLarge` (14sp), `labelMedium` (12sp), `labelSmall` (11sp) with weight 700.
+
+### 6.3 ExpressNavRail (Desktop & Tablet Side Rail)
+- **Source**: `lib/src/shared/navigation/express_nav_rail.dart`
+- Renders automatically when screen width `≥640dp` (`hasSideRail(context)`).
+- Full desktop width (`230dp`) with brand lockup and labels; collapses to compact mode (`80dp`) with tooltips on medium screens (`640dp`–`1060dp`).
+- Interactive `_ExpressRailPill` with `MouseRegion` hover detection, active squircle pill, and `F1` keyboard shortcuts modal trigger.

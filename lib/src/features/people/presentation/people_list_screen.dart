@@ -443,12 +443,11 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
                     ),
                     data: (families) {
                       final filtered = families.where((f) {
-                        if (f == null) return false;
                         if (_searchQuery.isEmpty) return true;
                         final matchName = f.name.toLowerCase().contains(_searchQuery);
                         final matchDesc = (f.description ?? '').toLowerCase().contains(_searchQuery);
                         return matchName || matchDesc;
-                      }).whereType<Family>().toList();
+                      }).toList();
 
                       if (filtered.isEmpty) {
                         return Center(

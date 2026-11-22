@@ -53,7 +53,6 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
   }
 
   void _showFilterSheet(BuildContext context, AppLocalizations l10n) {
-    final theme = Theme.of(context);
     final eventsAsync = ref.read(activeEventsListProvider);
 
     String? tempEventId = _filterEventId;

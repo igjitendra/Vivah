@@ -90,3 +90,17 @@ The Android platform runner is fully configured under `android/`:
    - Launch background set to Deep Navy `#1F3352` (`@color/brand_navy`) for zero-flicker transitions into Flutter's `SplashScreen`.
 4. **Data Backup & Transfer Policies**:
    - `android/app/src/main/res/xml/backup_rules.xml` and `data_extraction_rules.xml`: Exclude cloud uploads while permitting secure local device-to-device transfers of `vyavahaar.db` and preferences.
+
+---
+
+## 6. Automated Keystore Signing & 'App not installed' Resolution
+
+### 6.1 Automated v1 + v2 Signature Scheme in CI
+To eliminate the Android "App not installed" (`INSTALL_PARSE_FAILED_NO_CERTIFICATES` / signature mismatch) error:
+- `.github/workflows/build-apk.yml` automatically generates an RSA-2048 upload keystore and `key.properties`.
+- `scripts/configure-android-sdk.py` injects `signingConfigs.release` configured with `v1SigningEnabled true` and `v2SigningEnabled true`.
+- Post-build step verifies both `app-debug.apk` and `app-release.apk` with `jarsigner -verify` before publishing release assets, guaranteeing valid certificates.
+
+### 6.2 Troubleshooting on Device (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`)
+- When updating from an earlier test build, Android requires that the existing installation be uninstalled first if the cryptographic certificate or package name has changed.
+- Users must uninstall the old version from **Settings ➔ Apps** before installing the newly signed APK.

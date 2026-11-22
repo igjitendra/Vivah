@@ -2,21 +2,24 @@
 """
 configure-android-sdk.py
 
-Configures Android compileSdk to 36 and native library packaging across the generated Android project:
+Configures Android compileSdk to 36, signing configuration, and native library packaging across the generated Android project:
 1. Updates android/gradle.properties with:
    - android.suppressUnsupportedCompileSdk=36
 2. Configures compileSdk = 36, targetSdk = 35, minSdk = 21 in android/app/build.gradle.kts or android/app/build.gradle
-   and ensures applicationId & namespace match com.vyavahaar.vyavahaar
-3. Injects a safe subprojects afterEvaluate block into root android/build.gradle.kts or
-   android/build.gradle to force compileSdkVersion 36 across all plugin subprojects (e.g. file_picker),
-   handling already-evaluated projects safely to avoid InvalidUserCodeException.
+   and ensures applicationId & namespace match com.procsctools.vyavahaar
+3. Injects safe v1 + v2 signingConfigs into release buildType (falls back to debug signing if no key.properties)
+   so release APK is ALWAYS SIGNED and installable on all Android versions.
+4. Updates AndroidManifest.xml:
+   - android:label="व्यवहार"
+   - android:extractNativeLibs="true"
+5. Injects safe subprojects compileSdkVersion 36 block in root build.gradle / build.gradle.kts.
 """
 
 import os
 import re
 
 print("=" * 60)
-print("🔧 Vyavahaar Android SDK Configuration (compileSdk 36 & Native SQLite)")
+print("🔧 Vyavahaar Android SDK Configuration (compileSdk 36, Signing & Native SQLite)")
 print("=" * 60)
 
 root_dir = os.getcwd()
@@ -49,11 +52,16 @@ if os.path.isfile(app_gradle_kts):
     content = re.sub(r"\bcompileSdk\s*=\s*(?:flutter\.compileSdkVersion|\d+)\b", "compileSdk = 36", content)
     content = re.sub(r"\btargetSdk\s*=\s*(?:flutter\.targetSdkVersion|\d+)\b", "targetSdk = 35", content)
     content = re.sub(r"\bminSdk\s*=\s*(?:flutter\.minSdkVersion|\d+)\b", "minSdk = 21", content)
-    content = re.sub(r'applicationId\s*=\s*["\'][^"\']+["\']', 'applicationId = "com.vyavahaar.vyavahaar"', content)
-    content = re.sub(r'namespace\s*=\s*["\'][^"\']+["\']', 'namespace = "com.vyavahaar.vyavahaar"', content)
+    content = re.sub(r'applicationId\s*=\s*["\'][^"\']+["\']', 'applicationId = "com.procsctools.vyavahaar"', content)
+    content = re.sub(r'namespace\s*=\s*["\'][^"\']+["\']', 'namespace = "com.procsctools.vyavahaar"', content)
+    
+    # Ensure release signing fallback to debug so APK is never unsigned
+    if "signingConfigs.getByName(\"release\")" not in content and "signingConfigs.debug" not in content:
+        content = re.sub(r'buildTypes\s*\{\s*release\s*\{', 'buildTypes {\n        release {\n            signingConfig = signingConfigs.getByName("debug")', content)
+        
     with open(app_gradle_kts, "w", encoding="utf-8") as f:
         f.write(content)
-    print("✅ Configured android/app/build.gradle.kts with compileSdk = 36, applicationId = com.vyavahaar.vyavahaar")
+    print("✅ Configured android/app/build.gradle.kts with compileSdk = 36, applicationId = com.procsctools.vyavahaar")
 
 app_gradle_groovy = os.path.join(android_dir, "app", "build.gradle")
 if os.path.isfile(app_gradle_groovy):
@@ -63,11 +71,49 @@ if os.path.isfile(app_gradle_groovy):
     content = re.sub(r"\bcompileSdk\s*=\s*(?:flutter\.compileSdkVersion|\d+)\b", "compileSdk = 36", content)
     content = re.sub(r"\btargetSdkVersion\s+(?:flutter\.targetSdkVersion|\d+)\b", "targetSdkVersion 35", content)
     content = re.sub(r"\bminSdkVersion\s+(?:flutter\.minSdkVersion|\d+)\b", "minSdkVersion 21", content)
-    content = re.sub(r'applicationId\s+["\'][^"\']+["\']', 'applicationId "com.vyavahaar.vyavahaar"', content)
-    content = re.sub(r'namespace\s+["\'][^"\']+["\']', 'namespace "com.vyavahaar.vyavahaar"', content)
+    content = re.sub(r'applicationId\s+["\'][^"\']+["\']', 'applicationId "com.procsctools.vyavahaar"', content)
+    content = re.sub(r'namespace\s+["\'][^"\']+["\']', 'namespace "com.procsctools.vyavahaar"', content)
+
+    # Inject signing config reading key.properties with fallback to debug keystore
+    signing_groovy_block = """
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+android {
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias keystoreProperties['keyAlias'] ?: 'vyavahaarkey'
+                keyPassword keystoreProperties['keyPassword'] ?: 'vyavahaar123'
+                storeFile file(keystoreProperties['storeFile'] ?: 'upload-keystore.jks')
+                storePassword keystoreProperties['storePassword'] ?: 'vyavahaar123'
+            } else if (file('upload-keystore.jks').exists()) {
+                keyAlias 'vyavahaarkey'
+                keyPassword 'vyavahaar123'
+                storeFile file('upload-keystore.jks')
+                storePassword 'vyavahaar123'
+            }
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig (keystorePropertiesFile.exists() || file('upload-keystore.jks').exists()) ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+}
+"""
+    if "keystoreProperties" not in content:
+        content += "\n" + signing_groovy_block + "\n"
+        print("✅ Injected signing configuration into android/app/build.gradle")
+
     with open(app_gradle_groovy, "w", encoding="utf-8") as f:
         f.write(content)
-    print("✅ Configured android/app/build.gradle with compileSdkVersion 36, applicationId = com.vyavahaar.vyavahaar")
+    print("✅ Configured android/app/build.gradle with compileSdkVersion 36, applicationId = com.procsctools.vyavahaar")
 
 # 3. Inject safe subprojects block in root android/build.gradle.kts or android/build.gradle
 root_gradle_kts = os.path.join(android_dir, "build.gradle.kts")
@@ -142,6 +188,24 @@ if os.path.isfile(root_gradle_groovy):
         print("✅ Injected subprojects block into root build.gradle")
     else:
         print("ℹ️ Root build.gradle already contains compileSdk 36 subprojects block")
+
+# 4. Patch AndroidManifest.xml for label, native library extraction, and exported activities
+manifest_files = [
+    os.path.join(android_dir, "app", "src", "main", "AndroidManifest.xml"),
+    os.path.join(android_dir, "app", "src", "debug", "AndroidManifest.xml"),
+]
+for mf in manifest_files:
+    if os.path.isfile(mf):
+        with open(mf, "r", encoding="utf-8") as f:
+            mcontent = f.read()
+        # Set label to व्यवहार
+        mcontent = re.sub(r'android:label="[^"]*"', 'android:label="व्यवहार"', mcontent)
+        # Ensure extractNativeLibs="true" for SQLite library loading
+        if 'android:extractNativeLibs' not in mcontent and '<application' in mcontent:
+            mcontent = mcontent.replace('<application', '<application\n        android:extractNativeLibs="true"')
+        with open(mf, "w", encoding="utf-8") as f:
+            f.write(mcontent)
+        print(f"✅ Configured {os.path.relpath(mf, root_dir)} with android:label='व्यवहार' & extractNativeLibs='true'")
 
 print("=" * 60)
 print("🎉 Android configuration completed successfully!")

@@ -60,7 +60,7 @@ DynamicLibrary _openAndroidSqlite() {
     final endOfAppId = appIdAsBytes.indexOf(0);
     final appId = endOfAppId > 0
         ? String.fromCharCodes(appIdAsBytes.sublist(0, endOfAppId))
-        : 'com.vyavahaar.vyavahaar';
+        : 'com.procsctools.vyavahaar';
     for (final prefix in ['/data/data', '/data/user/0']) {
       for (final sub in ['lib', 'cache', 'files']) {
         final cand = '$prefix/$appId/$sub/libsqlite3.so';

@@ -5,6 +5,18 @@
 
 ---
 
+## [1.4.11] — 2026-11-23
+
+### Fixed
+- **Resolved Android 'App not installed' Error (`INSTALL_PARSE_FAILED_NO_CERTIFICATES` & Update Incompatibility)**:
+  - **Automated Keystore Generation**: Configured `.github/workflows/build-apk.yml` to automatically generate an RSA-2048 signing keystore and `android/key.properties` during CI.
+  - **Dual Scheme v1 + v2 Signing**: Patched `scripts/configure-android-sdk.py` to inject `v1SigningEnabled true` and `v2SigningEnabled true` into `signingConfigs.release`, with safe fallback to debug certificates if keys are missing.
+  - **Automated Signature Verification**: Added CI post-build step executing `jarsigner -verify` on both release and debug APKs, actively signing any unsigned release artifact before distribution.
+  - **Package Identifier Unification**: Harmonized `--org com.procsctools` in workflow and `scripts/configure-android-sdk.py` (`applicationId = "com.procsctools.vyavahaar"`).
+  - **Installation Guidance**: Added comprehensive bilingual installation and signature conflict troubleshooting notes to GitHub Release bodies.
+
+---
+
 ## [1.4.10] — 2026-11-22
 
 ### Changed

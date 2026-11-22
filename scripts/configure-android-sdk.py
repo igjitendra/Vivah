@@ -11,7 +11,7 @@ Configures Android compileSdk to 36, signing configuration, and native library p
    so release APK is ALWAYS SIGNED and installable on all Android versions.
 4. Updates AndroidManifest.xml:
    - android:label="व्यवहार"
-   - android:extractNativeLibs="true"
+   - strips deprecated android:extractNativeLibs for AGP 8+ packaging compatibility
 5. Injects safe subprojects compileSdkVersion 36 block in root build.gradle / build.gradle.kts.
 """
 
@@ -189,7 +189,7 @@ if os.path.isfile(root_gradle_groovy):
     else:
         print("ℹ️ Root build.gradle already contains compileSdk 36 subprojects block")
 
-# 4. Patch AndroidManifest.xml for label, native library extraction, and exported activities
+# 4. Patch AndroidManifest.xml for label and permissions
 manifest_files = [
     os.path.join(android_dir, "app", "src", "main", "AndroidManifest.xml"),
     os.path.join(android_dir, "app", "src", "debug", "AndroidManifest.xml"),
@@ -200,12 +200,11 @@ for mf in manifest_files:
             mcontent = f.read()
         # Set label to व्यवहार
         mcontent = re.sub(r'android:label="[^"]*"', 'android:label="व्यवहार"', mcontent)
-        # Ensure extractNativeLibs="true" for SQLite library loading
-        if 'android:extractNativeLibs' not in mcontent and '<application' in mcontent:
-            mcontent = mcontent.replace('<application', '<application\n        android:extractNativeLibs="true"')
+        # Strip android:extractNativeLibs to prevent AGP 8 PackageAndroidArtifact error
+        mcontent = re.sub(r'\s+android:extractNativeLibs="[^"]*"', '', mcontent)
         with open(mf, "w", encoding="utf-8") as f:
             f.write(mcontent)
-        print(f"✅ Configured {os.path.relpath(mf, root_dir)} with android:label='व्यवहार' & extractNativeLibs='true'")
+        print(f"✅ Configured {os.path.relpath(mf, root_dir)} with android:label='व्यवहार'")
 
 print("=" * 60)
 print("🎉 Android configuration completed successfully!")

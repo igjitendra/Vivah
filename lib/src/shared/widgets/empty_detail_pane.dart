@@ -63,7 +63,7 @@ class EmptyDetailPane extends StatelessWidget {
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: ExpressType.titleMedium(context).copyWith(
+                style: ExpressType.titleMedium().copyWith(
                   fontWeight: FontWeight.w700,
                   color: theme.colorScheme.onSurface,
                 ),
@@ -74,7 +74,7 @@ class EmptyDetailPane extends StatelessWidget {
               Text(
                 subtitle,
                 textAlign: TextAlign.center,
-                style: ExpressType.bodyMedium(context).copyWith(
+                style: ExpressType.bodyMedium().copyWith(
                   color: textSecondary,
                   height: 1.45,
                 ),
@@ -96,7 +96,7 @@ class EmptyDetailPane extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       'Ctrl+N नया जोड़ें  •  Ctrl+F खोजें  •  F1 शॉर्टकट',
-                      style: ExpressType.labelSmall(context).copyWith(
+                      style: ExpressType.labelSmall().copyWith(
                         color: textSecondary,
                         fontWeight: FontWeight.w500,
                       ),

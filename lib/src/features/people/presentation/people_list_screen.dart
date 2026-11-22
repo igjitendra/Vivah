@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart' hide Family;
 import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/utils/responsive.dart';
 import '../../../domain/entities/entities.dart';
+import '../../../shared/widgets/empty_detail_pane.dart';
 import '../../../shared/widgets/express_squish.dart';
 import '../../../app/app_providers.dart';
+import 'person_detail_screen.dart';
 
 /// Modern Card-Based Screen displaying the directory of relatives and families/clans
 /// Fully theme-adaptive with search, tab switching, and tactile spring interactions.
@@ -27,6 +30,7 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
   int _currentTab = 0; // 0 = People (लोग), 1 = Families (परिवार)
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  String? _selectedPersonId;
 
   @override
   void dispose() {
@@ -199,56 +203,9 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
     final textPrimary = theme.colorScheme.onSurface;
     final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
     final primaryAccent = theme.colorScheme.primary;
+    final wide = isWideLayout(context);
 
-    return Scaffold(
-      backgroundColor: scaffoldBg,
-      appBar: AppBar(
-        title: Text(
-          _currentTab == 0 ? l10n.peopleTitle : l10n.familiesTitle,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
-        ),
-        backgroundColor: headerBg,
-        elevation: 0,
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 75),
-        child: ExpressSquish(
-          scale: 0.94,
-          onTap: () {
-            if (_currentTab == 0) {
-              widget.onNewPerson();
-            } else {
-              _showAddFamilyDialog(context, ref, l10n);
-            }
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            decoration: BoxDecoration(
-              color: primaryAccent,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: primaryAccent.withValues(alpha: 0.4),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(_currentTab == 0 ? Icons.person_add : Icons.group_add, color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  _currentTab == 0 ? l10n.newPerson : l10n.newFamily,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      body: Column(
+    final masterList = Column(
         children: [
           // 1. Tab Selector (People vs Families)
           Container(
@@ -371,27 +328,37 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
                       }
 
                       return ListView.builder(
-                        padding: const EdgeInsets.only(
+                        padding: EdgeInsets.only(
                           left: AppSpacing.md,
                           right: AppSpacing.md,
                           top: AppSpacing.md,
-                          bottom: AppSpacing.floatingTabBottomPadding + 20,
+                          bottom: wide ? AppSpacing.md : AppSpacing.floatingTabBottomPadding + 20,
                         ),
                         itemCount: filtered.length,
                         itemBuilder: (context, index) {
                           final person = filtered[index];
                           final rel = person.relationshipLabel ?? l10n.relativeDefault;
                           final addr = person.address ?? l10n.villageUnknown;
+                          final isSelected = wide && _selectedPersonId == person.id;
 
                           return Padding(
                             padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                             child: ExpressCard(
                               padding: const EdgeInsets.all(AppSpacing.md),
                               radius: 16,
-                              color: cardBg,
-                              borderColor: cardBorder,
-                              elevation: 0,
-                              onTap: () => widget.onOpenPersonDetail?.call(person.id),
+                              color: isSelected
+                                  ? primaryAccent.withValues(alpha: isDark ? 0.15 : 0.08)
+                                  : cardBg,
+                              borderColor: isSelected ? primaryAccent : cardBorder,
+                              borderWidth: isSelected ? 2.0 : 1.0,
+                              elevation: isSelected ? 2 : 0,
+                              onTap: () {
+                                if (wide) {
+                                  setState(() => _selectedPersonId = person.id);
+                                } else {
+                                  widget.onOpenPersonDetail?.call(person.id);
+                                }
+                              },
                               child: Row(
                                 children: [
                                   CircleAvatar(
@@ -555,7 +522,85 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
                   ),
           ),
         ],
+      );
+
+    return Scaffold(
+      backgroundColor: scaffoldBg,
+      appBar: AppBar(
+        title: Text(
+          _currentTab == 0 ? l10n.peopleTitle : l10n.familiesTitle,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+        ),
+        backgroundColor: headerBg,
+        elevation: 0,
       ),
+      floatingActionButton: wide
+          ? null
+          : Padding(
+              padding: const EdgeInsets.only(bottom: 75),
+              child: ExpressSquish(
+                scale: 0.94,
+                onTap: () {
+                  if (_currentTab == 0) {
+                    widget.onNewPerson();
+                  } else {
+                    _showAddFamilyDialog(context, ref, l10n);
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: primaryAccent,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryAccent.withValues(alpha: 0.4),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(_currentTab == 0 ? Icons.person_add : Icons.group_add, color: Colors.white, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        _currentTab == 0 ? l10n.newPerson : l10n.newFamily,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+      body: wide
+          ? Row(
+              children: [
+                SizedBox(
+                  width: 440,
+                  child: masterList,
+                ),
+                VerticalDivider(width: 1, thickness: 1, color: cardBorder),
+                Expanded(
+                  child: _selectedPersonId != null
+                      ? PersonDetailScreen(
+                          key: ValueKey(_selectedPersonId),
+                          personId: _selectedPersonId!,
+                          showBackButton: false,
+                          onClose: () => setState(() => _selectedPersonId = null),
+                        )
+                      : EmptyDetailPane(
+                          title: l10n.selectPersonToViewDetails,
+                          subtitle: l10n.selectPersonSubtitle,
+                          icon: Icons.person_outline,
+                          actionLabel: l10n.newPerson,
+                          onAction: widget.onNewPerson,
+                        ),
+                ),
+              ],
+            )
+          : masterList,
     );
   }
 }

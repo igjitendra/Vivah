@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/utils/responsive.dart';
+import '../../../shared/widgets/empty_detail_pane.dart';
 import '../../../shared/widgets/express_squish.dart';
 import '../../../app/app_providers.dart';
+import 'event_detail_screen.dart';
 
 /// Modern Material 3 Screen listing celebratory family events (विवाह, मुंडन, आदि)
 /// Fully theme-adaptive with search and tactile spring interactions.
@@ -24,6 +27,7 @@ class EventsListScreen extends ConsumerStatefulWidget {
 class _EventsListScreenState extends ConsumerState<EventsListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  String? _selectedEventId;
 
   @override
   void dispose() {
@@ -46,50 +50,9 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
     final textPrimary = theme.colorScheme.onSurface;
     final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
     final primaryAccent = theme.colorScheme.primary;
+    final wide = isWideLayout(context);
 
-    return Scaffold(
-      backgroundColor: scaffoldBg,
-      appBar: AppBar(
-        title: Text(
-          l10n.eventsTitle,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
-        ),
-        backgroundColor: headerBg,
-        elevation: 0,
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 75),
-        child: ExpressSquish(
-          scale: 0.94,
-          onTap: widget.onNewEvent,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            decoration: BoxDecoration(
-              color: primaryAccent,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: primaryAccent.withValues(alpha: 0.4),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.add, color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  l10n.newEvent,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      body: Column(
+    final masterList = Column(
         children: [
           // Search Box Pill
           Container(
@@ -178,26 +141,36 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.only(
+                  padding: EdgeInsets.only(
                     left: AppSpacing.md,
                     right: AppSpacing.md,
                     top: AppSpacing.md,
-                    bottom: AppSpacing.floatingTabBottomPadding + 20,
+                    bottom: wide ? AppSpacing.md : AppSpacing.floatingTabBottomPadding + 20,
                   ),
                   itemCount: filtered.length,
                   itemBuilder: (context, index) {
                     final ev = filtered[index];
                     final eventTypeName = l10n.isEnglish ? ev.eventType.name : ev.eventType.labelHindi;
+                    final isSelected = wide && _selectedEventId == ev.id;
 
                     return Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                       child: ExpressCard(
                         padding: const EdgeInsets.all(AppSpacing.md),
                         radius: 16,
-                        color: cardBg,
-                        borderColor: cardBorder,
-                        elevation: 0,
-                        onTap: () => widget.onOpenEventDetail?.call(ev.id),
+                        color: isSelected
+                            ? primaryAccent.withValues(alpha: isDark ? 0.15 : 0.08)
+                            : cardBg,
+                        borderColor: isSelected ? primaryAccent : cardBorder,
+                        borderWidth: isSelected ? 2.0 : 1.0,
+                        elevation: isSelected ? 2 : 0,
+                        onTap: () {
+                          if (wide) {
+                            setState(() => _selectedEventId = ev.id);
+                          } else {
+                            widget.onOpenEventDetail?.call(ev.id);
+                          }
+                        },
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -256,7 +229,79 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
             ),
           ),
         ],
+      );
+
+    return Scaffold(
+      backgroundColor: scaffoldBg,
+      appBar: AppBar(
+        title: Text(
+          l10n.eventsTitle,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+        ),
+        backgroundColor: headerBg,
+        elevation: 0,
       ),
+      floatingActionButton: wide
+          ? null
+          : Padding(
+              padding: const EdgeInsets.only(bottom: 75),
+              child: ExpressSquish(
+                scale: 0.94,
+                onTap: widget.onNewEvent,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: primaryAccent,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryAccent.withValues(alpha: 0.4),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.add, color: Colors.white, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.newEvent,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+      body: wide
+          ? Row(
+              children: [
+                SizedBox(
+                  width: 440,
+                  child: masterList,
+                ),
+                VerticalDivider(width: 1, thickness: 1, color: cardBorder),
+                Expanded(
+                  child: _selectedEventId != null
+                      ? EventDetailScreen(
+                          key: ValueKey(_selectedEventId),
+                          eventId: _selectedEventId!,
+                          showBackButton: false,
+                          onClose: () => setState(() => _selectedEventId = null),
+                        )
+                      : EmptyDetailPane(
+                          title: l10n.selectEventToViewDetails,
+                          subtitle: l10n.selectEventSubtitle,
+                          icon: Icons.celebration_outlined,
+                          actionLabel: l10n.newEvent,
+                          onAction: widget.onNewEvent,
+                        ),
+                ),
+              ],
+            )
+          : masterList,
     );
   }
 }

@@ -16,8 +16,15 @@ import '../../../shared/widgets/express_squish.dart';
 /// Fully theme-adaptive with celebration summary, event editing, and transaction timeline.
 class EventDetailScreen extends ConsumerStatefulWidget {
   final String eventId;
+  final bool showBackButton;
+  final VoidCallback? onClose;
 
-  const EventDetailScreen({super.key, required this.eventId});
+  const EventDetailScreen({
+    super.key,
+    required this.eventId,
+    this.showBackButton = true,
+    this.onClose,
+  });
 
   @override
   ConsumerState<EventDetailScreen> createState() => _EventDetailScreenState();
@@ -178,7 +185,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             onPressed: () async {
               Navigator.pop(ctx);
               await ref.read(eventsRepositoryProvider).archiveEvent(widget.eventId);
-              if (context.mounted) {
+              if (widget.onClose != null) {
+                widget.onClose!();
+              } else if (context.mounted) {
                 Navigator.pop(context);
               }
             },
@@ -209,6 +218,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
       key: ValueKey(_refreshKey),
       backgroundColor: scaffoldBg,
       appBar: AppBar(
+        automaticallyImplyLeading: widget.showBackButton,
         title: Text(
           l10n.eventDetails,
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
@@ -216,6 +226,14 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         backgroundColor: headerBg,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          if (widget.onClose != null)
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: widget.onClose,
+              tooltip: 'बंद करें',
+            ),
+        ],
       ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 16),

@@ -105,6 +105,7 @@ class ExpressCard extends StatelessWidget {
     this.radius = Express.cardRadius,
     this.color,
     this.borderColor,
+    this.borderWidth = 1.0,
     this.onTap,
     this.onLongPress,
     this.elevation = 0,
@@ -116,6 +117,7 @@ class ExpressCard extends StatelessWidget {
   final double radius;
   final Color? color;
   final Color? borderColor;
+  final double borderWidth;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final double elevation;
@@ -134,7 +136,7 @@ class ExpressCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: cardBg,
         borderRadius: BorderRadius.circular(radius),
-        border: Border.all(color: cardBorder, width: 1),
+        border: Border.all(color: cardBorder, width: borderWidth),
         boxShadow: elevation > 0
             ? [
                 BoxShadow(

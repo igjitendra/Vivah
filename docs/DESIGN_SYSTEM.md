@@ -161,3 +161,22 @@ Vyavahaar incorporates fluid spring physics and tactile scale gestures directly 
 - Renders automatically when screen width `≥640dp` (`hasSideRail(context)`).
 - Full desktop width (`230dp`) with brand lockup and labels; collapses to compact mode (`80dp`) with tooltips on medium screens (`640dp`–`1060dp`).
 - Interactive `_ExpressRailPill` with `MouseRegion` hover detection, active squircle pill, and `F1` keyboard shortcuts modal trigger.
+
+### 6.4 Comprehensive Form Action Migration to ExpressButton
+All core transaction, relation, and ceremony creation workflows utilize `ExpressButton` for tactile consistency:
+- **`AddEntryScreen`**: `ExpressButton` (label: "व्यवहार सुरक्षित करें" / `l10n.saveTransaction`, icon: `Icons.check`, tone: `ExpressTone.filled`, dynamic tint: Mila Green `#15803D` or Diya Red `#B91C1C`, `expand: true`, `isLoading: _isSaving`).
+- **`AddPersonScreen`**: `ExpressButton` (label: "व्यक्ति सुरक्षित करें" / `l10n.savePerson`, icon: `Icons.person_add_alt_1`, tone: `ExpressTone.filled`, tint: `primaryAccent`, `expand: true`, `isLoading: _isSaving`).
+- **`AddEventScreen`**: `ExpressButton` (label: "कार्यक्रम सुरक्षित करें" / `l10n.saveEvent`, icon: `Icons.calendar_today`, tone: `ExpressTone.filled`, tint: `primaryAccent`, `expand: true`, `isLoading: _isSaving`).
+
+### 6.5 Dual-Pane Master-Detail Layout & EmptyDetailPane Specifications
+- **Source**: `lib/src/shared/widgets/empty_detail_pane.dart`, `lib/src/core/utils/responsive.dart`
+- **Breakpoint Rules**:
+  - `splitWidth = 900.0`: Screens `≥900dp` automatically enter dual-pane split view for `LedgerScreen`, `PeopleListScreen`, and `EventsListScreen`.
+  - `paneWidth = 440.0`: Fixed-width master list on the left; right side takes remaining width (`Expanded`) for detail inspections.
+- **Active Card Selection State**:
+  - Border width increases from `1.0dp` to `2.0dp` with primary accent color.
+  - Background receives subtle `12%` (dark) / `8%` (light) accent tint.
+  - Subtle elevation (`2.0dp`) confirms current selection.
+- **`EmptyDetailPane`**:
+  - Rendered in right pane when no item is selected.
+  - Centered circular brand watermark (`AppSymbol`), Devanagari headline, explanatory subtitle, and tactile keyboard shortcuts pill (`Ctrl+N` नया जोड़ें • `Ctrl+F` खोजें • `F1` शॉर्टकट).

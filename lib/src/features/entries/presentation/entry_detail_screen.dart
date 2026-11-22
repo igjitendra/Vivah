@@ -15,8 +15,15 @@ import '../../../shared/widgets/direction_badge.dart';
 /// Fully theme-adaptive with status actions and soft archiving.
 class EntryDetailScreen extends ConsumerStatefulWidget {
   final String entryId;
+  final bool showBackButton;
+  final VoidCallback? onClose;
 
-  const EntryDetailScreen({super.key, required this.entryId});
+  const EntryDetailScreen({
+    super.key,
+    required this.entryId,
+    this.showBackButton = true,
+    this.onClose,
+  });
 
   @override
   ConsumerState<EntryDetailScreen> createState() => _EntryDetailScreenState();
@@ -162,7 +169,9 @@ class _EntryDetailScreenState extends ConsumerState<EntryDetailScreen> {
             onPressed: () async {
               Navigator.pop(ctx);
               await ref.read(entriesRepositoryProvider).archiveEntry(widget.entryId);
-              if (context.mounted) {
+              if (widget.onClose != null) {
+                widget.onClose!();
+              } else if (context.mounted) {
                 Navigator.pop(context);
               }
             },
@@ -192,6 +201,7 @@ class _EntryDetailScreenState extends ConsumerState<EntryDetailScreen> {
       key: ValueKey(_refreshKey),
       backgroundColor: scaffoldBg,
       appBar: AppBar(
+        automaticallyImplyLeading: widget.showBackButton,
         title: Text(
           l10n.transactionDetails,
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
@@ -199,6 +209,14 @@ class _EntryDetailScreenState extends ConsumerState<EntryDetailScreen> {
         backgroundColor: headerBg,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          if (widget.onClose != null)
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: widget.onClose,
+              tooltip: 'बंद करें',
+            ),
+        ],
       ),
       body: FutureBuilder<TransactionEntry?>(
         future: entriesRepo.getEntryById(widget.entryId),

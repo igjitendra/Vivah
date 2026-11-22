@@ -65,5 +65,11 @@
   "relationship": "رشتہ",
   "villageOrCity": "گاؤں / شہر",
   "villageOrCityHint": "مثال: رام پور",
-  "optionalField": "اختیاری"
+  "optionalField": "اختیاری",
+  "selectEntryToViewDetails": "تفصیلات دیکھنے کے لیے کوئی اندراج منتخب کریں",
+  "selectEntrySubtitle": "کھاتے سے کسی اندراج پر کلک کر کے تفصیل دیکھیں",
+  "selectPersonToViewDetails": "پاس بک دیکھنے کے لیے کسی فرد کو منتخب کریں",
+  "selectPersonSubtitle": "تاریخ دیکھنے کے لیے کسی پر کلک کریں",
+  "selectEventToViewDetails": "تفصیلات دیکھنے کے لیے کوئی تقریب منتخب کریں",
+  "selectEventSubtitle": "تقریب میں ملا اور دیا گیا شگون دیکھنے کے لیے کلک کریں"
 }

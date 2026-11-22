@@ -212,5 +212,11 @@
   "relationship": "Relationship",
   "villageOrCity": "Village / City",
   "villageOrCityHint": "e.g. Rampur, Jaipur",
-  "optionalField": "Optional"
+  "optionalField": "Optional",
+  "selectEntryToViewDetails": "Select an entry to view details",
+  "selectEntrySubtitle": "Click any entry from the ledger to view breakdown and gifts",
+  "selectPersonToViewDetails": "Select a person to view passbook",
+  "selectPersonSubtitle": "Click any relative or acquaintance to view their gift history",
+  "selectEventToViewDetails": "Select an event to view celebration ledger",
+  "selectEventSubtitle": "Click any ceremony to inspect shagun received and given"
 }

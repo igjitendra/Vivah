@@ -116,3 +116,17 @@
 - **Native PC Desktop Runners**:
   - Native Windows x64 C++ runner (`windows/`) with single-instance mutex and Inno Setup installer.
   - Native Linux GTK+ C++ runner (`linux/`) with window state persistence and XDG desktop entry.
+- **PC Desktop Dual-Pane (Split-View) Architecture**:
+  - Master-detail dual-pane interface automatically engaged on wide screens (`splitWidth >= 900dp`):
+    - **Ledger Master-Detail**: Left pane fixed 440dp width with search, direction tabs, filters, and transaction cards. Right pane embeds `EntryDetailScreen` or `EmptyDetailPane` placeholder.
+    - **People & Family Master-Detail**: Left pane shows relatives and families directory. Right pane embeds `PersonDetailScreen` or `EmptyDetailPane`.
+    - **Events Master-Detail**: Left pane displays celebration ceremonies. Right pane embeds `EventDetailScreen` or `EmptyDetailPane`.
+  - Active card selection feedback: highlighted accent border (`borderWidth: 2.0`), elevated tone, and spring bounce.
+  - `EmptyDetailPane`: Brand lockup, keyboard shortcut cheat sheet, and action CTA button.
+
+### 1.12 Compliance & Privacy Security (`docs/PRIVACY_POLICY.md`)
+- **100% Offline-First Zero Data Collection**: No remote servers, no user accounts, no analytics or telemetry SDKs.
+- **Google Play Store Data Safety Ready**: Full compliance with Play Store disclosures confirming 0% data collected and 0% data shared.
+- **Principle of Least Privilege**: Zero internet permission (`android.permission.INTERNET` not requested or used).
+- **Offline Cryptography**: AES-256-GCM authenticated encryption with PBKDF2 (600,000 iterations) for local user backups.
+- **DPDP Act 2023 & COPPA Compliant**: Full privacy rights and zero collection across all age demographics.

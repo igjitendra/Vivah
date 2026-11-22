@@ -28,9 +28,9 @@
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Android** | Mobile | Touch-First | Phase 2–3 | **VERIFIED** | Flutter + Material 3 implementation (`lib/`). Screen layouts, navigation, and SQLite database verified. |
 | **iOS** | Mobile | Touch-First | Phase 5 | **ARCHITECTURE READY** | Unified Flutter `lib/` codebase; cross-platform Drift SQLite and reactive Riverpod architecture. |
-| **Linux** | Desktop | Keyboard & Mouse | Desktop Post-MVP | **VERIFIED** | Native GTK+ C++ runner (`linux/`), responsive `ExpressNavRail`, hardware keyboard shortcuts, and Drift SQLite engine. |
+| **Linux** | Desktop | Keyboard & Mouse | Desktop Post-MVP | **VERIFIED** | Native GTK+ C++ runner (`linux/`), responsive `ExpressNavRail`, hardware keyboard shortcuts, dual-pane Split-View master-detail, and Drift SQLite engine. |
 | **macOS** | Desktop | Keyboard, Mouse, Trackpad | Desktop Post-MVP | **ARCHITECTURE READY** | Flutter + Drift ORM native SQLite desktop engine ready (`lib/src/data/database/`). |
-| **Windows** | Desktop | Keyboard, Mouse, Touch | Desktop Post-MVP | **VERIFIED** | Native Win32 C++ runner (`windows/`) with single-instance mutex, Inno Setup installer (`installer.iss`), responsive `ExpressNavRail`, and keyboard shortcuts. |
+| **Windows** | Desktop | Keyboard, Mouse, Touch | Desktop Post-MVP | **VERIFIED** | Native Win32 C++ runner (`windows/`) with single-instance mutex, Inno Setup installer (`installer.iss`), responsive `ExpressNavRail`, dual-pane Split-View master-detail, and keyboard shortcuts. |
 
 ---
 
@@ -43,6 +43,8 @@
 | Declarative Routing | `VERIFIED` | `lib/src/app/router/app_router.dart` | GoRouter with ShellRoute and FloatingPillTabBar on mobile. |
 | State Management & DI | `VERIFIED` | `lib/src/app/app_providers.dart` | Riverpod providers for repositories, streams, and summaries. |
 | Theming & Design System | `VERIFIED` | `lib/src/app/theme/app_theme.dart` | Material 3 light theme with warm Indian palette (Deep Navy, Terracotta, Forest Green). |
+| PC Desktop Dual-Pane Split-View | `VERIFIED` | `lib/src/shared/widgets/empty_detail_pane.dart`, `ledger_screen.dart`, `people_list_screen.dart`, `events_list_screen.dart` | Responsive master-detail dual-pane for Ledger, People, and Events (`splitWidth >= 900dp`). |
+| Data Safety & Privacy Policy | `VERIFIED` | `docs/PRIVACY_POLICY.md` | Google Play Store compliant 100% offline zero-collection policy, permissions audit, DPDP Act & COPPA compliance. |
 
 ### Indian Multilingual Localization Architecture
 | Module / Feature | Status | Primary Source Files | Verification Evidence |

@@ -65,5 +65,11 @@
   "relationship": "रिश्ता / संबंध",
   "villageOrCity": "गाँव / शहर",
   "villageOrCityHint": "उदा. रामपुर, जयपुर",
-  "optionalField": "ऐच्छिक"
+  "optionalField": "ऐच्छिक",
+  "selectEntryToViewDetails": "विवरण देखने के लिए कोई प्रविष्टि चुनें",
+  "selectEntrySubtitle": "बही खाते से किसी भी व्यवहार पर क्लिक करके उपहार व विवरण देखें",
+  "selectPersonToViewDetails": "विवरण देखने के लिए किसी व्यक्ति को चुनें",
+  "selectPersonSubtitle": "उपहार व व्यवहार इतिहास देखने के लिए किसी रिश्तेदार पर क्लिक करें",
+  "selectEventToViewDetails": "विवरण देखने के लिए कोई कार्यक्रम चुनें",
+  "selectEventSubtitle": "कार्यक्रम में मिला व दिया शगुन देखने के लिए क्लिक करें"
 }

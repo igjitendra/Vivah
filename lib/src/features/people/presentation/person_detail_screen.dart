@@ -15,8 +15,15 @@ import '../../../shared/widgets/express_squish.dart';
 /// Fully theme-adaptive with Mila/Diya balance passbook, editing, and transaction stream.
 class PersonDetailScreen extends ConsumerStatefulWidget {
   final String personId;
+  final bool showBackButton;
+  final VoidCallback? onClose;
 
-  const PersonDetailScreen({super.key, required this.personId});
+  const PersonDetailScreen({
+    super.key,
+    required this.personId,
+    this.showBackButton = true,
+    this.onClose,
+  });
 
   @override
   ConsumerState<PersonDetailScreen> createState() => _PersonDetailScreenState();
@@ -199,7 +206,9 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> {
             onPressed: () async {
               Navigator.pop(ctx);
               await repo.archivePerson(person.id);
-              if (context.mounted) {
+              if (widget.onClose != null) {
+                widget.onClose!();
+              } else if (context.mounted) {
                 Navigator.pop(context);
               }
             },
@@ -231,10 +240,19 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> {
       key: ValueKey(_refreshKey),
       backgroundColor: scaffoldBg,
       appBar: AppBar(
+        automaticallyImplyLeading: widget.showBackButton,
         title: Text(l10n.personDetails, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: headerBg,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          if (widget.onClose != null)
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: widget.onClose,
+              tooltip: 'बंद करें',
+            ),
+        ],
       ),
       body: FutureBuilder<Person?>(
         future: peopleRepo.getPersonById(widget.personId),

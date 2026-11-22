@@ -45,8 +45,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{autoprograms}\Vyavahaar"; Filename: "{app}\Vyavahaar.exe"; AppUserModelID: "com.igjitendra.vyavahaar"
-Name: "{autodesktop}\Vyavahaar"; Filename: "{app}\Vyavahaar.exe"; Tasks: desktopicon; AppUserModelID: "com.igjitendra.vyavahaar"
+Name: "{autoprograms}\Vyavahaar"; Filename: "{app}\Vyavahaar.exe"; AppUserModelID: "com.vyavahaar.app"
+Name: "{autodesktop}\Vyavahaar"; Filename: "{app}\Vyavahaar.exe"; Tasks: desktopicon; AppUserModelID: "com.vyavahaar.app"
 
 [Run]
 Filename: "{app}\Vyavahaar.exe"; Description: "{cm:LaunchProgram,Vyavahaar}"; Flags: nowait postinstall skipifsilent

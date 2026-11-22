@@ -391,6 +391,14 @@ class AppLocalizations {
   String get onboardingSlide3Badge => isEnglish ? 'No Internet, No Login' : (isUrdu ? 'بغیر انٹرنیٹ، بغیر لاگ ان' : 'बिना इंटरनेट, बिना लॉगिन');
   String get onboardingAppTour => isEnglish ? 'App Tour & Onboarding' : (isUrdu ? 'ایپ کا تعارف' : 'ऐप परिचय (ऑनबोर्डिंग)');
 
+  // Dual-Pane Desktop Split View
+  String get selectEntryToViewDetails => isEnglish ? 'Select an entry to view details' : (isUrdu ? 'تفصیلات دیکھنے کے لیے کوئی اندراج منتخب کریں' : 'विवरण देखने के लिए कोई प्रविष्टि चुनें');
+  String get selectEntrySubtitle => isEnglish ? 'Click any entry from the ledger to view breakdown and gifts' : (isUrdu ? 'کھاتے से किसी اندراج پر کلک کر کے تفصیل دیکھیں' : 'बही खाते से किसी भी व्यवहार पर क्लिक करके उपहार व विवरण देखें');
+  String get selectPersonToViewDetails => isEnglish ? 'Select a person to view passbook' : (isUrdu ? 'پاس بک دیکھنے کے لیے کسی فرد کو منتخب کریں' : 'विवरण देखने के लिए किसी व्यक्ति को चुनें');
+  String get selectPersonSubtitle => isEnglish ? 'Click any relative or acquaintance to view their gift history' : (isUrdu ? 'تاریخ دیکھنے کے لیے کسی پر کلک کریں' : 'उपहार व व्यवहार इतिहास देखने के लिए किसी रिश्तेदार पर क्लिक करें');
+  String get selectEventToViewDetails => isEnglish ? 'Select an event to view celebration ledger' : (isUrdu ? 'تفصیلات دیکھنے کے لیے کوئی تقریب منتخب کریں' : 'विवरण देखने के लिए कोई कार्यक्रम चुनें');
+  String get selectEventSubtitle => isEnglish ? 'Click any ceremony to inspect shagun received and given' : (isUrdu ? 'تقریب میں ملا اور دیا گیا شگون دیکھنے کے لیے کلک کریں' : 'कार्यक्रम में मिला व दिया शगुन देखने के लिए क्लिक करें');
+
   // Plurals
   String entryCount(int count) {
     if (isEnglish) {

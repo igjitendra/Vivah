@@ -52,6 +52,8 @@ if os.path.isfile(app_gradle_kts):
     content = re.sub(r"\bcompileSdk\s*=\s*(?:flutter\.compileSdkVersion|\d+)\b", "compileSdk = 36", content)
     content = re.sub(r"\btargetSdk\s*=\s*(?:flutter\.targetSdkVersion|\d+)\b", "targetSdk = 35", content)
     content = re.sub(r"\bminSdk\s*=\s*(?:flutter\.minSdkVersion|\d+)\b", "minSdk = 21", content)
+    content = re.sub(r'applicationId\s*=\s*["\'][^"\']+["\']', 'applicationId = "com.vyavahaar.app"', content)
+    content = re.sub(r'namespace\s*=\s*["\'][^"\']+["\']', 'namespace = "com.vyavahaar.app"', content)
     if "useLegacyPackaging" not in content:
         packaging_kts = """
 android {
@@ -65,7 +67,7 @@ android {
         content += packaging_kts
     with open(app_gradle_kts, "w", encoding="utf-8") as f:
         f.write(content)
-    print("✅ Configured android/app/build.gradle.kts with compileSdk = 36 & legacy packaging")
+    print("✅ Configured android/app/build.gradle.kts with compileSdk = 36, applicationId = com.vyavahaar.app & legacy packaging")
 
 app_gradle_groovy = os.path.join(android_dir, "app", "build.gradle")
 if os.path.isfile(app_gradle_groovy):
@@ -75,6 +77,8 @@ if os.path.isfile(app_gradle_groovy):
     content = re.sub(r"\bcompileSdk\s*=\s*(?:flutter\.compileSdkVersion|\d+)\b", "compileSdk = 36", content)
     content = re.sub(r"\btargetSdkVersion\s+(?:flutter\.targetSdkVersion|\d+)\b", "targetSdkVersion 35", content)
     content = re.sub(r"\bminSdkVersion\s+(?:flutter\.minSdkVersion|\d+)\b", "minSdkVersion 21", content)
+    content = re.sub(r'applicationId\s+["\'][^"\']+["\']', 'applicationId "com.vyavahaar.app"', content)
+    content = re.sub(r'namespace\s+["\'][^"\']+["\']', 'namespace "com.vyavahaar.app"', content)
     if "useLegacyPackaging" not in content:
         packaging_groovy = """
 android {
@@ -88,7 +92,7 @@ android {
         content += packaging_groovy
     with open(app_gradle_groovy, "w", encoding="utf-8") as f:
         f.write(content)
-    print("✅ Configured android/app/build.gradle with compileSdkVersion 36 & legacy packaging")
+    print("✅ Configured android/app/build.gradle with compileSdkVersion 36, applicationId = com.vyavahaar.app & legacy packaging")
 
 # 3. Update AndroidManifest.xml to enforce android:extractNativeLibs="true"
 for manifest_name in ["AndroidManifest.xml"]:

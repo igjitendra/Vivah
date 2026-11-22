@@ -98,3 +98,21 @@ The Home Screen (`lib/src/features/dashboard/presentation/dashboard_screen.dart`
   3. *Slide 3 (100% Offline & Private)*: Emphasizes that zero data ever leaves the user's phone. Features AES-256-GCM encryption, PDF/CSV reports, and includes an instant language switcher chip.
 - **User Agency**: A prominent "छोड़ें" (Skip) pill is always available on early slides so returning or impatient users can immediately enter the app.
 - **Revisiting**: Users can re-open the onboarding tour at any time from **Settings ➔ Display & Preferences ➔ ऐप परिचय (Onboarding)**.
+
+---
+
+## 6. InlitX/streak Tactile UX, Buttons & PC Desktop Dual-Pane Guidelines
+
+### 6.1 Tactile Button Micro-Interactions (ExpressButton)
+- Adopted directly from `InlitX/streak` button physics:
+  - **Press Dynamics**: Tap scale down to `0.94` with custom bouncy spring curve (`ratio: 0.58, stiffness: 380`).
+  - **Morphing Squircle**: Pill shape smoothly transitions into rounded squircle (`14dp`–`16dp`) during press, delivering a real-world rubber stamp or tactile switch sensation.
+  - **Color-Coded Feedback**: Mila operations flash soft green; Diya operations flash terracotta red.
+
+### 6.2 Desktop Split-View (Master-Detail Dual-Pane)
+- **Wide Display Ergonomics (`width ≥ 900dp`)**:
+  - Avoid stretching short data across full wide PC monitors.
+  - Divide screen into **Master Pane** (`440dp` width) for quick browsing, filtering, and sorting, and **Detail Pane** (remaining width) for full read/edit/delete operations.
+  - Retain master list scroll position when inspecting details.
+  - Selected item in the master list receives an active `2.0dp` border and background tint, establishing clear spatial orientation.
+  - When no item is selected, display `EmptyDetailPane` with brand mark and keyboard shortcut guidance.

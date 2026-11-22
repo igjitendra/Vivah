@@ -5,10 +5,13 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
+import '../../../core/utils/responsive.dart';
 import '../../../domain/entities/entities.dart';
+import '../../../shared/widgets/empty_detail_pane.dart';
 import '../../../shared/widgets/express_squish.dart';
 import '../../../app/app_providers.dart';
 import '../../../domain/enums/transaction_enums.dart';
+import '../../entries/presentation/entry_detail_screen.dart';
 
 /// Modern Material 3 Ledger (बही) Screen with Advanced Filters
 /// Fully theme-adaptive with search pill, direction segment filters, and tactile cards.
@@ -30,6 +33,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
   TransactionDirection? _selectedDirection;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  String? _selectedEntryId;
 
   // Advanced Filters
   String? _filterEventId;
@@ -264,55 +268,9 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
     final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
     final searchBg = isDark ? const Color(0xFF161A24) : const Color(0xFFF1F5F9);
     final primaryAccent = theme.colorScheme.primary;
+    final wide = isWideLayout(context);
 
-    return Scaffold(
-      backgroundColor: scaffoldBg,
-      appBar: AppBar(
-        title: Text(
-          l10n.ledgerTitle,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
-            fontSize: 20,
-            letterSpacing: 0.3,
-          ),
-        ),
-        backgroundColor: headerBg,
-        elevation: 0,
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 75),
-        child: ExpressSquish(
-          scale: 0.94,
-          onTap: widget.onNewEntry,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            decoration: BoxDecoration(
-              color: primaryAccent,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: primaryAccent.withValues(alpha: 0.4),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.add_card, color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  l10n.newTransaction,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      body: Column(
+    final masterList = Column(
         children: [
           // Filter Chips & Search Bar Header
           Container(
@@ -620,11 +578,11 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.only(
+                  padding: EdgeInsets.only(
                     left: AppSpacing.md,
                     right: AppSpacing.md,
                     top: AppSpacing.md,
-                    bottom: AppSpacing.floatingTabBottomPadding + 20,
+                    bottom: wide ? AppSpacing.md : AppSpacing.floatingTabBottomPadding + 20,
                   ),
                   itemCount: filtered.length,
                   itemBuilder: (context, index) {
@@ -640,7 +598,14 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                         textSecondary: textSecondary,
                         isDark: isDark,
                         l10n: l10n,
-                        onTap: () => widget.onOpenEntryDetail?.call(entry.id),
+                        isSelected: wide && _selectedEntryId == entry.id,
+                        onTap: () {
+                          if (wide) {
+                            setState(() => _selectedEntryId = entry.id);
+                          } else {
+                            widget.onOpenEntryDetail?.call(entry.id);
+                          }
+                        },
                       ),
                     );
                   },
@@ -649,7 +614,84 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
             ),
           ),
         ],
+      );
+
+    return Scaffold(
+      backgroundColor: scaffoldBg,
+      appBar: AppBar(
+        title: Text(
+          l10n.ledgerTitle,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+            fontSize: 20,
+            letterSpacing: 0.3,
+          ),
+        ),
+        backgroundColor: headerBg,
+        elevation: 0,
       ),
+      floatingActionButton: wide
+          ? null
+          : Padding(
+              padding: const EdgeInsets.only(bottom: 75),
+              child: ExpressSquish(
+                scale: 0.94,
+                onTap: widget.onNewEntry,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: primaryAccent,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryAccent.withValues(alpha: 0.4),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.add_card, color: Colors.white, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.newTransaction,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+      body: wide
+          ? Row(
+              children: [
+                SizedBox(
+                  width: 440,
+                  child: masterList,
+                ),
+                VerticalDivider(width: 1, thickness: 1, color: cardBorder),
+                Expanded(
+                  child: _selectedEntryId != null
+                      ? EntryDetailScreen(
+                          key: ValueKey(_selectedEntryId),
+                          entryId: _selectedEntryId!,
+                          showBackButton: false,
+                          onClose: () => setState(() => _selectedEntryId = null),
+                        )
+                      : EmptyDetailPane(
+                          title: l10n.selectEntryToViewDetails,
+                          subtitle: l10n.selectEntrySubtitle,
+                          icon: Icons.receipt_long_outlined,
+                          actionLabel: l10n.newTransaction,
+                          onAction: widget.onNewEntry,
+                        ),
+                ),
+              ],
+            )
+          : masterList,
     );
   }
 
@@ -722,6 +764,7 @@ class _TransactionCard extends StatelessWidget {
   final Color textSecondary;
   final bool isDark;
   final AppLocalizations l10n;
+  final bool isSelected;
   final VoidCallback onTap;
 
   const _TransactionCard({
@@ -733,6 +776,7 @@ class _TransactionCard extends StatelessWidget {
     required this.textSecondary,
     required this.isDark,
     required this.l10n,
+    this.isSelected = false,
     required this.onTap,
   });
 
@@ -745,9 +789,10 @@ class _TransactionCard extends StatelessWidget {
     return ExpressCard(
       padding: const EdgeInsets.all(AppSpacing.md),
       radius: 16,
-      color: cardBg,
-      borderColor: cardBorder,
-      elevation: 0,
+      color: isSelected ? themeColor.withValues(alpha: isDark ? 0.15 : 0.08) : cardBg,
+      borderColor: isSelected ? themeColor : cardBorder,
+      borderWidth: isSelected ? 2.0 : 1.0,
+      elevation: isSelected ? 2 : 0,
       onTap: onTap,
       child: IntrinsicHeight(
         child: Row(

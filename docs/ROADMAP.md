@@ -82,9 +82,9 @@ flowchart TD
 ### Phase 5: Android Build, Packaging & Play Store Launch (`IN PROGRESS`)
 - [x] Clean Flutter architecture with 0 legacy JavaScript dependencies.
 - [x] Automated CI workflow covering Python architecture tests, code generation, and Flutter tests.
-- [ ] Android package name alignment (`com.vyavahaar.app`).
+- [x] Android package name alignment (`com.vyavahaar.app`).
+- [x] Google Play Store privacy policy and Data Safety declaration (`docs/PRIVACY_POLICY.md`).
 - [ ] Production Android App Bundle (`.aab`) generation via Flutter Gradle.
-- [ ] Google Play Store privacy policy and Data Safety declaration.
 - [ ] Closed internal testing track rollout.
 
 ### Phase 6: Multi-Platform iOS & Desktop Verification (`FUTURE MILESTONES`)

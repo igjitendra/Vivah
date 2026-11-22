@@ -92,3 +92,11 @@ In `lib/src/app/router/app_router.dart`, `ShellRoute` dynamically detects screen
   | `Ctrl + ,` / `⌘,` | Settings | Open Settings Screen |
   | `F1` or `Ctrl + /` | Help | Open Keyboard Shortcuts Guide Sheet |
   | `Esc` | Back / Dismiss | Pop current fullscreen screen or dialog |
+
+### 4.3 Dual-Pane Master-Detail Navigation Behavior
+- **Desktop Mode (`width ≥ 900dp`, `isWideLayout(context)`)**:
+  - `LedgerScreen`, `PeopleListScreen`, and `EventsListScreen` suppress full-screen route pushing when selecting an item.
+  - Instead, selection updates local state (`_selectedEntryId`, `_selectedPersonId`, `_selectedEventId`), rendering `EntryDetailScreen`, `PersonDetailScreen`, or `EventDetailScreen` embedded in the right pane without `showBackButton`.
+  - Closing the detail view via close action button (`Icons.close`) or archiving/deleting returns the right pane to `EmptyDetailPane` while preserving list scroll position and active filters.
+- **Mobile Mode (`width < 900dp`)**:
+  - Item tap executes standard GoRouter route push (`/entry/:id`, `/person/:id`, `/event/:id`) with full-screen transitions and back button.

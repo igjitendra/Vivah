@@ -64,5 +64,5 @@
 
 All five platform releases follow strict Semantic Versioning (`MAJOR.MINOR.PATCH`):
 - **App Version**: `1.0.0`
-- **Database Schema Version**: `3` (Must match across all 5 platforms).
-- **Backup Envelope Version**: `3` (Guarantees seamless JSON backup interchange between Android, iOS, Linux, macOS, and Windows).
+- **Database Schema Version**: `4` (Must match across all 5 platforms).
+- **Backup Envelope Version**: `4` (Guarantees seamless JSON backup interchange between Android, iOS, Linux, macOS, and Windows).

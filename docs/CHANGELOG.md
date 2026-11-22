@@ -5,6 +5,27 @@
 
 ---
 
+## [1.4.8] — 2026-11-22
+
+### Added
+- **Native PC Desktop Dual-Pane (Split-View) Architecture**:
+  - Implemented responsive dual-pane master-detail interface on PC Desktop (`isWideLayout` / `splitWidth >= 900dp`):
+    - **Ledger Master-Detail (`LedgerScreen`)**: Left pane (440dp width) with search, direction tabs, filters, and transaction cards. Right pane embeds `EntryDetailScreen` with live transaction breakdown or `EmptyDetailPane` placeholder when no transaction is selected.
+    - **People & Family Master-Detail (`PeopleListScreen`)**: Left pane displays relatives and families directory. Right pane embeds `PersonDetailScreen` with balance passbook or `EmptyDetailPane`.
+    - **Events Master-Detail (`EventsListScreen`)**: Left pane displays celebration ceremonies. Right pane embeds `EventDetailScreen` with ceremony totals and timeline or `EmptyDetailPane`.
+  - Added tactile active selection indicator on master list cards (highlighted accent border, elevated tone, and spring squish).
+  - Implemented `EmptyDetailPane` (`lib/src/shared/widgets/empty_detail_pane.dart`) with official brand lockup, keyboard shortcuts hint pill, and CTA button.
+  - Added `showBackButton` and `onClose` callback parameters to `EntryDetailScreen`, `PersonDetailScreen`, and `EventDetailScreen` to support seamless embedding and closing in desktop panes.
+- **Cross-Platform Package Alignment & Linux / Windows Distribution Cleanup**:
+  - Aligned desktop application IDs to official standard `com.vyavahaar.app` across `linux/CMakeLists.txt`, `windows/installer.iss`, and Linux XDG desktop entry `linux/com.vyavahaar.app.desktop`.
+  - Updated `linux/package.sh` AppImage packaging script to build `Vyavahaar-x86_64.AppImage`.
+  - Configured `scripts/configure-android-sdk.py` to guarantee `namespace = "com.vyavahaar.app"` and `applicationId = "com.vyavahaar.app"`.
+- **Google Play Store Data Safety & Privacy Policy Compliance**:
+  - Published comprehensive offline-first `docs/PRIVACY_POLICY.md` detailing 100% offline zero-collection policy, permissions audit, AES-256-GCM encryption, COPPA and India DPDP Act 2023 compliance.
+  - Aligned `docs/ROADMAP.md` and `docs/PLATFORM_RELEASE.md` to SQLite schema v4 and backup envelope v4.
+
+---
+
 ## [1.4.7] — 2026-11-22
 
 ### Added

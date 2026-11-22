@@ -21,7 +21,7 @@
 ## 2. Platform-Specific Build Specifications
 
 ### 2.1 Android Build & Release
-- **Package Identifier**: `com.vyavahaar.app`
+- **Package Identifier**: `com.procsctools.vyavahaar`
 - **Output Formats**:
   - Production App Bundle: `app-release.aab` (uploaded to Google Play Console).
   - Standalone Testing APK: `app-release.apk` (for direct offline sideloading on user devices).
@@ -29,7 +29,7 @@
 - **Permissions**: Zero internet permissions requested.
 
 ### 2.2 iOS Build & Release
-- **Bundle Identifier**: `com.vyavahaar.app`
+- **Bundle Identifier**: `com.procsctools.vyavahaar`
 - **Minimum iOS Version**: iOS 15.0+ (supported by Flutter stable).
 - **Output Format**: Signed `.ipa` archive via `flutter build ipa --release` or Xcode.
 - **App Store Review Compliance**:
@@ -40,8 +40,8 @@
 - **Target Distributions**: Ubuntu/Debian, Fedora/RHEL, Arch Linux.
 - **Recommended Formats**:
   1. **AppImage**: Single self-contained executable running on any modern Linux distribution without root installation.
-  2. **Flatpak**: Sandboxed package distributed via Flathub with isolated local storage permissions (`~/.var/app/com.vyavahaar.app/`).
-- **Desktop Entry**: Standard `com.vyavahaar.app.desktop` file with HiDPI icon and Hindi localization.
+  2. **Flatpak**: Sandboxed package distributed via Flathub with isolated local storage permissions (`~/.var/app/com.procsctools.vyavahaar/`).
+- **Desktop Entry**: Standard `com.procsctools.vyavahaar.desktop` file with HiDPI icon and Hindi localization.
 
 ### 2.4 macOS Desktop Packaging
 - **Target Architectures**: Apple Silicon (`arm64` - M1/M2/M3/M4) and Intel (`x86_64`) via Universal Binary.

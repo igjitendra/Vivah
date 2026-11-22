@@ -3,7 +3,7 @@
 > **Effective Date**: November 22, 2026  
 > **Last Updated**: November 22, 2026  
 > **Application**: व्यवहार (Vyavahaar) — Digital Family Ledger  
-> **Package Identifier**: `com.vyavahaar.app`  
+> **Package Identifier**: `com.procsctools.vyavahaar`  
 > **Hosting & Source**: 100% Offline-First Open-Source Application  
 
 ---
@@ -53,7 +53,7 @@ Vyavahaar operates on the **Principle of Least Privilege**:
 ## 4. Local Data Storage & Security
 
 1. **Local SQLite Database**:
-   - All relative records, ceremony details, and financial transactions are stored in a sandboxed SQLite database (`vyavahaar.db`) within your device's private application sandbox (`/data/data/com.vyavahaar.app/`).
+   - All relative records, ceremony details, and financial transactions are stored in a sandboxed SQLite database (`vyavahaar.db`) within your device's private application sandbox (`/data/data/com.procsctools.vyavahaar/`).
    - Other apps cannot access or read your data without root permissions.
 
 2. **User-Initiated Encrypted Backups**:
@@ -92,4 +92,4 @@ Because Vyavahaar has no network connectivity and does not collect data, this po
 For questions regarding this Privacy Policy or Vyavahaar's offline security architecture:
 - **Project Maintainers**: Vyavahaar Open Source Team
 - **Issue Tracker**: GitHub Issues on the project repository
-- **Application ID**: `com.vyavahaar.app`
+- **Application ID**: `com.procsctools.vyavahaar`

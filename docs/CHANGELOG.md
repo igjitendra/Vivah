@@ -5,6 +5,19 @@
 
 ---
 
+## [1.4.10] — 2026-11-22
+
+### Changed
+- **Application Package Identifier Alignment (`com.procsctools.vyavahaar`)**:
+  - Aligned global package identifier, application ID, and namespace across all platforms to `com.procsctools.vyavahaar`:
+    - **Android Build & CI**: Configured `.github/workflows/build-apk.yml` with `--org com.procsctools` and `scripts/configure-android-sdk.py` to enforce `applicationId = "com.procsctools.vyavahaar"` and `namespace = "com.procsctools.vyavahaar"`.
+    - **SQLite Dynamic Native Loader**: Added primary extraction paths for `/data/data/com.procsctools.vyavahaar/lib/libsqlite3.so` in `lib/src/data/database/sqlite_loader.dart`.
+    - **Windows x64 Desktop**: Updated Inno Setup installer `windows/installer.iss` with `AppUserModelID: "com.procsctools.vyavahaar"`.
+    - **Linux GTK+ Desktop**: Updated `linux/CMakeLists.txt` (`APPLICATION_ID`), XDG specification `linux/com.procsctools.vyavahaar.desktop`, and `linux/package.sh`.
+    - **Documentation**: Updated `docs/PRIVACY_POLICY.md`, `docs/ROADMAP.md`, `docs/ARCHITECTURE.md`, `docs/ANDROID_BUILD_RELEASE.md`, and `docs/PLATFORM_RELEASE.md`.
+
+---
+
 ## [1.4.9] — 2026-11-22
 
 ### Added

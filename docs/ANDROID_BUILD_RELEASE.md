@@ -1,7 +1,7 @@
 # Android Build, Packaging & Release Guide — व्यवहार (Vyavahaar)
 
 > **Platform**: Android Mobile (Tier 1 Target)  
-> **Package Identifier**: `com.vyavahaar.app` (Target Play Store ID)  
+> **Package Identifier**: `com.procsctools.vyavahaar` (Target Play Store ID)  
 > **Runtime**: Flutter Stable / Dart 3.x  
 > **Master Multi-Platform Release Guide**: [`docs/PLATFORM_RELEASE.md`](PLATFORM_RELEASE.md) (Covers Android, iOS, Linux, macOS, and Windows)  
 > **Last Updated**: 2026-11-21  
@@ -11,7 +11,7 @@
 ## 1. Android Configuration
 
 In the Flutter Android project configuration:
-- **Application ID / Package Name**: `com.vyavahaar.app`
+- **Application ID / Package Name**: `com.procsctools.vyavahaar`
 - **Application Label**: व्यवहार
 - **Version Name**: `1.0.0`
 - **Version Code**: `1`
@@ -80,9 +80,9 @@ Produces optimized APKs per ABI (`app-arm64-v8a-release.apk`, `app-armeabi-v7a-r
 The Android platform runner is fully configured under `android/`:
 1. **Runner Configuration**:
    - `android/settings.gradle.kts`: Declares `rootProject.name = "vyavahaar"`.
-   - `android/app/build.gradle.kts`: Configured with `namespace = "com.vyavahaar.app"`, `applicationId = "com.vyavahaar.app"`, `minSdk = 26`, `targetSdk = 35`, Java 11 compatibility with core library desugaring (`desugar_jdk_libs:2.1.5`).
+   - `android/app/build.gradle.kts`: Configured with `namespace = "com.procsctools.vyavahaar"`, `applicationId = "com.procsctools.vyavahaar"`, `minSdk = 26`, `targetSdk = 35`, Java 11 compatibility with core library desugaring (`desugar_jdk_libs:2.1.5`).
 2. **Security & Financial Privacy Bridge**:
-   - `android/app/src/main/kotlin/com/vyavahaar/app/MainActivity.kt`: Extends `FlutterFragmentActivity` and registers the `vyavahaar/security` MethodChannel.
+   - `android/app/src/main/kotlin/com/procsctools/vyavahaar/MainActivity.kt`: Extends `FlutterFragmentActivity` and registers the `vyavahaar/security` MethodChannel.
    - Calling `setSecure(true)` dynamically applies `WindowManager.LayoutParams.FLAG_SECURE` to the window, preventing screenshots and screen recordings while viewing sensitive family financial transactions.
 3. **100% Offline Manifest Hardening**:
    - `android/app/src/main/AndroidManifest.xml`: Strips `INTERNET` and `ACCESS_NETWORK_STATE` via `tools:node="remove"`.

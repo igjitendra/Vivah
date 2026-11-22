@@ -189,7 +189,7 @@ The following test suites were executed directly in the repository environment:
    - Because the local development environment is Android Termux (`Linux aarch64`), `flutter` and `dart` command-line binaries are not installed locally.
    - All Flutter builds, code generation (`build_runner`), analysis, and unit tests are handled automatically via GitHub Actions CI on Ubuntu runners.
 2. **Phase 5 Android Release Packaging**:
-   - Align Android package identifier (`com.vyavahaar.app`) in `android/app/build.gradle`.
+   - Align Android package identifier (`com.procsctools.vyavahaar`) in `android/app/build.gradle`.
    - Generate production signing keystore for Google Play Store upload.
    - Draft Google Play Data Safety declaration (100% offline, zero data collected).
 3. **User Approval for Merge**:

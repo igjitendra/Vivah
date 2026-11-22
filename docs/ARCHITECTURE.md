@@ -134,9 +134,9 @@ Vyavahaar implements native PC software capabilities directly modeled on InlitX/
 2. **Linux Native Runner (`linux/`)**:
    - GTK+ 3.0 C++ runtime (`linux/runner/main.cc`, `my_application.cc`).
    - Window size and state restoration (`window_delete_cb`, `size_window`).
-   - Standard XDG Desktop file specification: `linux/com.vyavahaar.app.desktop`.
+   - Standard XDG Desktop file specification: `linux/com.procsctools.vyavahaar.desktop`.
 3. **Android Native Runner (`android/`)**:
-   - Package: `com.vyavahaar.app`, compileSdk 35, minSdk 26, Java 11 with JDK desugaring.
+   - Package: `com.procsctools.vyavahaar`, compileSdk 35, minSdk 26, Java 11 with JDK desugaring.
    - `MainActivity.kt` extending `FlutterFragmentActivity` with `vyavahaar/security` MethodChannel for toggling `FLAG_SECURE` (screenshot/screen-record prevention for privacy mode).
    - 100% Offline Manifest Hardening: Strips `INTERNET` and `ACCESS_NETWORK_STATE` permissions via `tools:node="remove"`.
    - Local device backup & transfer rules configured in `res/xml/backup_rules.xml` and `res/xml/data_extraction_rules.xml`.

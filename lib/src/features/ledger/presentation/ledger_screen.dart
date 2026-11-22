@@ -10,7 +10,7 @@ import '../../../shared/widgets/express_squish.dart';
 import '../../../app/app_providers.dart';
 import '../../../domain/enums/transaction_enums.dart';
 
-/// Modern Material 3 Ledger (बही) Screen
+/// Modern Material 3 Ledger (बही) Screen with Advanced Filters
 /// Fully theme-adaptive with search pill, direction segment filters, and tactile cards.
 class LedgerScreen extends ConsumerStatefulWidget {
   final VoidCallback onNewEntry;
@@ -31,10 +31,223 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
+  // Advanced Filters
+  String? _filterEventId;
+  TransactionType? _filterType;
+  TransactionStatus? _filterStatus;
+  int _sortBy = 0; // 0: Newest First, 1: Oldest First, 2: Amount High-Low, 3: Amount Low-High
+
+  int get _activeFiltersCount {
+    int count = 0;
+    if (_filterEventId != null) count++;
+    if (_filterType != null) count++;
+    if (_filterStatus != null) count++;
+    if (_sortBy != 0) count++;
+    return count;
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _showFilterSheet(BuildContext context, AppLocalizations l10n) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final eventsAsync = ref.read(activeEventsListProvider);
+
+    String? tempEventId = _filterEventId;
+    TransactionType? tempType = _filterType;
+    TransactionStatus? tempStatus = _filterStatus;
+    int tempSortBy = _sortBy;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setSheetState) => Padding(
+          padding: EdgeInsets.only(
+            left: AppSpacing.md,
+            right: AppSpacing.md,
+            top: AppSpacing.md,
+            bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.md,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n.advancedFilters,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                const Divider(),
+                const SizedBox(height: 8),
+
+                // 1. Event Filter
+                Text(l10n.filterByEvent, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 6),
+                eventsAsync.when(
+                  loading: () => const LinearProgressIndicator(),
+                  error: (err, _) => const SizedBox.shrink(),
+                  data: (events) => DropdownButtonFormField<String?>(
+                    value: tempEventId,
+                    hint: Text(l10n.all),
+                    items: [
+                      DropdownMenuItem(value: null, child: Text(l10n.all)),
+                      ...events.map((e) => DropdownMenuItem(value: e.id, child: Text('${e.title} (${e.eventDate})'))),
+                    ],
+                    onChanged: (val) => setSheetState(() => tempEventId = val),
+                    decoration: InputDecoration(
+                      filled: true,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // 2. Type Filter (Cash / Item / Both)
+                Text(l10n.filterByType, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    ChoiceChip(
+                      label: Text(l10n.all),
+                      selected: tempType == null,
+                      onSelected: (val) => setSheetState(() => tempType = null),
+                    ),
+                    ChoiceChip(
+                      label: Text(l10n.cash),
+                      selected: tempType == TransactionType.cash,
+                      onSelected: (val) => setSheetState(() => tempType = val ? TransactionType.cash : null),
+                    ),
+                    ChoiceChip(
+                      label: Text(l10n.giftItem),
+                      selected: tempType == TransactionType.item,
+                      onSelected: (val) => setSheetState(() => tempType = val ? TransactionType.item : null),
+                    ),
+                    ChoiceChip(
+                      label: Text(l10n.cashAndItem),
+                      selected: tempType == TransactionType.cashAndItem,
+                      onSelected: (val) => setSheetState(() => tempType = val ? TransactionType.cashAndItem : null),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // 3. Status Filter (Recorded vs Planned)
+                Text(l10n.filterByStatus, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    ChoiceChip(
+                      label: Text(l10n.all),
+                      selected: tempStatus == null,
+                      onSelected: (val) => setSheetState(() => tempStatus = null),
+                    ),
+                    ChoiceChip(
+                      label: Text(l10n.statusRecorded),
+                      selected: tempStatus == TransactionStatus.recorded,
+                      onSelected: (val) => setSheetState(() => tempStatus = val ? TransactionStatus.recorded : null),
+                    ),
+                    ChoiceChip(
+                      label: Text(l10n.statusPlanned),
+                      selected: tempStatus == TransactionStatus.planned,
+                      onSelected: (val) => setSheetState(() => tempStatus = val ? TransactionStatus.planned : null),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // 4. Sort By
+                Text(l10n.sortBy, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    ChoiceChip(
+                      label: Text(l10n.newestFirst),
+                      selected: tempSortBy == 0,
+                      onSelected: (val) => setSheetState(() => tempSortBy = 0),
+                    ),
+                    ChoiceChip(
+                      label: Text(l10n.oldestFirst),
+                      selected: tempSortBy == 1,
+                      onSelected: (val) => setSheetState(() => tempSortBy = 1),
+                    ),
+                    ChoiceChip(
+                      label: Text(l10n.amountHighToLow),
+                      selected: tempSortBy == 2,
+                      onSelected: (val) => setSheetState(() => tempSortBy = 2),
+                    ),
+                    ChoiceChip(
+                      label: Text(l10n.amountLowToHigh),
+                      selected: tempSortBy == 3,
+                      onSelected: (val) => setSheetState(() => tempSortBy = 3),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                // Action Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          setSheetState(() {
+                            tempEventId = null;
+                            tempType = null;
+                            tempStatus = null;
+                            tempSortBy = 0;
+                          });
+                        },
+                        child: Text(l10n.clearFilters),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.terracotta),
+                        onPressed: () {
+                          setState(() {
+                            _filterEventId = tempEventId;
+                            _filterType = tempType;
+                            _filterStatus = tempStatus;
+                            _sortBy = tempSortBy;
+                          });
+                          Navigator.pop(ctx);
+                        },
+                        child: Text(l10n.applyFilters, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -43,6 +256,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final l10n = context.l10n;
     final entriesAsync = ref.watch(entriesListProvider(_selectedDirection));
+    final eventsAsync = ref.watch(activeEventsListProvider);
 
     final scaffoldBg = theme.scaffoldBackgroundColor;
     final headerBg = isDark ? theme.colorScheme.surface : theme.colorScheme.secondary;
@@ -111,42 +325,67 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
             ),
             child: Column(
               children: [
-                // 1. Material 3 Search Bar Pill
-                Container(
-                  decoration: BoxDecoration(
-                    color: searchBg,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: cardBorder),
-                  ),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
-                    style: TextStyle(fontSize: 14, color: textPrimary),
-                    decoration: InputDecoration(
-                      hintText: l10n.searchLedgerHint,
-                      hintStyle: TextStyle(fontSize: 13, color: textSecondary),
-                      prefixIcon: Icon(Icons.search, color: textSecondary, size: 20),
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: Icon(Icons.clear, color: textSecondary, size: 18),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() => _searchQuery = '');
-                              },
-                            )
-                          : null,
-                      filled: false,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
+                // 1. Search Bar with Advanced Filter Icon Button
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: searchBg,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: cardBorder),
+                        ),
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
+                          style: TextStyle(fontSize: 14, color: textPrimary),
+                          decoration: InputDecoration(
+                            hintText: l10n.searchLedgerHint,
+                            hintStyle: TextStyle(fontSize: 13, color: textSecondary),
+                            prefixIcon: Icon(Icons.search, color: textSecondary, size: 20),
+                            suffixIcon: _searchQuery.isNotEmpty
+                                ? IconButton(
+                                    icon: Icon(Icons.clear, color: textSecondary, size: 18),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      setState(() => _searchQuery = '');
+                                    },
+                                  )
+                                : null,
+                            filled: false,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+                            border: InputBorder.none,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: _activeFiltersCount > 0 ? primaryAccent.withValues(alpha: 0.15) : searchBg,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: _activeFiltersCount > 0 ? primaryAccent : cardBorder),
+                      ),
+                      child: IconButton(
+                        icon: Badge(
+                          isLabelVisible: _activeFiltersCount > 0,
+                          label: Text('$_activeFiltersCount', style: const TextStyle(fontSize: 10, color: Colors.white)),
+                          backgroundColor: primaryAccent,
+                          child: Icon(
+                            Icons.tune_rounded,
+                            color: _activeFiltersCount > 0 ? primaryAccent : textSecondary,
+                            size: 20,
+                          ),
+                        ),
+                        onPressed: () => _showFilterSheet(context, l10n),
+                      ),
+                    ),
+                  ],
                 ),
 
                 const SizedBox(height: 8),
 
-                // 2. Filter Segment Chips Row
+                // 2. Filter Segment Chips Row (All / Mila / Diya)
                 Row(
                   children: [
                     _buildFilterChip(
@@ -186,11 +425,87 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                     ),
                   ],
                 ),
+
+                // 3. Active Filters Pill Row
+                if (_activeFiltersCount > 0) ...[
+                  const SizedBox(height: 8),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        if (_filterEventId != null) ...[
+                          Chip(
+                            label: Text(
+                              eventsAsync.value?.firstWhere((e) => e.id == _filterEventId, orElse: () => Event(id: '', title: l10n.tabEvents, eventType: EventType.other, eventDate: '', createdAt: DateTime.now(), updatedAt: DateTime.now())).title ?? l10n.tabEvents,
+                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                            deleteIcon: const Icon(Icons.close, size: 14),
+                            onDeleted: () => setState(() => _filterEventId = null),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          const SizedBox(width: 4),
+                        ],
+                        if (_filterType != null) ...[
+                          Chip(
+                            label: Text(
+                              _filterType == TransactionType.cash
+                                  ? l10n.cash
+                                  : (_filterType == TransactionType.item ? l10n.giftItem : l10n.cashAndItem),
+                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                            deleteIcon: const Icon(Icons.close, size: 14),
+                            onDeleted: () => setState(() => _filterType = null),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          const SizedBox(width: 4),
+                        ],
+                        if (_filterStatus != null) ...[
+                          Chip(
+                            label: Text(
+                              _filterStatus == TransactionStatus.recorded ? l10n.statusRecorded : l10n.statusPlanned,
+                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                            deleteIcon: const Icon(Icons.close, size: 14),
+                            onDeleted: () => setState(() => _filterStatus = null),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          const SizedBox(width: 4),
+                        ],
+                        if (_sortBy != 0) ...[
+                          Chip(
+                            label: Text(
+                              _sortBy == 1
+                                  ? l10n.oldestFirst
+                                  : (_sortBy == 2 ? l10n.amountHighToLow : l10n.amountLowToHigh),
+                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                            deleteIcon: const Icon(Icons.close, size: 14),
+                            onDeleted: () => setState(() => _sortBy = 0),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          const SizedBox(width: 4),
+                        ],
+                        ActionChip(
+                          label: Text(l10n.clearFilters, style: TextStyle(fontSize: 11, color: primaryAccent, fontWeight: FontWeight.bold)),
+                          onPressed: () {
+                            setState(() {
+                              _filterEventId = null;
+                              _filterType = null;
+                              _filterStatus = null;
+                              _sortBy = 0;
+                            });
+                          },
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
 
-          // 3. Transactions List View
+          // 4. Transactions List View
           Expanded(
             child: entriesAsync.when(
               loading: () => Center(child: CircularProgressIndicator(color: primaryAccent)),
@@ -205,18 +520,51 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                 ),
               ),
               data: (entries) {
-                // Apply Search Query filter
-                final filtered = entries.where((e) {
-                  if (_searchQuery.isEmpty) return true;
-                  final name = e.personName?.toLowerCase() ?? '';
-                  final village = e.personAddress?.toLowerCase() ?? '';
-                  final event = e.eventTitle?.toLowerCase() ?? '';
-                  final notes = e.notes?.toLowerCase() ?? '';
-                  return name.contains(_searchQuery) ||
-                      village.contains(_searchQuery) ||
-                      event.contains(_searchQuery) ||
-                      notes.contains(_searchQuery);
+                // Apply Search & Advanced Filters
+                var filtered = entries.where((e) {
+                  if (_searchQuery.isNotEmpty) {
+                    final name = e.personName?.toLowerCase() ?? '';
+                    final village = e.personAddress?.toLowerCase() ?? '';
+                    final event = e.eventTitle?.toLowerCase() ?? '';
+                    final notes = e.notes?.toLowerCase() ?? '';
+                    final matchesSearch = name.contains(_searchQuery) ||
+                        village.contains(_searchQuery) ||
+                        event.contains(_searchQuery) ||
+                        notes.contains(_searchQuery);
+                    if (!matchesSearch) return false;
+                  }
+
+                  if (_filterEventId != null && e.eventId != _filterEventId) {
+                    return false;
+                  }
+
+                  if (_filterType != null && e.transactionType != _filterType) {
+                    return false;
+                  }
+
+                  if (_filterStatus != null && e.status != _filterStatus) {
+                    return false;
+                  }
+
+                  return true;
                 }).toList();
+
+                // Apply Sorting
+                switch (_sortBy) {
+                  case 1:
+                    filtered.sort((a, b) => a.transactionDate.compareTo(b.transactionDate));
+                    break;
+                  case 2:
+                    filtered.sort((a, b) => (b.amountPaise ?? 0).compareTo(a.amountPaise ?? 0));
+                    break;
+                  case 3:
+                    filtered.sort((a, b) => (a.amountPaise ?? 0).compareTo(b.amountPaise ?? 0));
+                    break;
+                  case 0:
+                  default:
+                    filtered.sort((a, b) => b.transactionDate.compareTo(a.transactionDate));
+                    break;
+                }
 
                 if (filtered.isEmpty) {
                   return Center(
@@ -236,7 +584,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            _searchQuery.isNotEmpty ? l10n.noResultsFound : l10n.noEntriesYet,
+                            _searchQuery.isNotEmpty || _activeFiltersCount > 0 ? l10n.noResultsFound : l10n.noEntriesYet,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
@@ -245,11 +593,11 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            _searchQuery.isNotEmpty ? l10n.tryDifferentSearch : l10n.recordFirstTransaction,
+                            _searchQuery.isNotEmpty || _activeFiltersCount > 0 ? l10n.tryDifferentSearch : l10n.recordFirstTransaction,
                             style: TextStyle(fontSize: 13, color: textSecondary),
                             textAlign: TextAlign.center,
                           ),
-                          if (_searchQuery.isEmpty) ...[
+                          if (_searchQuery.isEmpty && _activeFiltersCount == 0) ...[
                             const SizedBox(height: 16),
                             ExpressSquish(
                               scale: 0.95,
@@ -258,18 +606,11 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                                 decoration: BoxDecoration(
                                   color: primaryAccent,
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.add, color: Colors.white, size: 18),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      l10n.newTransaction,
-                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
+                                child: Text(
+                                  l10n.newTransaction,
+                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                                 ),
                               ),
                             ),
@@ -281,24 +622,28 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.md,
-                    AppSpacing.sm,
-                    AppSpacing.md,
-                    AppSpacing.floatingTabBottomPadding + 20,
+                  padding: const EdgeInsets.only(
+                    left: AppSpacing.md,
+                    right: AppSpacing.md,
+                    top: AppSpacing.md,
+                    bottom: AppSpacing.floatingTabBottomPadding + 20,
                   ),
                   itemCount: filtered.length,
                   itemBuilder: (context, index) {
                     final entry = filtered[index];
-                    return _buildTransactionCard(
-                      context,
-                      entry,
-                      cardBg: cardBg,
-                      cardBorder: cardBorder,
-                      textPrimary: textPrimary,
-                      textSecondary: textSecondary,
-                      searchBg: searchBg,
-                      isDark: isDark,
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                      child: _TransactionCard(
+                        entry: entry,
+                        cardBg: cardBg,
+                        cardBorder: cardBorder,
+                        searchBg: searchBg,
+                        textPrimary: textPrimary,
+                        textSecondary: textSecondary,
+                        isDark: isDark,
+                        l10n: l10n,
+                        onTap: () => widget.onOpenEntryDetail?.call(entry.id),
+                      ),
                     );
                   },
                 );
@@ -323,9 +668,10 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
   }) {
     return Expanded(
       child: ExpressSquish(
-        scale: 0.94,
+        scale: 0.96,
         onTap: onTap,
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
             color: isSelected ? activeColor : cardBg,
@@ -334,6 +680,15 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
               color: isSelected ? activeColor : cardBorder,
               width: 1,
             ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: activeColor.withValues(alpha: 0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : [],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -343,13 +698,13 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                 size: 14,
                 color: isSelected ? Colors.white : textSecondary,
               ),
-              const SizedBox(width: 5),
+              const SizedBox(width: 4),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                   color: isSelected ? Colors.white : textPrimary,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                  fontSize: 12,
                 ),
               ),
             ],
@@ -358,78 +713,66 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
       ),
     );
   }
+}
 
-  Widget _buildTransactionCard(
-    BuildContext context,
-    TransactionEntry entry, {
-    required Color cardBg,
-    required Color cardBorder,
-    required Color textPrimary,
-    required Color textSecondary,
-    required Color searchBg,
-    required bool isDark,
-  }) {
-    final l10n = context.l10n;
-    final isReceived = entry.direction == TransactionDirection.received;
+class _TransactionCard extends StatelessWidget {
+  final TransactionEntry entry;
+  final Color cardBg;
+  final Color cardBorder;
+  final Color searchBg;
+  final Color textPrimary;
+  final Color textSecondary;
+  final bool isDark;
+  final AppLocalizations l10n;
+  final VoidCallback onTap;
+
+  const _TransactionCard({
+    required this.entry,
+    required this.cardBg,
+    required this.cardBorder,
+    required this.searchBg,
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.isDark,
+    required this.l10n,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isReceived = entry.direction == TransactionDirection.received || entry.direction == TransactionDirection.mila;
     final themeColor = isReceived ? AppColors.milaGreen : AppColors.diyaRed;
-    final themeSoftColor = isReceived
-        ? (isDark ? const Color(0xFF1B3D27) : AppColors.milaGreenSoft)
-        : (isDark ? const Color(0xFF451E22) : AppColors.diyaRedSoft);
-
     final personName = entry.personName ?? l10n.unknownPerson;
-    final initial = personName.isNotEmpty ? personName.characters.first : '?';
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm + 2),
-      child: ExpressCard(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        radius: 16,
-        color: cardBg,
-        borderColor: cardBorder,
-        elevation: 0,
-        onTap: () => widget.onOpenEntryDetail?.call(entry.id),
+    return ExpressCard(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      radius: 16,
+      color: cardBg,
+      borderColor: cardBorder,
+      elevation: 0,
+      onTap: onTap,
+      child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Direction Avatar with initials & arrow badge
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                CircleAvatar(
-                  radius: 22,
-                  backgroundColor: themeSoftColor,
-                  child: Text(
-                    initial,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: themeColor,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: -2,
-                  right: -2,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: themeColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: cardBg, width: 1.5),
-                    ),
-                    child: Icon(
-                      isReceived ? Icons.arrow_downward : Icons.arrow_upward,
-                      size: 9,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
+            // Direction Indicator Icon
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: themeColor.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isReceived ? Icons.south_west_rounded : Icons.north_east_rounded,
+                color: themeColor,
+                size: 18,
+              ),
             ),
 
-            const SizedBox(width: AppSpacing.md),
+            const SizedBox(width: 12),
 
-            // Details Column
+            // Person and Detail Information
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

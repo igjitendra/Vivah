@@ -61,3 +61,9 @@ final activeEventsListProvider = StreamProvider<List<Event>>((ref) {
   final repo = ref.watch(eventsRepositoryProvider);
   return repo.watchActiveEvents();
 });
+
+/// Active families stream provider
+final activeFamiliesListProvider = StreamProvider<List<Family>>((ref) {
+  final repo = ref.watch(familiesRepositoryProvider);
+  return repo.watchActiveFamilies();
+});

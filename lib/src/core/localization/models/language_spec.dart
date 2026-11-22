@@ -42,6 +42,9 @@ class LanguageSpec {
     this.lineSpacingMultiplier = 1.0,
   });
 
+  /// Native display name alias
+  String get nativeName => nameNative;
+
   /// BCP 47 Language Tag
   String get bcp47Tag {
     final parts = [languageCode];

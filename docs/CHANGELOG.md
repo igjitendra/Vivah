@@ -56,6 +56,25 @@
 
 ---
 
+## [1.4.3] — 2026-11-22
+
+### Added
+- **Complete Family & Clan Management System (परिवार एवं कुल प्रबंधन प्रणाली)**:
+  - Integrated full UI support for `Families` in `PeopleListScreen` via tab switcher (`लोग` vs `परिवार`).
+  - Added "+ नया परिवार जोड़ें" dialog with name, description/village, and notes.
+  - Added family membership inspection sheet showing all relatives belonging to a family.
+  - Linked family association dropdown in `AddPersonScreen` ensuring every relative can be grouped by clan/family.
+  - Added `activeFamiliesListProvider` reactive stream in `app_providers.dart`.
+- **Comprehensive Visual Insights & Analytics in Reports (सांख्यिकी एवं विज़ुअल अंतर्दृष्टि)**:
+  - Added financial overview cards (*Kul Mila* and *Kul Diya* with counts).
+  - Added Top Shagun Transactions cards displaying the highest received and given transactions.
+  - Added Event-wise Activity breakdown showing transactional totals per ceremony.
+- **Advanced Ledger Filter & Sorting System (बही उन्नत फ़िल्टर व सॉर्टिंग)**:
+  - Integrated modal filter sheet with Event dropdown, Transaction Type chips (*Cash, Item, Both*), Status chips (*Recorded, Planned*), and 4 Sort options (*Newest, Oldest, Amount High-to-Low, Amount Low-to-High*).
+  - Added active filter badge counter on filter icon and interactive dismissible filter tags row.
+
+---
+
 ## [1.4.2] — 2026-11-22
 
 ### Added

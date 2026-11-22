@@ -213,7 +213,7 @@ class AppLogo extends StatelessWidget {
     final titleColor = isDark ? AppColors.warmCream : AppColors.deepNavy;
     final taglineColor = isDark ? const Color(0xFFCBD5E1) : AppColors.textSecondary;
     final pageColor = isDark ? AppColors.warmCream : AppColors.warmCream;
-    final checkColor = AppColors.terracotta;
+    const checkColor = AppColors.terracotta;
 
     final effectiveTagline = customTagline ?? l10n.appTagline;
 

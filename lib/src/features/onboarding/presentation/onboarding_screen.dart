@@ -245,7 +245,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               const Icon(Icons.translate, size: 16, color: AppColors.terracotta),
                               const SizedBox(width: 8),
                               Text(
-                                '${l10n.selectLanguage}: ${activeLanguage.nativeName}',
+                                '${l10n.selectLanguage}: ${activeLanguage.nameNative}',
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,

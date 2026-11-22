@@ -128,6 +128,44 @@ class AppLocalizations {
   String get personNotFound => isEnglish ? 'Person not found' : (isUrdu ? 'شخص نہیں ملا' : 'व्यक्ति नहीं मिला');
   String get personSavedSuccess => isEnglish ? 'Person saved successfully' : (isUrdu ? 'شخص کامیابی سے محفوظ ہو گیا' : 'व्यक्ति सफलतापूर्वक सहेजा गया');
   String get noPeopleFound => isEnglish ? 'No people found' : (isUrdu ? 'کوئی شخص نہیں ملا' : 'कोई व्यक्ति नहीं मिला');
+
+  // Families / Clan System
+  String get familiesTitle => isEnglish ? 'Families & Clans' : (isUrdu ? 'خاندان' : 'परिवार व कुल');
+  String get newFamily => isEnglish ? 'New Family' : (isUrdu ? 'نیا خاندان' : 'नया परिवार');
+  String get addNewFamily => isEnglish ? 'Add New Family' : (isUrdu ? 'نیا خاندان شامل کریں' : 'नया परिवार जोड़ें');
+  String get familyName => isEnglish ? 'Family Name *' : (isUrdu ? 'خاندان کا نام *' : 'परिवार का नाम *');
+  String get familyNameHint => isEnglish ? 'e.g. Sharma Family - Kanpur' : (isUrdu ? 'مثال: شرما خاندان' : 'उदा. शर्मा परिवार - कानपुर');
+  String get familyDescription => isEnglish ? 'Description / Village' : (isUrdu ? 'تفصیل / گاؤں' : 'विवरण / गाँव');
+  String get familyDescriptionHint => isEnglish ? 'e.g. Maternal side relatives' : (isUrdu ? 'مثال: ننھیال کے رشتہ دار' : 'उदा. ननिहाल पक्ष के रिश्तेदार');
+  String get selectFamilyOptional => isEnglish ? 'Family / Clan (Optional)' : (isUrdu ? 'خاندان (اختیاری)' : 'परिवार / कुल (वैकल्पिक)');
+  String get noFamily => isEnglish ? 'No Family (Independent)' : (isUrdu ? 'کوئی خاندان نہیں' : 'कोई परिवार नहीं');
+  String get familySavedSuccess => isEnglish ? 'Family saved successfully' : (isUrdu ? 'خاندان کامیابی سے محفوظ ہو گیا' : 'परिवार सफलतापूर्वक सहेजा गया');
+  String get membersCount => isEnglish ? 'Members' : (isUrdu ? 'افراد' : 'सदस्य');
+  String get noFamiliesFound => isEnglish ? 'No families added yet' : (isUrdu ? 'ابھی کوئی خاندان شامل نہیں ہے' : 'अभी कोई परिवार नहीं जोड़ा गया');
+  String get peopleTab => isEnglish ? 'People' : (isUrdu ? 'افراد' : 'लोग');
+  String get familiesTab => isEnglish ? 'Families' : (isUrdu ? 'خاندان' : 'परिवार');
+
+  // Advanced Filters
+  String get advancedFilters => isEnglish ? 'Advanced Filters' : (isUrdu ? 'مزید فلٹرز' : 'उन्नत फ़िल्टर');
+  String get filterByEvent => isEnglish ? 'Filter by Event' : (isUrdu ? 'تقریب سے فلٹر' : 'कार्यक्रम अनुसार फ़िल्टर');
+  String get filterByType => isEnglish ? 'Transaction Type' : (isUrdu ? 'لین دین کی قسم' : 'लेनदेन का प्रकार');
+  String get filterByStatus => isEnglish ? 'Status' : (isUrdu ? 'حیثیت' : 'स्थिति');
+  String get sortBy => isEnglish ? 'Sort By' : (isUrdu ? 'ترتیب دیں' : 'क्रमबद्ध करें');
+  String get newestFirst => isEnglish ? 'Newest First' : (isUrdu ? 'تازہ ترین پہلے' : 'नवीनतम पहले');
+  String get oldestFirst => isEnglish ? 'Oldest First' : (isUrdu ? 'قدیم ترین پہلے' : 'पुरातन पहले');
+  String get amountHighToLow => isEnglish ? 'Amount: High to Low' : (isUrdu ? 'رقم: زیادہ سے کم' : 'अधिकतम राशि पहले');
+  String get amountLowToHigh => isEnglish ? 'Amount: Low to High' : (isUrdu ? 'رقم: کم سے زیادہ' : 'न्यूनतम राशि पहले');
+  String get clearFilters => isEnglish ? 'Clear Filters' : (isUrdu ? 'فلٹرز صاف کریں' : 'फ़िल्टर हटाएं');
+  String get applyFilters => isEnglish ? 'Apply Filters' : (isUrdu ? 'فلٹرز لگائیں' : 'फ़िल्टर लागू करें');
+
+  // Analytics & Insights
+  String get insightsTitle => isEnglish ? 'Insights & Analytics' : (isUrdu ? 'تجزیات اور شماریات' : 'सांख्यिकी व अंतर्दृष्टि');
+  String get topTransactions => isEnglish ? 'Top Shagun Transactions' : (isUrdu ? 'سب سے بڑے لین دین' : 'शीर्ष शगुन लेनदेन');
+  String get topReceived => isEnglish ? 'Top Received' : (isUrdu ? 'سب سے زیادہ ملا' : 'शीर्ष प्राप्त');
+  String get topGiven => isEnglish ? 'Top Given' : (isUrdu ? 'سب سے زیادہ دیا' : 'शीर्ष दिया गया');
+  String get eventBreakdown => isEnglish ? 'Event-Wise Summary' : (isUrdu ? 'تقریب وار تفصیل' : 'कार्यक्रम-वार सारांश');
+  String get activitySummary => isEnglish ? 'Activity Overview' : (isUrdu ? 'سرگرمی کا خلاصہ' : 'गतिविधि विवरण');
+  String get totalTransactionsCount => isEnglish ? 'Total Transactions' : (isUrdu ? 'کل لین دین' : 'कुल लेनदेन');
   String get personHistory => isEnglish ? 'Transaction History' : (isUrdu ? 'لین دین کی تاریخ' : 'व्यवहार इतिहास');
   String get call => isEnglish ? 'Call' : (isUrdu ? 'کال' : 'कॉल करें');
   String get whatsapp => isEnglish ? 'WhatsApp' : (isUrdu ? 'واٹس ایپ' : 'व्हाट्सएप');

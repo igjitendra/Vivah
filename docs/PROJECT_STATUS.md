@@ -71,10 +71,11 @@
 | Feature / Screen | Status | Primary Source Files | Verification Evidence |
 | :--- | :--- | :--- | :--- |
 | Home Dashboard | `VERIFIED` | `lib/src/features/dashboard/presentation/dashboard_screen.dart` | Navy header, separate Mila/Diya cards, quick actions, event list. |
-| Bahi Khata (Ledger) | `VERIFIED` | `lib/src/features/ledger/presentation/ledger_screen.dart` | Direction tabs (All / Mila / Diya), real-time search, rupee formatting. |
-| People Directory & Profile | `VERIFIED` | `lib/src/features/people/presentation/people_list_screen.dart`, `person_detail_screen.dart`, `add_person_screen.dart` | Full directory search, personal exchange history, relationship badges. |
+| Bahi Khata (Ledger) | `VERIFIED` | `lib/src/features/ledger/presentation/ledger_screen.dart` | Direction tabs, advanced modal filters (event, type, status, sorting), active filter tags. |
+| People & Family Directory | `VERIFIED` | `lib/src/features/people/presentation/people_list_screen.dart`, `person_detail_screen.dart`, `add_person_screen.dart` | Tabbed people/clan directory, family membership inspection, family association dropdown. |
 | Events Management | `VERIFIED` | `lib/src/features/events/presentation/events_list_screen.dart`, `event_detail_screen.dart`, `add_event_screen.dart` | Event listing, ceremony totals (Mila/Diya never netted), guest list. |
 | Add & Detail Transaction | `VERIFIED` | `lib/src/features/entries/presentation/add_entry_screen.dart`, `entry_detail_screen.dart` | Multi-item entry support, planned/recorded toggles, soft archiving. |
+| Visual Insights & Reports | `VERIFIED` | `lib/src/features/reports/presentation/reports_screen.dart` | Visual financial analytics, top Shagun transactions, ceremony breakdown, PDF & CSV export. |
 | PDF Reports (Devanagari) | `VERIFIED` | `lib/src/features/reports/services/pdf_service.dart`, `reports_screen.dart` | Offline A4 PDF generation with Noto Sans Devanagari embedding. |
 | CSV Reports (Excel UTF-8 BOM) | `VERIFIED` | `lib/src/features/reports/services/csv_service.dart`, `reports_screen.dart` | RFC-4180 CSV export with UTF-8 BOM for Microsoft Excel. |
 | AES-256-GCM Encrypted Backup | `VERIFIED` | `lib/src/features/settings/services/backup_service.dart`, `settings_screen.dart` | OWASP PBKDF2 600,000 iterations, unique 128-bit salt and 12-byte nonce. |

@@ -19,17 +19,27 @@
 
 ### 1.2 Bahi Khata / Ledger (`lib/src/features/ledger/presentation/ledger_screen.dart`)
 - **Direction Filters**: Toggle between *Sabhi* (All), *Mila* (Received), and *Diya* (Given).
+- **Advanced Filters & Sorting Modal**:
+  - Filter by specific Event from active events.
+  - Filter by Transaction Type (*Cash, Gift, Cash & Gift*).
+  - Filter by Status (*Recorded, Planned*).
+  - 4 Sort options (*Newest First, Oldest First, Amount High-to-Low, Amount Low-to-High*).
+  - Active filter badge counter and dismissible horizontal filter chip tags.
 - **Entry Cards**: Direction badge, amount, counterparty name, village/relationship, event title, and date.
 - **Interactive Routing**: Tapping any card opens the transaction detail view (`/entry/:id`).
 - **Floating Button**: Quick access to add new transaction.
 
 ### 1.3 People & Relationship History (`lib/src/features/people/presentation/`)
-- **People Directory** (`people_list_screen.dart`): Alphabetical/recency listing with search bar querying name, village, and relationship.
+- **People & Family Directory** (`people_list_screen.dart`):
+  - Top tab switcher between *People (लोग)* and *Families (परिवार)*.
+  - People directory with real-time search across name, village, and relationship.
+  - Family directory showing clans/families, member count badges, and inspection bottom sheet listing all family members.
+  - One-tap "+ Naya Parivar" creation dialog.
 - **Person Profile** (`person_detail_screen.dart`):
   - Personal info: Name, village, relationship tag, phone number, notes.
   - Reciprocal balance sheet: Total cash received and total cash given to this person.
   - Complete history: Chronological list of every transaction, gift, and event shared with this person.
-- **Add Person** (`add_person_screen.dart`): Form with validation for name, village, relationship, and optional phone. Includes dynamic 1-tap relationship suggestion chips (*Mama, Chacha, Bua, Mausi, Jija, Sala, Samdhi, Mitra, Padosi*) localized across Hindi, English, and Urdu.
+- **Add Person** (`add_person_screen.dart`): Form with validation for name, village, relationship, family association dropdown, and optional phone. Includes dynamic 1-tap relationship suggestion chips (*Mama, Chacha, Bua, Mausi, Jija, Sala, Samdhi, Mitra, Padosi*) localized across Hindi, English, and Urdu.
 
 ### 1.4 Events Management (`lib/src/features/events/presentation/`)
 - **Events Directory** (`events_list_screen.dart`): Lists all family ceremonies with event type badges (*Shaadi, Tilak, Mundan, etc.*) and event dates.

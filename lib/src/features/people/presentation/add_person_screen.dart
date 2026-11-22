@@ -25,6 +25,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
   final _phoneController = TextEditingController();
   final _notesController = TextEditingController();
 
+  String? _selectedFamilyId;
   bool _isSaving = false;
 
   @override
@@ -42,6 +43,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final l10n = context.l10n;
+    final familiesAsync = ref.watch(activeFamiliesListProvider);
 
     final scaffoldBg = theme.scaffoldBackgroundColor;
     final headerBg = isDark ? theme.colorScheme.surface : theme.colorScheme.secondary;
@@ -171,6 +173,29 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
+                        Text(l10n.selectFamilyOptional, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary)),
+                        const SizedBox(height: 8),
+                        familiesAsync.when(
+                          loading: () => const LinearProgressIndicator(),
+                          error: (err, _) => const SizedBox.shrink(),
+                          data: (families) {
+                            return DropdownButtonFormField<String?>(
+                              value: _selectedFamilyId,
+                              hint: Text(l10n.selectFamilyOptional, style: TextStyle(fontSize: 13, color: textSecondary)),
+                              items: [
+                                DropdownMenuItem(value: null, child: Text(l10n.noFamily)),
+                                ...families.map((f) => DropdownMenuItem(value: f.id, child: Text(f.name))),
+                              ],
+                              onChanged: (val) => setState(() => _selectedFamilyId = val),
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: inputBg,
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 16),
                         Text(l10n.notes, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary)),
                         const SizedBox(height: 8),
                         TextFormField(
@@ -228,6 +253,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
       final person = Person(
         id: const Uuid().v4(),
         fullName: _nameController.text.trim(),
+        familyId: _selectedFamilyId,
         phoneNumber: _phoneController.text.trim().isNotEmpty ? _phoneController.text.trim() : null,
         relationshipLabel: _relationController.text.trim().isNotEmpty ? _relationController.text.trim() : null,
         address: _addressController.text.trim().isNotEmpty ? _addressController.text.trim() : null,

@@ -309,7 +309,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     // D. Complete Ledger PDF
                     _buildReportTile(
                       title: l10n.completeLedgerPdf,
-                      subtitle: l10n.completeLedgerPdfSubtitle,
                       icon: Icons.picture_as_pdf,
                       iconColor: primaryAccent,
                       cardBg: cardBg,
@@ -336,7 +335,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     // E. Received Only PDF
                     _buildReportTile(
                       title: l10n.receivedOnlyPdf,
-                      subtitle: l10n.receivedOnlyPdfSubtitle,
                       icon: Icons.arrow_downward,
                       iconColor: AppColors.milaGreen,
                       cardBg: cardBg,
@@ -364,7 +362,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     // F. Given Only PDF
                     _buildReportTile(
                       title: l10n.givenOnlyPdf,
-                      subtitle: l10n.givenOnlyPdfSubtitle,
                       icon: Icons.arrow_upward,
                       iconColor: AppColors.diyaRed,
                       cardBg: cardBg,
@@ -392,7 +389,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     // G. CSV Section
                     _buildReportTile(
                       title: l10n.csvExport,
-                      subtitle: l10n.csvExportSubtitle,
                       icon: Icons.table_chart_outlined,
                       iconColor: isDark ? const Color(0xFF38BDF8) : headerBg,
                       cardBg: cardBg,
@@ -419,7 +415,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
   Widget _buildReportTile({
     required String title,
-    required String subtitle,
     required IconData icon,
     required Color iconColor,
     required Color cardBg,
@@ -436,13 +431,16 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       elevation: 0,
       onTap: onTap,
       child: ListTile(
+        dense: true,
         leading: CircleAvatar(
           backgroundColor: iconColor.withValues(alpha: 0.15),
-          child: Icon(icon, color: iconColor),
+          child: Icon(icon, color: iconColor, size: 20),
         ),
-        title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: textPrimary)),
-        subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: textSecondary)),
-        trailing: Icon(Icons.share, color: textSecondary),
+        title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary)),
+        trailing: Icon(Icons.share, color: textSecondary, size: 20),
+      ),
+    );
+  }
       ),
     );
   }

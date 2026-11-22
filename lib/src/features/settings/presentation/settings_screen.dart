@@ -78,27 +78,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   primaryAccent: primaryAccent,
                   children: [
                     ListTile(
+                      dense: true,
                       leading: const Icon(Icons.palette_outlined, color: Color(0xFFA78BFA)),
                       title: Text(l10n.themeAndColors, style: TextStyle(fontWeight: FontWeight.w600, color: textPrimary)),
-                      subtitle: Text(l10n.themeAndColorsSubtitle, style: TextStyle(color: textSecondary, fontSize: 12)),
-                      trailing: Icon(Icons.chevron_right, color: textSecondary),
+                      trailing: Icon(Icons.chevron_right, color: textSecondary, size: 20),
                       onTap: () => context.push('/theme'),
                     ),
                     Divider(height: 1, color: cardBorder),
                     ListTile(
+                      dense: true,
                       leading: Icon(Icons.translate, color: isDark ? const Color(0xFF38BDF8) : headerBg),
                       title: Text(l10n.selectLanguage, style: TextStyle(fontWeight: FontWeight.w600, color: textPrimary)),
-                      subtitle: Text(l10n.selectLanguageSubtitle, style: TextStyle(color: textSecondary, fontSize: 12)),
-                      trailing: Icon(Icons.chevron_right, color: textSecondary),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            l10n.locale.languageCode.toUpperCase(),
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textSecondary),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(Icons.chevron_right, color: textSecondary, size: 20),
+                        ],
+                      ),
                       onTap: widget.onOpenLanguageSelector,
-                    ),
-                    Divider(height: 1, color: cardBorder),
-                    ListTile(
-                      leading: const Icon(Icons.auto_stories_outlined, color: AppColors.terracotta),
-                      title: Text(l10n.onboardingAppTour, style: TextStyle(fontWeight: FontWeight.w600, color: textPrimary)),
-                      subtitle: Text('ऐप का परिचय और मार्गदर्शन देखें', style: TextStyle(color: textSecondary, fontSize: 12)),
-                      trailing: Icon(Icons.chevron_right, color: textSecondary),
-                      onTap: () => context.push('/onboarding?fromSettings=true'),
                     ),
                   ],
                 ),
@@ -116,19 +118,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   primaryAccent: primaryAccent,
                   children: [
                     ListTile(
+                      dense: true,
                       leading: Icon(Icons.description_outlined, color: primaryAccent),
                       title: Text(l10n.reports, style: TextStyle(fontWeight: FontWeight.w600, color: textPrimary)),
-                      subtitle: Text(l10n.reportsSubtitle, style: TextStyle(color: textSecondary, fontSize: 12)),
-                      trailing: Icon(Icons.chevron_right, color: textSecondary),
+                      trailing: Icon(Icons.chevron_right, color: textSecondary, size: 20),
                       onTap: widget.onOpenReports,
                     ),
                     if (widget.onOpenReminders != null) ...[
                       Divider(height: 1, color: cardBorder),
                       ListTile(
+                        dense: true,
                         leading: const Icon(Icons.notifications_active_outlined, color: AppColors.gold),
                         title: Text(l10n.reminders, style: TextStyle(fontWeight: FontWeight.w600, color: textPrimary)),
-                        subtitle: Text(l10n.remindersSubtitle, style: TextStyle(color: textSecondary, fontSize: 12)),
-                        trailing: Icon(Icons.chevron_right, color: textSecondary),
+                        trailing: Icon(Icons.chevron_right, color: textSecondary, size: 20),
                         onTap: widget.onOpenReminders,
                       ),
                     ],
@@ -148,18 +150,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   primaryAccent: primaryAccent,
                   children: [
                     ListTile(
+                      dense: true,
                       leading: const Icon(Icons.lock_outline, color: AppColors.milaGreen),
                       title: Text(l10n.backup, style: TextStyle(fontWeight: FontWeight.w600, color: textPrimary)),
-                      subtitle: Text(l10n.backupSubtitle, style: TextStyle(color: textSecondary, fontSize: 12)),
-                      trailing: Icon(Icons.file_upload_outlined, color: textSecondary),
+                      trailing: Icon(Icons.file_upload_outlined, color: textSecondary, size: 20),
                       onTap: () => _handleEncryptedBackup(backupService, cardBg, textPrimary, primaryAccent),
                     ),
                     Divider(height: 1, color: cardBorder),
                     ListTile(
+                      dense: true,
                       leading: Icon(Icons.file_download_outlined, color: isDark ? const Color(0xFF38BDF8) : headerBg),
                       title: Text(l10n.restore, style: TextStyle(fontWeight: FontWeight.w600, color: textPrimary)),
-                      subtitle: Text(l10n.restoreSubtitle, style: TextStyle(color: textSecondary, fontSize: 12)),
-                      trailing: Icon(Icons.chevron_right, color: textSecondary),
+                      trailing: Icon(Icons.chevron_right, color: textSecondary, size: 20),
                       onTap: () => _handleRestoreBackup(backupService, cardBg, textPrimary, primaryAccent),
                     ),
                   ],

@@ -592,7 +592,6 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
                         )
                       : EmptyDetailPane(
                           title: l10n.selectPersonToViewDetails,
-                          subtitle: l10n.selectPersonSubtitle,
                           icon: Icons.person_outline,
                           actionLabel: l10n.newPerson,
                           onAction: widget.onNewPerson,

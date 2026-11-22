@@ -1,7 +1,7 @@
 name: vyavahaar
 description: "व्यवहार (Vyavahaar) — Digital Family Ledger. रिश्तों का हिसाब, हमेशा याद।"
 publish_to: "none"
-version: 1.0.1+2
+version: 1.0.2+3
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
@@ -71,6 +71,34 @@ flutter:
     - assets/brand/
 
   fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Poppins-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Poppins-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Poppins-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Poppins-ExtraBold.ttf
+          weight: 800
+    - family: Figtree
+      fonts:
+        - asset: assets/fonts/Figtree-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Figtree-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Figtree-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Figtree-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Figtree-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Figtree-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Figtree-Black.ttf
+          weight: 900
     - family: NotoSansDevanagari
       fonts:
         - asset: assets/fonts/NotoSansDevanagari-Regular.ttf

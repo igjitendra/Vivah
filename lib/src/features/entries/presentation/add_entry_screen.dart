@@ -873,14 +873,6 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                             ),
                           ],
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8, bottom: 4),
-                          child: Text(
-                            isReceived ? l10n.shagunReceivedSubtitle : l10n.shagunGivenSubtitle,
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textSecondary),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -943,7 +935,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    selectedPerson != null ? selectedPerson.fullName : l10n.selectRelativeTapHint,
+                                    selectedPerson != null ? selectedPerson.fullName : l10n.selectPerson,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 15,

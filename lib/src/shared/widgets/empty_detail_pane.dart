@@ -16,7 +16,7 @@ class EmptyDetailPane extends StatelessWidget {
   const EmptyDetailPane({
     super.key,
     required this.title,
-    required this.subtitle,
+    this.subtitle = '',
     this.icon,
     this.onAction,
     this.actionLabel,
@@ -68,42 +68,17 @@ class EmptyDetailPane extends StatelessWidget {
                   color: theme.colorScheme.onSurface,
                 ),
               ),
-              const SizedBox(height: AppSpacing.xs),
-
-              // Subtitle
-              Text(
-                subtitle,
-                textAlign: TextAlign.center,
-                style: ExpressType.bodyMedium().copyWith(
-                  color: textSecondary,
-                  height: 1.45,
+              if (subtitle.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: ExpressType.bodyMedium().copyWith(
+                    color: textSecondary,
+                    height: 1.45,
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-
-              // Desktop Quick Shortcuts Hint Card
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: cardBg,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: borderColor),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.keyboard_outlined, size: 18, color: textSecondary),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Ctrl+N नया जोड़ें  •  Ctrl+F खोजें  •  F1 शॉर्टकट',
-                      style: ExpressType.labelSmall().copyWith(
-                        color: textSecondary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              ],
             ],
           ),
         ),

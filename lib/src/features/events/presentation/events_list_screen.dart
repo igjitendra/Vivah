@@ -293,7 +293,6 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                         )
                       : EmptyDetailPane(
                           title: l10n.selectEventToViewDetails,
-                          subtitle: l10n.selectEventSubtitle,
                           icon: Icons.celebration_outlined,
                           actionLabel: l10n.newEvent,
                           onAction: widget.onNewEvent,

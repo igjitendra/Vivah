@@ -160,6 +160,12 @@ final GoRouter appRouter = GoRouter(
                   onNewPerson: () => context.push('/person/new'),
                   onOpenSettings: () => context.go('/settings'),
                   onOpenEventDetails: (id) => context.push('/event/$id'),
+                  onViewAllEntries: () => context.go('/bahi'),
+                  onViewAllEvents: () => context.go('/events'),
+                  onViewAllPeople: () => context.go('/people'),
+                  onOpenEntryDetails: (id) => context.push('/entry/$id'),
+                  onFilterMila: () => context.go('/bahi?direction=received'),
+                  onFilterDiya: () => context.go('/bahi?direction=given'),
                 );
               },
             ),

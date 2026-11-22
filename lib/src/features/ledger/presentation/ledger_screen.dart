@@ -683,7 +683,6 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                         )
                       : EmptyDetailPane(
                           title: l10n.selectEntryToViewDetails,
-                          subtitle: l10n.selectEntrySubtitle,
                           icon: Icons.receipt_long_outlined,
                           actionLabel: l10n.newTransaction,
                           onAction: widget.onNewEntry,

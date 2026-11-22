@@ -1,22 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../app/app_providers.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
+import '../../../domain/enums/transaction_enums.dart';
+import '../../../shared/widgets/express_button.dart';
 import '../../../shared/widgets/express_squish.dart';
 import '../../../shared/widgets/app_logo.dart';
 
-/// Modern Material 3 Card-Based Dashboard for व्यवहार (Vyavahaar)
-/// Fully theme-adaptive (Light / Dark & Color Palettes) with tactile ExpressSquish feedback.
-class DashboardScreen extends StatelessWidget {
+/// Modern, Minimal & Tactile Dashboard for व्यवहार (Vyavahaar)
+/// Inspired by InlitX/streak: clean typography, spring physics, zero AI filler text.
+class DashboardScreen extends ConsumerWidget {
   final DashboardSummary summary;
   final VoidCallback onNewEntry;
   final VoidCallback onNewEvent;
   final VoidCallback onNewPerson;
   final VoidCallback onOpenSettings;
   final ValueChanged<String>? onOpenEventDetails;
+  final VoidCallback? onViewAllEntries;
+  final VoidCallback? onViewAllEvents;
+  final VoidCallback? onViewAllPeople;
+  final ValueChanged<String>? onOpenEntryDetails;
+  final VoidCallback? onFilterMila;
+  final VoidCallback? onFilterDiya;
 
   const DashboardScreen({
     super.key,
@@ -26,10 +36,16 @@ class DashboardScreen extends StatelessWidget {
     required this.onNewPerson,
     required this.onOpenSettings,
     this.onOpenEventDetails,
+    this.onViewAllEntries,
+    this.onViewAllEvents,
+    this.onViewAllPeople,
+    this.onOpenEntryDetails,
+    this.onFilterMila,
+    this.onFilterDiya,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final l10n = context.l10n;
@@ -43,94 +59,80 @@ class DashboardScreen extends StatelessWidget {
     final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
     final primaryAccent = theme.colorScheme.primary;
 
+    final entriesAsync = ref.watch(entriesListProvider(null));
+
     return Scaffold(
       backgroundColor: scaffoldBg,
       body: Column(
         children: [
-          // A. Premium Material 3 Header
+          // 1. Sleek & Confident Header (Zero Slogans / Filler)
           Container(
             padding: EdgeInsets.only(
-              top: topPadding + 12,
-              bottom: AppSpacing.lg,
+              top: topPadding + 10,
+              bottom: AppSpacing.md,
               left: AppSpacing.lg,
               right: AppSpacing.lg,
             ),
             decoration: BoxDecoration(
               color: headerBg,
               borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(24),
-                bottomRight: Radius.circular(24),
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: isDark ? Colors.black38 : const Color(0x2A0F172A),
-                  blurRadius: 14,
-                  offset: const Offset(0, 5),
+                  color: isDark ? Colors.black38 : const Color(0x1F0F172A),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const AppSymbol(
-                              size: 22,
-                              pageColor: AppColors.warmCream,
-                              checkmarkColor: AppColors.terracotta,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            l10n.appName,
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                              letterSpacing: 0.4,
-                            ),
-                          ),
-                        ],
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        l10n.appTagline,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white.withValues(alpha: 0.75),
-                        ),
+                      child: const AppSymbol(
+                        size: 22,
+                        pageColor: AppColors.warmCream,
+                        checkmarkColor: AppColors.terracotta,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      l10n.appName,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
                 ),
                 ExpressSquish(
                   scale: 0.90,
                   onTap: onOpenSettings,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.12),
+                      color: Colors.white.withValues(alpha: 0.14),
                       shape: BoxShape.circle,
                     ),
-                    padding: const EdgeInsets.all(10),
-                    child: const Icon(Icons.settings_outlined, color: Colors.white, size: 22),
+                    padding: const EdgeInsets.all(9),
+                    child: const Icon(Icons.settings_outlined, color: Colors.white, size: 20),
                   ),
                 ),
               ],
             ),
           ),
 
-          // Scrollable Content
+          // 2. Scrollable Body
           Expanded(
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
@@ -140,187 +142,162 @@ class DashboardScreen extends StatelessWidget {
                 AppSpacing.floatingTabBottomPadding,
               ),
               children: [
-                // B. Financial Summary Cards (Mila vs Diya - Material 3 Elevated)
+                // A. Financial Overview: Mila vs Diya (Hero Cards with Spring Touch)
                 Row(
                   children: [
                     // Card 1: Total Received (कुल मिला)
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(AppSpacing.md + 2),
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF132A1C) : Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: AppColors.milaGreen.withValues(alpha: isDark ? 0.45 : 0.25),
-                            width: 1.2,
+                      child: ExpressSquish(
+                        scale: 0.96,
+                        onTap: onFilterMila ?? onViewAllEntries,
+                        child: Container(
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF132A1C) : Colors.white,
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: AppColors.milaGreen.withValues(alpha: isDark ? 0.45 : 0.25),
+                              width: 1.2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: isDark ? Colors.black26 : const Color(0x0C15803D),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: isDark ? Colors.black26 : const Color(0x0C15803D),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: isDark ? const Color(0xFF1C3D2A) : AppColors.milaGreenSoft,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: AppColors.milaGreen.withValues(alpha: 0.3)),
-                                  ),
-                                  child: const Icon(Icons.arrow_downward, size: 14, color: AppColors.milaGreen),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    l10n.totalReceived,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.milaGreen,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                      color: isDark ? const Color(0xFF1C3D2A) : AppColors.milaGreenSoft,
+                                      shape: BoxShape.circle,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                    child: const Icon(Icons.arrow_downward, size: 13, color: AppColors.milaGreen),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      l10n.totalReceived,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.milaGreen,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  CurrencyUtils.formatPaise(summary.totalMilaPaise),
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.milaGreen,
+                                    letterSpacing: -0.4,
                                   ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              CurrencyUtils.formatPaise(summary.totalMilaPaise),
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.milaGreen,
-                                letterSpacing: -0.5,
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF1C3D2A) : AppColors.milaGreenSoft,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                l10n.received,
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.milaGreen,
-                                ),
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
 
-                    const SizedBox(width: AppSpacing.md),
+                    const SizedBox(width: AppSpacing.sm),
 
                     // Card 2: Total Given (कुल दिया)
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(AppSpacing.md + 2),
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF2E1517) : Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: AppColors.diyaRed.withValues(alpha: isDark ? 0.45 : 0.25),
-                            width: 1.2,
+                      child: ExpressSquish(
+                        scale: 0.96,
+                        onTap: onFilterDiya ?? onViewAllEntries,
+                        child: Container(
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF2E1517) : Colors.white,
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: AppColors.diyaRed.withValues(alpha: isDark ? 0.45 : 0.25),
+                              width: 1.2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: isDark ? Colors.black26 : const Color(0x0CB91C1C),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: isDark ? Colors.black26 : const Color(0x0CB91C1C),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: isDark ? const Color(0xFF421D20) : AppColors.diyaRedSoft,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: AppColors.diyaRed.withValues(alpha: 0.3)),
-                                  ),
-                                  child: const Icon(Icons.arrow_upward, size: 14, color: AppColors.diyaRed),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    l10n.totalGiven,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.diyaRed,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                      color: isDark ? const Color(0xFF421D20) : AppColors.diyaRedSoft,
+                                      shape: BoxShape.circle,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                    child: const Icon(Icons.arrow_upward, size: 13, color: AppColors.diyaRed),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      l10n.totalGiven,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.diyaRed,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  CurrencyUtils.formatPaise(summary.totalDiyaPaise),
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.diyaRed,
+                                    letterSpacing: -0.4,
                                   ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              CurrencyUtils.formatPaise(summary.totalDiyaPaise),
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.diyaRed,
-                                letterSpacing: -0.5,
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF421D20) : AppColors.diyaRedSoft,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                l10n.given,
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.diyaRed,
-                                ),
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
 
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.sm),
 
-                // C. Overview Statistics Strip (Material 3 Card)
+                // B. Stats Capsule Strip (Interactive Shortcuts)
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: AppSpacing.md),
+                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: AppSpacing.sm),
                   decoration: BoxDecoration(
                     color: cardBg,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: cardBorder),
-                    boxShadow: [
-                      BoxShadow(
-                        color: isDark ? Colors.black12 : const Color(0x08000000),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
                   ),
                   child: Row(
                     children: [
@@ -331,8 +308,9 @@ class DashboardScreen extends StatelessWidget {
                         value: '${summary.totalEvents}',
                         textPrimary: textPrimary,
                         textSecondary: textSecondary,
+                        onTap: onViewAllEvents,
                       ),
-                      Container(width: 1, height: 36, color: cardBorder),
+                      Container(width: 1, height: 28, color: cardBorder),
                       _StatColumn(
                         icon: Icons.people_outline,
                         iconColor: isDark ? const Color(0xFF93C5FD) : theme.colorScheme.secondary,
@@ -340,8 +318,9 @@ class DashboardScreen extends StatelessWidget {
                         value: '${summary.totalPeople}',
                         textPrimary: textPrimary,
                         textSecondary: textSecondary,
+                        onTap: onViewAllPeople,
                       ),
-                      Container(width: 1, height: 36, color: cardBorder),
+                      Container(width: 1, height: 28, color: cardBorder),
                       _StatColumn(
                         icon: Icons.receipt_long_outlined,
                         iconColor: primaryAccent,
@@ -349,30 +328,61 @@ class DashboardScreen extends StatelessWidget {
                         value: '${summary.totalEntries}',
                         textPrimary: textPrimary,
                         textSecondary: textSecondary,
+                        onTap: onViewAllEntries,
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: AppSpacing.lg),
+                const SizedBox(height: AppSpacing.md),
 
-                // D. Recent Event Showcase Card
-                Text(
-                  l10n.recentEvent,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: textPrimary,
-                  ),
+                // C. Action Buttons (InlitX/streak Style - Direct, Punchy, No Verbose Subtitles)
+                ExpressButton(
+                  label: l10n.recordNewTransaction,
+                  icon: Icons.add_circle_outline,
+                  expand: true,
+                  onPressed: onNewEntry,
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                if (summary.recentEventTitle != null)
+
+                const SizedBox(height: AppSpacing.xs),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: _QuickActionChip(
+                        icon: Icons.celebration_outlined,
+                        label: l10n.newEvent,
+                        cardBg: cardBg,
+                        cardBorder: cardBorder,
+                        textColor: textPrimary,
+                        iconColor: primaryAccent,
+                        onTap: onNewEvent,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                    Expanded(
+                      child: _QuickActionChip(
+                        icon: Icons.person_add_outlined,
+                        label: l10n.newPerson,
+                        cardBg: cardBg,
+                        cardBorder: cardBorder,
+                        textColor: textPrimary,
+                        iconColor: primaryAccent,
+                        onTap: onNewPerson,
+                      ),
+                    ),
+                  ],
+                ),
+
+                // D. Recent Event Showcase (Only Rendered if an Event Exists)
+                if (summary.recentEventTitle != null) ...[
+                  const SizedBox(height: AppSpacing.md),
                   ExpressCard(
-                    padding: const EdgeInsets.all(AppSpacing.md + 2),
-                    radius: 18,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    radius: 14,
                     color: cardBg,
                     borderColor: cardBorder,
-                    elevation: 1,
+                    elevation: 0,
                     onTap: () {
                       if (summary.recentEventId != null) {
                         onOpenEventDetails?.call(summary.recentEventId!);
@@ -381,14 +391,14 @@ class DashboardScreen extends StatelessWidget {
                     child: Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: primaryAccent.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(14),
+                            color: primaryAccent.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Icon(Icons.celebration, color: primaryAccent, size: 24),
+                          child: Icon(Icons.celebration, color: primaryAccent, size: 20),
                         ),
-                        const SizedBox(width: AppSpacing.md),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -396,174 +406,226 @@ class DashboardScreen extends StatelessWidget {
                               Text(
                                 summary.recentEventTitle!,
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w700,
                                   color: textPrimary,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               if (summary.recentEventDate != null) ...[
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    Icon(Icons.calendar_today_outlined, size: 12, color: textSecondary),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      AppDateUtils.formatIsoDate(summary.recentEventDate, l10n.locale.languageCode),
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                        color: textSecondary,
-                                      ),
-                                    ),
-                                  ],
+                                const SizedBox(height: 2),
+                                Text(
+                                  AppDateUtils.formatIsoDate(summary.recentEventDate, l10n.locale.languageCode),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                    color: textSecondary,
+                                  ),
                                 ),
                               ],
                             ],
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF1E2638) : const Color(0xFFF1F5F9),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(Icons.chevron_right, color: textSecondary, size: 18),
-                        ),
+                        Icon(Icons.chevron_right, color: textSecondary, size: 18),
                       ],
                     ),
-                  )
-                else
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 24, horizontal: AppSpacing.lg),
-                    decoration: BoxDecoration(
-                      color: cardBg,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: cardBorder),
+                  ),
+                ],
+
+                const SizedBox(height: AppSpacing.md),
+
+                // E. Recent Transactions Section (Real Ledger Peek)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n.transactions,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: textPrimary,
+                        letterSpacing: 0.2,
+                      ),
                     ),
-                    child: Center(
-                      child: Column(
+                    TextButton(
+                      onPressed: onViewAllEntries,
+                      style: TextButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
+                      child: Row(
                         children: [
-                          Icon(Icons.event_available_outlined, size: 36, color: textSecondary.withValues(alpha: 0.6)),
-                          const SizedBox(height: 8),
                           Text(
-                            l10n.noRecentEvent,
-                            style: TextStyle(fontSize: 13, color: textSecondary, fontWeight: FontWeight.w500),
+                            l10n.viewAll,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: primaryAccent,
+                            ),
                           ),
+                          const SizedBox(width: 2),
+                          Icon(Icons.chevron_right, size: 16, color: primaryAccent),
                         ],
                       ),
                     ),
-                  ),
-
-                const SizedBox(height: AppSpacing.xl),
-
-                // E. Quick Actions Section
-                Text(
-                  l10n.quickActions,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: textPrimary,
-                  ),
+                  ],
                 ),
-                const SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: AppSpacing.xs),
 
-                // Primary Quick Action: Record New Transaction
-                ExpressSquish(
-                  scale: 0.97,
-                  onTap: onNewEntry,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: primaryAccent,
-                      borderRadius: BorderRadius.circular(18),
-                      boxShadow: [
-                        BoxShadow(
-                          color: primaryAccent.withValues(alpha: 0.35),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                // Transactions List Feed
+                entriesAsync.when(
+                  loading: () => const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(24),
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     ),
-                    padding: const EdgeInsets.all(AppSpacing.md + 4),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.22),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(Icons.add_card, color: Colors.white, size: 24),
+                  ),
+                  error: (err, _) => Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: cardBg,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: cardBorder),
+                    ),
+                    child: Text(
+                      '${l10n.errorGeneric}: $err',
+                      style: const TextStyle(fontSize: 12, color: Colors.red),
+                    ),
+                  ),
+                  data: (entries) {
+                    final recentEntries = entries
+                        .where((e) => e.status == TransactionStatus.recorded && e.archivedAt == null)
+                        .take(4)
+                        .toList();
+
+                    if (recentEntries.isEmpty) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: cardBg,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: cardBorder),
                         ),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
+                        child: Center(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              Icon(Icons.receipt_long_outlined, size: 32, color: textSecondary.withValues(alpha: 0.5)),
+                              const SizedBox(height: 8),
                               Text(
-                                l10n.newTransaction,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                l10n.newEntrySubtitle,
+                                l10n.noEntriesYet,
                                 style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white.withValues(alpha: 0.85),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: textSecondary,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.25),
-                            shape: BoxShape.circle,
+                      );
+                    }
+
+                    return Column(
+                      children: recentEntries.map((entry) {
+                        final isMila = entry.direction == TransactionDirection.received ||
+                            entry.direction == TransactionDirection.mila;
+                        final amountColor = isMila ? AppColors.milaGreen : AppColors.diyaRed;
+                        final prefix = isMila ? '+' : '-';
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                          child: ExpressSquish(
+                            scale: 0.98,
+                            onTap: () => onOpenEntryDetails?.call(entry.id),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: cardBg,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: cardBorder),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(7),
+                                    decoration: BoxDecoration(
+                                      color: isMila
+                                          ? (isDark ? const Color(0xFF1B3D28) : AppColors.milaGreenSoft)
+                                          : (isDark ? const Color(0xFF421D20) : AppColors.diyaRedSoft),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      isMila ? Icons.arrow_downward : Icons.arrow_upward,
+                                      size: 14,
+                                      color: amountColor,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          entry.personName,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            color: textPrimary,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Row(
+                                          children: [
+                                            if (entry.eventTitle != null && entry.eventTitle!.isNotEmpty) ...[
+                                              Flexible(
+                                                child: Text(
+                                                  entry.eventTitle!,
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: primaryAccent,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text('•', style: TextStyle(fontSize: 10, color: textSecondary)),
+                                              const SizedBox(width: 4),
+                                            ],
+                                            Text(
+                                              AppDateUtils.formatIsoDate(entry.transactionDate, l10n.locale.languageCode),
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: textSecondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '$prefix${CurrencyUtils.formatPaise(entry.cashAmountPaise)}',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w800,
+                                      color: amountColor,
+                                      letterSpacing: -0.3,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                          child: const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: AppSpacing.sm),
-
-                // Secondary Actions Row: New Event & New Person
-                Row(
-                  children: [
-                    Expanded(
-                      child: _ActionCard(
-                        icon: Icons.calendar_month_outlined,
-                        iconColor: primaryAccent,
-                        title: l10n.newEvent,
-                        subtitle: l10n.newEventSubtitle,
-                        onTap: onNewEvent,
-                        cardBg: cardBg,
-                        cardBorder: cardBorder,
-                        textPrimary: textPrimary,
-                        textSecondary: textSecondary,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: _ActionCard(
-                        icon: Icons.person_add_outlined,
-                        iconColor: primaryAccent,
-                        title: l10n.newPerson,
-                        subtitle: l10n.newPersonSubtitle,
-                        onTap: onNewPerson,
-                        cardBg: cardBg,
-                        cardBorder: cardBorder,
-                        textPrimary: textPrimary,
-                        textSecondary: textSecondary,
-                      ),
-                    ),
-                  ],
+                        );
+                      }).toList(),
+                    );
+                  },
                 ),
               ],
             ),
@@ -581,6 +643,7 @@ class _StatColumn extends StatelessWidget {
   final String value;
   final Color textPrimary;
   final Color textSecondary;
+  final VoidCallback? onTap;
 
   const _StatColumn({
     required this.icon,
@@ -589,112 +652,100 @@ class _StatColumn extends StatelessWidget {
     required this.value,
     required this.textPrimary,
     required this.textSecondary,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 16, color: iconColor),
-              const SizedBox(width: 4),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: textPrimary,
+      child: ExpressSquish(
+        scale: 0.95,
+        onTap: onTap,
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 15, color: iconColor),
+                const SizedBox(width: 4),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: textPrimary,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: textSecondary,
+              ],
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: textSecondary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _ActionCard extends StatelessWidget {
+class _QuickActionChip extends StatelessWidget {
   final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
+  final String label;
   final Color cardBg;
   final Color cardBorder;
-  final Color textPrimary;
-  final Color textSecondary;
+  final Color textColor;
+  final Color iconColor;
+  final VoidCallback onTap;
 
-  const _ActionCard({
+  const _QuickActionChip({
     required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
+    required this.label,
     required this.cardBg,
     required this.cardBorder,
-    required this.textPrimary,
-    required this.textSecondary,
+    required this.textColor,
+    required this.iconColor,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return ExpressCard(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      radius: 16,
-      color: cardBg,
-      borderColor: cardBorder,
-      elevation: 0,
+    return ExpressSquish(
+      scale: 0.96,
       onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E2638) : const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 10),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: cardBorder),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: textColor,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            child: Icon(icon, color: iconColor, size: 20),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: textPrimary,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: 11,
-              color: textSecondary,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

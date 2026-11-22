@@ -8,9 +8,8 @@ import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../shared/widgets/express_squish.dart';
-import '../providers/entries_providers.dart';
-import '../../people/providers/people_providers.dart';
-import '../../events/providers/events_providers.dart';
+import '../../../app/app_providers.dart';
+import '../../../domain/enums/transaction_enums.dart';
 
 /// Modern Card-Based Screen to Record New Transaction (मिला या दिया व्यवहार)
 /// Full Material 3 theming with zero hardcoded colors or strings.

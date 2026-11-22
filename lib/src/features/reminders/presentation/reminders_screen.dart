@@ -7,7 +7,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../data/database/app_database.dart';
 import '../../../shared/widgets/express_squish.dart';
-import '../../entries/providers/entries_providers.dart';
+import '../../../app/app_providers.dart';
 
 /// Screen managing reminders for upcoming shagun, bahi deadlines, and family ceremonies.
 /// Fully theme-adaptive with Material 3 styling and tactile feedback.

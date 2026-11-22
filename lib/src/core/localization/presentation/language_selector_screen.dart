@@ -56,7 +56,7 @@ class _LanguageSelectorScreenState extends ConsumerState<LanguageSelectorScreen>
         lang.nameNative,
         lang.nameEnglish,
         lang.languageCode,
-        lang.scriptCode,
+        if (lang.scriptCode != null) lang.scriptCode!,
       ], _searchQuery);
     }).toList();
 

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../shared/widgets/express_squish.dart';
-import '../providers/events_providers.dart';
+import '../../../app/app_providers.dart';
 
 /// Modern Material 3 Screen listing celebratory family events (विवाह, मुंडन, आदि)
 /// Fully theme-adaptive with search and tactile spring interactions.

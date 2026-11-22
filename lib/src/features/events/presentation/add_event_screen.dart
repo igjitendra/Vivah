@@ -6,7 +6,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../shared/widgets/express_squish.dart';
-import '../providers/events_providers.dart';
+import '../../../app/app_providers.dart';
 
 /// Modern Screen for creating a new auspicious family event (शादी, मुंडन, आदि)
 /// Fully theme-adaptive with suggested ceremony chips and tactile spring squish.

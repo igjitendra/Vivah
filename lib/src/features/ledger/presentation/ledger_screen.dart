@@ -7,7 +7,8 @@ import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../shared/widgets/express_squish.dart';
-import '../providers/ledger_providers.dart';
+import '../../../app/app_providers.dart';
+import '../../../domain/enums/transaction_enums.dart';
 
 /// Modern Material 3 Ledger (बही) Screen
 /// Fully theme-adaptive with search pill, direction segment filters, and tactile cards.

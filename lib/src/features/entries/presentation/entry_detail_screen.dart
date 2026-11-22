@@ -9,7 +9,8 @@ import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../shared/widgets/direction_badge.dart';
 import '../../../shared/widgets/express_squish.dart';
-import '../providers/entries_providers.dart';
+import '../../../app/app_providers.dart';
+import '../../../domain/enums/transaction_enums.dart';
 
 /// Screen displaying complete details for a single transaction entry.
 /// Fully theme-adaptive with Material 3 cards and tactile feedback.

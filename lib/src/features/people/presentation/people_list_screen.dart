@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../shared/widgets/express_squish.dart';
-import '../providers/people_providers.dart';
+import '../../../app/app_providers.dart';
 
 /// Modern Card-Based Screen displaying the directory of relatives and acquaintances
 /// Fully theme-adaptive with search and tactile spring interactions.

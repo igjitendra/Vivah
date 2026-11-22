@@ -4,7 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../shared/widgets/express_squish.dart';
-import '../../entries/providers/entries_providers.dart';
+import '../../../app/app_providers.dart';
 import '../services/pdf_service.dart';
 import '../services/csv_service.dart';
 

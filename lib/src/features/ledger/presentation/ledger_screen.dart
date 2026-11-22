@@ -54,7 +54,6 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
 
   void _showFilterSheet(BuildContext context, AppLocalizations l10n) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final eventsAsync = ref.read(activeEventsListProvider);
 
     String? tempEventId = _filterEventId;

@@ -37,7 +37,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
     final textPrimary = theme.colorScheme.onSurface;
     final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
-    final searchBg = isDark ? const Color(0xFF161A24) : const Color(0xFFF1F5F9);
     final primaryAccent = theme.colorScheme.primary;
 
     return Scaffold(

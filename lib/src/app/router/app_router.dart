@@ -22,6 +22,9 @@ import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../core/localization/presentation/language_selector_screen.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../features/settings/presentation/theme_gallery_screen.dart';
+import '../../core/utils/responsive.dart';
+import '../../core/shortcuts/shortcuts_sheet.dart';
+import '../../shared/navigation/express_nav_rail.dart';
 import '../app_providers.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -104,6 +107,26 @@ final GoRouter appRouter = GoRouter(
             routePath: '/settings',
           ),
         ];
+
+        final bool useRail = hasSideRail(context);
+
+        if (useRail) {
+          return Scaffold(
+            body: Row(
+              children: [
+                ExpressNavRail(
+                  currentIndex: index,
+                  items: dynamicTabs,
+                  onSelect: (idx) {
+                    context.go(dynamicTabs[idx].routePath);
+                  },
+                  onOpenShortcuts: () => ShortcutsSheet.show(context),
+                ),
+                Expanded(child: child),
+              ],
+            ),
+          );
+        }
 
         return Scaffold(
           body: Stack(

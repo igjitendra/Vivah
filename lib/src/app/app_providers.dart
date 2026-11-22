@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' hide Family;
 import '../data/database/app_database.dart';
 import '../data/database/database_module.dart';
 import '../data/repositories/entries_repository.dart';

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' hide Family;
 import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -184,7 +184,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                               hint: Text(l10n.selectFamilyOptional, style: TextStyle(fontSize: 13, color: textSecondary)),
                               items: [
                                 DropdownMenuItem(value: null, child: Text(l10n.noFamily)),
-                                ...families.map((f) => DropdownMenuItem(value: f.id, child: Text(f.name))),
+                                ...families.whereType<Family>().map((f) => DropdownMenuItem(value: f.id, child: Text(f.name))),
                               ],
                               onChanged: (val) => setState(() => _selectedFamilyId = val),
                               decoration: InputDecoration(

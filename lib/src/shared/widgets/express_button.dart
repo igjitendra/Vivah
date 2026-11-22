@@ -75,7 +75,7 @@ class _ExpressButtonState extends State<ExpressButton> {
 
     final height = widget.compact ? 40.0 : 52.0;
     final double restingRadius = height / 2;
-    final double pressedRadius = 14.0;
+    const double pressedRadius = 14.0;
 
     return Semantics(
       button: true,

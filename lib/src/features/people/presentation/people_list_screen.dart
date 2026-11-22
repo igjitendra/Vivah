@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' hide Family;
 import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
@@ -443,11 +443,12 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
                     ),
                     data: (families) {
                       final filtered = families.where((f) {
+                        if (f == null) return false;
                         if (_searchQuery.isEmpty) return true;
                         final matchName = f.name.toLowerCase().contains(_searchQuery);
                         final matchDesc = (f.description ?? '').toLowerCase().contains(_searchQuery);
                         return matchName || matchDesc;
-                      }).toList();
+                      }).whereType<Family>().toList();
 
                       if (filtered.isEmpty) {
                         return Center(

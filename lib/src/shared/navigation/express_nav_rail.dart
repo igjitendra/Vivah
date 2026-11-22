@@ -221,7 +221,7 @@ class _ExpressRailPillState extends State<_ExpressRailPill> {
             behavior: HitTestBehavior.opaque,
             onTapDown: (_) => setState(() => _down = true),
             onTapUp: (_) => setState(() => _down = false),
-            onTapCancel: (_) => setState(() => _down = false),
+            onTapCancel: () => setState(() => _down = false),
             onTap: widget.onTap,
             child: AnimatedScale(
               scale: _down ? 0.95 : (_hover && !selected ? 1.02 : 1.0),

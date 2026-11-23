@@ -70,7 +70,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                 // Event Breakdown
                 final Map<String, List<TransactionEntry>> eventMap = {};
                 for (final e in recordedEntries) {
-                  final key = e.eventTitle != null && e.eventTitle!.isNotEmpty ? e.eventTitle! : 'सामान्य (General)';
+                  final key = e.eventTitle != null && e.eventTitle!.isNotEmpty ? e.eventTitle! : l10n.generalCategory;
                   eventMap.putIfAbsent(key, () => []).add(e);
                 }
 

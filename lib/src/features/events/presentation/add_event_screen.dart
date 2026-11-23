@@ -304,37 +304,6 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
   }
 
   List<String> _suggestedCeremonies(AppLocalizations l10n) {
-    if (l10n.isEnglish) {
-      return const [
-        'Birthday',
-        'Naming Ceremony',
-        'Sacred Thread (Upanayana)',
-        'Chhathi',
-        'Baby Shower',
-        'Satsang / Jagrata',
-        'Retirement',
-        'Anniversary / Shradh',
-      ];
-    } else if (l10n.isUrdu) {
-      return const [
-        'سالگرہ',
-        'نام رکھنے کی تقریب',
-        'چھٹی',
-        'گود بھرائی',
-        'محفل / مجلس',
-        'ریٹائرمنٹ',
-        'برسی',
-      ];
-    }
-    return const [
-      'जन्मदिन',
-      'नामकरण',
-      'जनेऊ / उपनयन',
-      'छठी',
-      'गोद भराई',
-      'सत्संग / जगराता',
-      'रिटायरमेंट',
-      'श्राद्ध / तेरहवीं',
-    ];
+    return l10n.quickCustomEvents;
   }
 }

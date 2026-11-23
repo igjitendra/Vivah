@@ -102,6 +102,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       onTap: widget.onOpenLanguageSelector,
                     ),
+
                   ],
                 ),
 

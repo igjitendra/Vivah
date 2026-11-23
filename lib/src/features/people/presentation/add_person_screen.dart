@@ -267,46 +267,6 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
   }
 
   List<String> _suggestedRelationships(AppLocalizations l10n) {
-    if (l10n.isEnglish) {
-      return const [
-        'Uncle (Mama)',
-        'Uncle (Chacha)',
-        'Aunt (Bua)',
-        'Aunt (Mausi)',
-        'Brother-in-law (Jija)',
-        'Brother-in-law (Sala)',
-        'Samdhi',
-        'Friend',
-        'Neighbor',
-        'Relative',
-      ];
-    } else if (l10n.isUrdu) {
-      return const [
-        'ماموں',
-        'چچا',
-        'پھوپھی',
-        'خالہ',
-        'بہنوئی',
-        'سالا',
-        'سمدھی',
-        'دوست',
-        'ہمسایہ',
-        'رشتہ دار',
-      ];
-    }
-    return const [
-      'मामा',
-      'चाचा',
-      'ताऊ',
-      'बुआ',
-      'मौसी',
-      'फूफा',
-      'जीजा',
-      'साला',
-      'समधी',
-      'मित्र',
-      'पड़ोसी',
-      'रिश्तेदार',
-    ];
+    return l10n.quickRelations;
   }
 }

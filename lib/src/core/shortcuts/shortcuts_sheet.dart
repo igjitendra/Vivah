@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
 import '../../core/theme/express_type.dart';
+import '../../core/localization/app_localizations.dart';
 import '../../shared/widgets/express_button.dart';
 
 /// Desktop Shortcuts Sheet modal inspired directly by InlitX/streak
@@ -28,16 +29,17 @@ class ShortcutsSheet extends StatelessWidget {
     final textPrimary = isDark ? Colors.white : AppColors.deepNavy;
     final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
 
+    final l10n = context.l10n;
     final shortcuts = [
-      _ShortcutItem('$cmd + 1', 'होम डैशबोर्ड (Home)'),
-      _ShortcutItem('$cmd + 2', 'बही-खाता (Bahi Ledger)'),
-      _ShortcutItem('$cmd + 3', 'कार्यक्रम (Events)'),
-      _ShortcutItem('$cmd + 4', 'लोग व रिश्तेदार (People)'),
-      _ShortcutItem('$cmd + 5', 'सेटिंग्स (Settings)'),
-      _ShortcutItem('$cmd + N', 'नया व्यवहार दर्ज करें (New Entry)'),
-      _ShortcutItem('$cmd + F', 'खोजें (Search)'),
-      _ShortcutItem('F1 / $cmd + /', 'कीबोर्ड शॉर्टकट्स गाइड (This Sheet)'),
-      _ShortcutItem('Esc', 'बंद करें / पीछे जाएं (Close / Back)'),
+      _ShortcutItem('$cmd + 1', l10n.shortcutHome),
+      _ShortcutItem('$cmd + 2', l10n.shortcutBahi),
+      _ShortcutItem('$cmd + 3', l10n.shortcutEvents),
+      _ShortcutItem('$cmd + 4', l10n.shortcutPeople),
+      _ShortcutItem('$cmd + 5', l10n.shortcutSettings),
+      _ShortcutItem('$cmd + N', l10n.shortcutNewEntry),
+      _ShortcutItem('$cmd + F', l10n.shortcutSearch),
+      _ShortcutItem('F1 / $cmd + /', l10n.shortcutGuide),
+      _ShortcutItem('Esc', l10n.shortcutClose),
     ];
 
     return Dialog(
@@ -74,7 +76,7 @@ class ShortcutsSheet extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        'कीबोर्ड शॉर्टकट्स (Desktop Shortcuts)',
+                        l10n.shortcutGuide,
                         style: ExpressType.titleMedium(
                           color: textPrimary,
                           weight: FontWeight.w800,

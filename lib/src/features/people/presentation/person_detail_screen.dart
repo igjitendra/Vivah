@@ -250,7 +250,7 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> {
             IconButton(
               icon: const Icon(Icons.close),
               onPressed: widget.onClose,
-              tooltip: 'बंद करें',
+              tooltip: l10n.close,
             ),
         ],
       ),

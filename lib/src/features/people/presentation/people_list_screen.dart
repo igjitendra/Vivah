@@ -148,7 +148,7 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 24),
                         child: Center(
                           child: Text(
-                            'इस परिवार में अभी कोई सदस्य नहीं जुड़ा है।',
+                            l10n.noFamilyMembersYet,
                             style: const TextStyle(color: Colors.grey, fontSize: 14),
                           ),
                         ),
@@ -260,7 +260,7 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
                 onChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
                 style: TextStyle(fontSize: 14, color: textPrimary),
                 decoration: InputDecoration(
-                  hintText: _currentTab == 0 ? l10n.searchPeopleHint : 'परिवार या गाँव से खोजें...',
+                  hintText: _currentTab == 0 ? l10n.searchPeopleHint : l10n.searchFamilyOrVillageHint,
                   hintStyle: TextStyle(fontSize: 13, color: textSecondary),
                   prefixIcon: Icon(Icons.search, color: textSecondary, size: 20),
                   suffixIcon: _searchQuery.isNotEmpty

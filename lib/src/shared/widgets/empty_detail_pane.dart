@@ -79,6 +79,7 @@ class EmptyDetailPane extends StatelessWidget {
                   ),
                 ),
               ],
+
             ],
           ),
         ),

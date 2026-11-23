@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/theme/express_type.dart';
 import '../../core/utils/responsive.dart';
+import '../../core/localization/app_localizations.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/express_squish.dart';
 import 'floating_pill_tab_bar.dart';
@@ -76,14 +77,14 @@ class ExpressNavRail extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'व्यवहार',
+                            context.l10n.appName,
                             style: ExpressType.titleLarge(
                               color: isDark ? Colors.white : AppColors.deepNavy,
                               weight: FontWeight.w900,
                             ).copyWith(fontSize: 18, letterSpacing: 0.5),
                           ),
                           Text(
-                            'रिश्तों का हिसाब',
+                            context.l10n.appTagline,
                             style: ExpressType.bodySmall(
                               color: isDark ? const Color(0xFF94A3B8) : AppColors.textSecondary,
                             ).copyWith(fontSize: 11),

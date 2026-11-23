@@ -215,7 +215,7 @@ class _EntryDetailScreenState extends ConsumerState<EntryDetailScreen> {
             IconButton(
               icon: const Icon(Icons.close),
               onPressed: widget.onClose,
-              tooltip: 'बंद करें',
+              tooltip: l10n.close,
             ),
         ],
       ),

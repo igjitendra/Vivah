@@ -106,7 +106,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
       entryId: '',
       itemName: name,
       quantity: 1.0,
-      unit: 'संख्या',
+      unit: context.l10n.isEnglish ? 'Count' : (context.l10n.isUrdu ? 'تعداد' : 'संख्या'),
       createdAt: now,
       updatedAt: now,
     );
@@ -209,7 +209,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     prefixText: '₹ ',
-                    hintText: 'उदा. 5000',
+                    hintText: l10n.isEnglish ? 'e.g. 5000' : (l10n.isUrdu ? 'مثال: 5000' : 'उदा. 5000'),
                     filled: true,
                     fillColor: inputBg,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
@@ -498,7 +498,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
     final addressController = TextEditingController();
     final phoneController = TextEditingController();
 
-    const commonRelations = ['मामा जी', 'चाचा जी', 'बुआ जी', 'फूफा जी', 'मौसा जी', 'जीजा जी', 'मित्र', 'पड़ोसी'];
+    final commonRelations = l10n.quickRelations;
 
     showModalBottomSheet(
       context: context,
@@ -555,7 +555,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                   controller: relController,
                   style: TextStyle(color: textPrimary, fontSize: 14),
                   decoration: InputDecoration(
-                    hintText: 'उदा. मामा जी / चाचा जी',
+                    hintText: l10n.isEnglish ? 'e.g. Uncle / Aunt' : (l10n.isUrdu ? 'مثال: ماموں / چچا' : 'उदा. मामा / चाचा'),
                     hintStyle: TextStyle(color: textSecondary, fontSize: 13),
                     filled: true,
                     fillColor: inputBg,
@@ -1273,7 +1273,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                           Wrap(
                             spacing: 6,
                             runSpacing: 6,
-                            children: _quickGiftSuggestions.map((g) {
+                            children: l10n.quickGiftSuggestions.map((g) {
                               return ActionChip(
                                 label: Text(g, style: TextStyle(fontSize: 11, color: textPrimary, fontWeight: FontWeight.w600)),
                                 backgroundColor: inputBg,
@@ -1556,7 +1556,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                         Wrap(
                           spacing: 6,
                           runSpacing: 6,
-                          children: _quickTags.map((tag) {
+                          children: l10n.quickTags.map((tag) {
                             return ActionChip(
                               label: Text(tag, style: TextStyle(fontSize: 11, color: textPrimary, fontWeight: FontWeight.w600)),
                               backgroundColor: inputBg,

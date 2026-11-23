@@ -246,9 +246,7 @@ class ThemeGalleryScreen extends ConsumerWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      l10n.isEnglish
-                          ? 'Personalize your Vyavahaar ledger with curated themes. Settings are saved permanently.'
-                          : 'व्यवहार बही-खाते को अपने मनपसंद रंग व थीम में सजाएं। यह चयन हमेशा सुरक्षित रहेगा।',
+                      l10n.themeGalleryDescription,
                       style: TextStyle(
                         fontSize: 12,
                         color: textMutedColor,

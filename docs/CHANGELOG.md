@@ -5,6 +5,32 @@
 
 ---
 
+## [1.4.14] — 2026-11-23
+
+### Added
+- **Record Transaction Architecture Redesign (`AddEntryScreen`)**:
+  - **Dedicated Mila vs Diya Workflows**:
+    - Distinct entry routes (`/entry/new?direction=received`, `/entry/new?direction=given`) with dedicated color themes: Emerald Green (`#15803D`) for Received (मिला) and Diya Red (`#B91C1C`) for Given (दिया).
+    - Top tactile hero switcher allowing instant tab toggling between Mila and Diya.
+  - **Dedicated Dual Action Buttons on Dashboard & Ledger**:
+    - **+ मिला** (Emerald Green) and **+ दिया** (Diya Red) dedicated action buttons on both Home (`DashboardScreen`) and Bahi Khata (`LedgerScreen`), fulfilling explicit separate button workflows.
+  - **100% People-Page Parity for Inline Relative Creation**:
+    - "+ नया रिश्तेदार जोड़ें (विस्तृत फॉर्म)" opens the complete `AddPersonScreen` form (phone book contact import, phone numbers, WhatsApp, village/city/address, relationship chips, notes, family group).
+    - Returning created `Person` entity automatically selects the new relative into the transaction entry without navigation friction.
+  - **Inline Event Creation with Auto-Selection**:
+    - "+ नया कार्यक्रम बनाएं" button launches `AddEventScreen` directly inline, creating and immediately auto-selecting the ceremony.
+  - **Reciprocal Past Exchange History Peek**:
+    - Asynchronous query displaying past reciprocal transactions with the selected relative (*"इन्होंने हमें पूर्व में दिया था: ₹..."* or *"पहला व्यवहार"*).
+  - **Rapid Entry / Munshi Mode for Received (मिला)**:
+    - "दर्ज करें और अगला जोड़ें" (`saveAndAddNext`) button saves current entry and immediately clears person/amount while keeping event, date, and receiver intact for continuous fast guest logging.
+  - **Specialized Fields per Transaction Direction**:
+    - Given: Payment Mode (Cash, UPI/Online, Gift only), Handed Over By tracking, and Recorded vs Planned status.
+    - Received: Received By tracking, and polite cultural WhatsApp thank-you slip generator.
+  - **Multilingual ARB & Localization Parity**:
+    - Complete key parity across `app_en.arb`, `app_hi.arb`, and `app_ur.arb` with zero hardcoding and zero emojis.
+
+---
+
 ## [1.4.13] — 2026-11-23
 
 ### Added

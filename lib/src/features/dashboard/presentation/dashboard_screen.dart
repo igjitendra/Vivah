@@ -17,6 +17,8 @@ import '../../../shared/widgets/app_logo.dart';
 class DashboardScreen extends ConsumerWidget {
   final DashboardSummary summary;
   final VoidCallback onNewEntry;
+  final VoidCallback? onNewEntryReceived;
+  final VoidCallback? onNewEntryGiven;
   final VoidCallback onNewEvent;
   final VoidCallback onNewPerson;
   final VoidCallback onOpenSettings;
@@ -32,6 +34,8 @@ class DashboardScreen extends ConsumerWidget {
     super.key,
     required this.summary,
     required this.onNewEntry,
+    this.onNewEntryReceived,
+    this.onNewEntryGiven,
     required this.onNewEvent,
     required this.onNewPerson,
     required this.onOpenSettings,
@@ -336,12 +340,29 @@ class DashboardScreen extends ConsumerWidget {
 
                 const SizedBox(height: AppSpacing.md),
 
-                // C. Action Buttons (InlitX/streak Style - Direct, Punchy, No Verbose Subtitles)
-                ExpressButton(
-                  label: l10n.recordNewTransaction,
-                  icon: Icons.add_circle_outline,
-                  expand: true,
-                  onPressed: onNewEntry,
+                // C. Action Buttons: Dedicated + मिला (Received) and + दिया (Given) Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: ExpressButton(
+                        label: l10n.recordMilaShort,
+                        icon: Icons.south_west_rounded,
+                        tint: AppColors.milaGreen,
+                        expand: true,
+                        onPressed: onNewEntryReceived ?? onNewEntry,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: ExpressButton(
+                        label: l10n.recordDiyaShort,
+                        icon: Icons.north_east_rounded,
+                        tint: AppColors.diyaRed,
+                        expand: true,
+                        onPressed: onNewEntryGiven ?? onNewEntry,
+                      ),
+                    ),
+                  ],
                 ),
 
                 const SizedBox(height: AppSpacing.xs),

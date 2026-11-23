@@ -156,6 +156,8 @@ final GoRouter appRouter = GoRouter(
                 return DashboardScreen(
                   summary: summary,
                   onNewEntry: () => context.push('/entry/new'),
+                  onNewEntryReceived: () => context.push('/entry/new?direction=received'),
+                  onNewEntryGiven: () => context.push('/entry/new?direction=given'),
                   onNewEvent: () => context.push('/event/new'),
                   onNewPerson: () => context.push('/person/new'),
                   onOpenSettings: () => context.go('/settings'),
@@ -177,6 +179,8 @@ final GoRouter appRouter = GoRouter(
           pageBuilder: (context, state) => NoTransitionPage(
             child: LedgerScreen(
               onNewEntry: () => context.push('/entry/new'),
+              onNewEntryReceived: () => context.push('/entry/new?direction=received'),
+              onNewEntryGiven: () => context.push('/entry/new?direction=given'),
               onOpenEntryDetail: (id) => context.push('/entry/$id'),
             ),
           ),
@@ -218,10 +222,22 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       parentNavigatorKey: _rootNavigatorKey,
       path: '/entry/new',
-      builder: (context, state) => AddEntryScreen(
-        initialEventId: state.uri.queryParameters['eventId'],
-        initialPersonId: state.uri.queryParameters['personId'],
-      ),
+      builder: (context, state) {
+        final dirParam = state.uri.queryParameters['direction'];
+        TransactionDirection? dir;
+        if (dirParam != null) {
+          if (dirParam == 'given' || dirParam == 'diya') {
+            dir = TransactionDirection.given;
+          } else if (dirParam == 'received' || dirParam == 'mila') {
+            dir = TransactionDirection.received;
+          }
+        }
+        return AddEntryScreen(
+          initialEventId: state.uri.queryParameters['eventId'],
+          initialPersonId: state.uri.queryParameters['personId'],
+          initialDirection: dir,
+        );
+      },
     ),
     GoRoute(
       parentNavigatorKey: _rootNavigatorKey,

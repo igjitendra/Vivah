@@ -158,7 +158,7 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.eventSavedSuccess), backgroundColor: AppColors.milaGreen),
         );
-        Navigator.pop(context);
+        Navigator.pop(context, event);
       }
     } catch (err) {
       if (mounted) {

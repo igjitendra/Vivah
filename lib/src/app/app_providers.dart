@@ -85,3 +85,9 @@ final activeFamiliesListProvider = StreamProvider<List<Family>>((ref) {
   final repo = ref.watch(familiesRepositoryProvider);
   return repo.watchActiveFamilies();
 });
+
+/// Person transaction history statistics provider (received_paise, given_paise)
+final personHistoryStatsProvider = FutureProvider.family<Map<String, int>, String>((ref, personId) async {
+  final repo = ref.watch(entriesRepositoryProvider);
+  return repo.getPersonHistoryStats(personId);
+});

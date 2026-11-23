@@ -176,7 +176,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
 
       if (!mounted) return;
       setState(() => _isSaving = false);
-      Navigator.pop(context);
+      Navigator.pop(context, person);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.l10n.personSavedSuccess), backgroundColor: AppColors.milaGreen),
@@ -185,7 +185,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
       if (mounted) {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('त्रुटि: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('${context.l10n.errorGeneric}: $e'), backgroundColor: Colors.red),
         );
       }
     }

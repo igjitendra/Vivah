@@ -17,11 +17,15 @@ import '../../entries/presentation/entry_detail_screen.dart';
 /// Fully theme-adaptive with search pill, direction segment filters, and tactile cards.
 class LedgerScreen extends ConsumerStatefulWidget {
   final VoidCallback onNewEntry;
+  final VoidCallback? onNewEntryReceived;
+  final VoidCallback? onNewEntryGiven;
   final ValueChanged<String>? onOpenEntryDetail;
 
   const LedgerScreen({
     super.key,
     required this.onNewEntry,
+    this.onNewEntryReceived,
+    this.onNewEntryGiven,
     this.onOpenEntryDetail,
   });
 
@@ -635,34 +639,69 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
           ? null
           : Padding(
               padding: const EdgeInsets.only(bottom: 75),
-              child: ExpressSquish(
-                scale: 0.94,
-                onTap: widget.onNewEntry,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: primaryAccent,
-                    borderRadius: BorderRadius.circular(28),
-                    boxShadow: [
-                      BoxShadow(
-                        color: primaryAccent.withValues(alpha: 0.4),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ExpressSquish(
+                    scale: 0.94,
+                    onTap: widget.onNewEntryReceived ?? widget.onNewEntry,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.milaGreen,
+                        borderRadius: BorderRadius.circular(26),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.milaGreen.withValues(alpha: 0.4),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.add_card, color: Colors.white, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        l10n.newTransaction,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.south_west_rounded, color: Colors.white, size: 18),
+                          const SizedBox(width: 6),
+                          Text(
+                            l10n.recordMilaShort,
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.5),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 10),
+                  ExpressSquish(
+                    scale: 0.94,
+                    onTap: widget.onNewEntryGiven ?? widget.onNewEntry,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.diyaRed,
+                        borderRadius: BorderRadius.circular(26),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.diyaRed.withValues(alpha: 0.4),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.north_east_rounded, color: Colors.white, size: 18),
+                          const SizedBox(width: 6),
+                          Text(
+                            l10n.recordDiyaShort,
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
       body: wide

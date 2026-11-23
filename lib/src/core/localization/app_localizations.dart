@@ -654,6 +654,18 @@ class AppLocalizations {
           ? const ['تعداد', 'گرام', 'تولہ', 'پیس', 'میٹر', 'کلو', 'ڈبہ']
           : const ['संख्या', 'ग्राम', 'तोला', 'पीस', 'थान / मीटर', 'किलो', 'डिब्बा']);
 
+  List<String> get quickReceivedByChips => isEnglish
+      ? const ['Father', 'Mother', 'Self', 'Bride/Groom']
+      : (isUrdu
+          ? const ['والد', 'والدہ', 'خود', 'دولہا/دلہن']
+          : const ['पिताजी', 'माताजी', 'स्वयं', 'दूल्हा/दुल्हन']);
+
+  List<String> get quickHandedOverByChips => isEnglish
+      ? const ['Self', 'Father', 'Mother', 'Brother', 'Uncle']
+      : (isUrdu
+          ? const ['خود', 'والد', 'والدہ', 'بھائی', 'چچا']
+          : const ['स्वयं', 'पिताजी', 'माताजी', 'भाई', 'चाचाजी']);
+
   // Plurals
   String entryCount(int count) {
     if (isEnglish) {
@@ -670,6 +682,37 @@ class AppLocalizations {
       return '$count व्यवहार';
     }
   }
+
+  String get recordReceivedTitle => isEnglish ? 'Record Received (+ Mila)' : (isUrdu ? '+ ملا لین دین درج کریں' : '+ मिला व्यवहार दर्ज करें');
+  String get recordGivenTitle => isEnglish ? 'Record Given (+ Diya)' : (isUrdu ? '+ دیا لین دین درج کریں' : '+ दिया व्यवहार दर्ज करें');
+  String get recordMilaShort => isEnglish ? '+ Received' : (isUrdu ? '+ ملا' : '+ मिला');
+  String get recordDiyaShort => isEnglish ? '+ Given' : (isUrdu ? '+ دیا' : '+ दिया');
+  String get saveAndAddNext => isEnglish ? 'Save & Add Next' : (isUrdu ? 'محفوظ کریں اور اگلا شامل کریں' : 'दर्ज करें और अगला जोड़ें');
+  String get receivedBy => isEnglish ? 'Received By (Family Member)' : (isUrdu ? 'کس نے وصول کیا (خاندان کا فرد)' : 'किसने प्राप्त किया (घर का सदस्य)');
+  String get receivedByHint => isEnglish ? 'e.g. Father, Mother, Self' : (isUrdu ? 'مثال: والد، والدہ، خود' : 'उदा. पिताजी, माताजी, स्वयं');
+  String get handedOverBy => isEnglish ? 'Handed Over By' : (isUrdu ? 'किसके द्वारा दिया / भिजवाया गया' : 'किसके द्वारा दिया / भिजवाया गया');
+  String get handedOverByHint => isEnglish ? 'e.g. Self, Brother, Uncle' : (isUrdu ? 'مثال: خود، بھائی، چچا' : 'उदा. स्वयं, भाई, चाचाजी');
+  String get paymentMode => isEnglish ? 'Payment Mode' : (isUrdu ? 'ادائیگی کا طریقہ' : 'भुगतान का माध्यम');
+  String get paymentCash => isEnglish ? 'Cash' : (isUrdu ? 'نقد' : 'नकद');
+  String get paymentOnline => isEnglish ? 'Online / UPI' : (isUrdu ? 'آن لائن / یو پی آئی' : 'ऑनलाइन / UPI');
+  String get paymentGiftOnly => isEnglish ? 'Gift Items Only' : (isUrdu ? 'صرف تحفہ' : 'केवल उपहार / भेंट');
+  String get reciprocalHistory => isEnglish ? 'Past Exchange History' : (isUrdu ? 'پچھلی لین دین کی تاریخ' : 'पिछला व्यवहार इतिहास');
+  String get reciprocalReceivedFromThem => isEnglish ? 'They gave us' : (isUrdu ? 'انہوں نے ہمیں دیا تھا' : 'इन्होंने हमें दिया था');
+  String get reciprocalGivenToThem => isEnglish ? 'We gave them' : (isUrdu ? 'ہم نے انہیں دیا تھا' : 'हमने इन्हें दिया था');
+  String get firstExchangeWithPerson => isEnglish ? 'First transaction with this relative' : (isUrdu ? 'اس رشتہ دار کے ساتھ پہلا لین دین' : 'इस रिश्तेदार के साथ पहला व्यवहार');
+  String get sendThankYouMessage => isEnglish ? 'Send Thank You Note' : (isUrdu ? 'شکریہ کا پیغام بھیجیں' : 'धन्यवाद संदेश भेजें');
+  String get thankYouTemplate => isEnglish
+      ? 'Greetings! Wholehearted gratitude for your love, blessings and shagun in our family celebration.'
+      : (isUrdu
+          ? 'سلام! ہماری خاندانی تقریب میں آپ کے پیار، دعاؤں اور تحفے کے لیے دل کی گہرائیوں سے شکریہ۔'
+          : 'सादर प्रणाम! हमारे पारिवारिक मांगलिक उत्सव में आपके स्नेह, आशीर्वाद एवं व्यवहार के लिए सपरिवार हार्दिक धन्यवाद।');
+  String get createNewEventInline => isEnglish ? '+ Create New Event' : (isUrdu ? '+ نئی تقریب بنائیں' : '+ नया कार्यक्रम बनाएं');
+  String get newRelativeFullForm => isEnglish ? '+ Add New Relative' : (isUrdu ? '+ نیا رشتہ دار شامل کریں' : '+ नया रिश्तेदार जोड़ें');
+  String get rapidEntrySuccess => isEnglish
+      ? 'Entry saved. Ready for next relative entry.'
+      : (isUrdu
+          ? 'لین دین محفوظ ہو گیا۔ اگلے رشتہ دار کے اندراج کے لیے تیار۔'
+          : 'व्यवहार दर्ज हुआ। अगले रिश्तेदार की एंट्री के लिए तैयार।');
 
   String personCount(int count) {
     if (isEnglish) {

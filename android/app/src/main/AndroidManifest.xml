@@ -1,33 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <!-- Notification permissions -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS"/>
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.health.READ_STEPS" />
 
-    <!-- Keeps a running focus session alive and visible while the app is in the
-         background. Started only while a session is running, stopped with it. -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-
-    <!-- Optional: only requested when the user picks a folder for automatic
-         backups outside the app's own storage. -->
+    <!-- Offline Storage Permissions for Backups -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="29" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
 
-    <!-- androidx.work (pulled in by home_widget) declares ACCESS_NETWORK_STATE for
-         network-constrained jobs. The app is fully offline and enqueues its widget
-         work without constraints, so the permission is never exercised. -->
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
-
-    
-    <!-- Contact Book & Intent Permissions for Vyavahaar Offline Contacts Import -->
+    <!-- Contact Book & Direct Communications for Offline Contacts Management -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
@@ -48,21 +27,16 @@
         </intent>
         <package android:name="com.whatsapp" />
         <package android:name="com.whatsapp.w4b" />
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT" />
+            <data android:mimeType="text/plain" />
+        </intent>
     </queries>
 
     <application
         android:label="व्यवहार"
         android:name="${applicationName}"
-        android:appComponentFactory="com.procsctools.vyavahaar.StreakComponentFactory"
-        tools:replace="android:appComponentFactory"
         android:icon="@mipmap/ic_launcher">
-
-        <!-- Keep the notification icon statically referenced so the release
-             packaging never strips it. It is otherwise only resolved by name at
-             runtime (getIdentifier), which the build treats as unused. -->
-        <meta-data
-            android:name="com.procsctools.vyavahaar.notification_icon"
-            android:resource="@drawable/ic_stat_notify" />
 
         <activity
             android:name=".MainActivity"
@@ -77,246 +51,14 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
         </activity>
-
-        <!-- Launcher icon variants. Exactly one alias is enabled at a time;
-             switching is done at runtime via the streak/app_icon channel. -->
-        <activity-alias
-            android:name=".MainActivityDefault"
-            android:targetActivity=".MainActivity"
-            android:enabled="true"
-            android:exported="true"
-            android:icon="@mipmap/ic_launcher"
-            android:label="व्यवहार">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".MainActivityNeutral"
-            android:targetActivity=".MainActivity"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@mipmap/ic_launcher_neutral"
-            android:label="व्यवहार">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".MainActivityAccent"
-            android:targetActivity=".MainActivity"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@mipmap/ic_launcher_accent"
-            android:label="व्यवहार">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".HealthPermissionsUsage"
-            android:targetActivity=".MainActivity"
-            android:exported="true"
-            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE"/>
-                <category android:name="android.intent.category.HEALTH_PERMISSIONS"/>
-            </intent-filter>
-        </activity-alias>
 
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-
-        <!-- Flutter Local Notifications Receivers -->
-        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver" />
-        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
-        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
-                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
-                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
-            </intent-filter>
-        </receiver>
-
-        <service
-            android:name=".FocusService"
-            android:exported="false"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="A user-started focus timer that must keep counting and stay
-                    controllable from its notification while the app is in the background." />
-        </service>
-
-        <!-- Home Widget -->
-        <receiver
-            android:name=".HabitWidgetProvider"
-            android:label="व्यवहार"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.procsctools.vyavahaar.UPDATE_WIDGET" />
-                <action android:name="es.antonborri.home_widget.action.UPDATE_WIDGET" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/habit_widget_info" />
-        </receiver>
-
-        <receiver
-            android:name=".TodosWidgetProvider"
-            android:label="व्यवहार"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="es.antonborri.home_widget.action.UPDATE_WIDGET" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/todos_widget_info" />
-        </receiver>
-
-        <receiver
-            android:name=".TodayWidgetProvider"
-            android:label="व्यवहार"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="es.antonborri.home_widget.action.UPDATE_WIDGET" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/today_widget_info" />
-        </receiver>
-
-        <receiver
-            android:name=".StatsWidgetProvider"
-            android:label="व्यवहार"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="es.antonborri.home_widget.action.UPDATE_WIDGET" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/stats_widget_info" />
-        </receiver>
-
-        <receiver
-            android:name=".FocusWidgetProvider"
-            android:label="व्यवहार"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="es.antonborri.home_widget.action.UPDATE_WIDGET" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/focus_widget_info" />
-        </receiver>
-
-        <receiver
-            android:name=".FocusBoardWidgetProvider"
-            android:label="व्यवहार"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="es.antonborri.home_widget.action.UPDATE_WIDGET" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/focus_board_widget_info" />
-        </receiver>
-
-        <!-- Per-widget appearance (and habit, for the heatmap) config screen. -->
-        <activity
-            android:name=".WidgetConfigActivity"
-            android:exported="true"
-            android:theme="@style/HeatmapConfigTheme">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name=".LinkActivity"
-            android:exported="true"
-            android:excludeFromRecents="true"
-            android:noHistory="true"
-            android:taskAffinity=""
-            android:theme="@android:style/Theme.NoDisplay">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="streak" />
-            </intent-filter>
-        </activity>
-
-        <receiver
-            android:name=".HeatmapWidgetProvider"
-            android:label="व्यवहार"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="es.antonborri.home_widget.action.UPDATE_WIDGET" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/heatmap_widget_info" />
-        </receiver>
-
-        <receiver
-            android:name=".WidgetRefreshReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.procsctools.vyavahaar.WIDGET_MIDNIGHT" />
-                <action android:name="android.intent.action.TIME_SET" />
-                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
-            </intent-filter>
-        </receiver>
-
-        <receiver
-            android:name=".ReminderStepReceiver"
-            android:exported="false" />
-
-        <receiver
-            android:name=".WidgetActionReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.procsctools.vyavahaar.TOGGLE_HABIT" />
-            </intent-filter>
-        </receiver>
-
-        <!-- Home Widget Background Receiver for Interactive Widgets -->
-        <receiver
-            android:name="es.antonborri.home_widget.HomeWidgetBackgroundReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="es.antonborri.home_widget.action.BACKGROUND" />
-            </intent-filter>
-        </receiver>
     </application>
-    <!-- Required to query activities that can process text, see:
-         https://developer.android.com/training/package-visibility and
-         https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
-
-         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.PROCESS_TEXT"/>
-            <data android:mimeType="text/plain"/>
-        </intent>
-    </queries>
 </manifest>

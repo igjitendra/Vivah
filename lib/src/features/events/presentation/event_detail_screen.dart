@@ -947,7 +947,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                   decoration: BoxDecoration(color: cardBg, borderRadius: BorderRadius.circular(12), border: Border.all(color: cardBorder)),
                   child: Row(
                     children: [
-                      DirectionBadge(direction: e.direction, size: 36),
+                      DirectionBadge(direction: e.direction),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(

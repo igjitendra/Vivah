@@ -121,11 +121,11 @@ class Person {
     if (trimmed.isEmpty) return 'व्य';
     final parts = trimmed.split(RegExp(r'\s+'));
     if (parts.length >= 2) {
-      final p1 = parts[0].isNotEmpty ? parts[0].characters.first : '';
-      final p2 = parts[1].isNotEmpty ? parts[1].characters.first : '';
+      final p1 = parts[0].isNotEmpty ? String.fromCharCode(parts[0].runes.first) : '';
+      final p2 = parts[1].isNotEmpty ? String.fromCharCode(parts[1].runes.first) : '';
       return '$p1$p2';
     }
-    return trimmed.characters.take(2).toString();
+    return String.fromCharCodes(trimmed.runes.take(2));
   }
 
   String? get primaryOrAnyPhone {

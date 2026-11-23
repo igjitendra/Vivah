@@ -844,7 +844,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                   // Save Button
                   ExpressButton(
                     onPressed: _handleSave,
-                    text: l10n.save,
+                    label: l10n.save,
                   ),
                   const SizedBox(height: 30),
                 ],

@@ -10,7 +10,7 @@ void main() {
       final event = Event(
         id: 'ev-test-1',
         title: 'विवाह समारोह',
-        eventType: EventType.wedding,
+        eventType: EventType.shaadi,
         eventDate: '2026-12-10',
         endDate: '2026-12-12',
         budgetEstimatedPaise: 50000000, // ₹5,00,000 estimated
@@ -171,7 +171,7 @@ void main() {
       final event = Event(
         id: 'ev-wedding',
         title: 'विशाल एवं अंकिता विवाह',
-        eventType: EventType.wedding,
+        eventType: EventType.shaadi,
         eventDate: '2026-12-20',
         endDate: '2026-12-22',
         functions: [

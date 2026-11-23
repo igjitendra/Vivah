@@ -9,6 +9,10 @@ import '../../../domain/entities/entities.dart';
 class CsvService {
   CsvService._();
 
+  /// Alias for backward compatibility
+  static Future<File> generateLedgerCsv({required List<TransactionEntry> entries, AppLocalizations? l10n}) =>
+      exportEntriesCsv(entries, l10n: l10n);
+
   /// Export entries to CSV file
   static Future<File> exportEntriesCsv(List<TransactionEntry> entries, {AppLocalizations? l10n}) async {
     final rows = <List<dynamic>>[];

@@ -513,7 +513,7 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
                 onChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
                 style: TextStyle(fontSize: 14, color: textPrimary),
                 decoration: InputDecoration(
-                  hintText: l10n.searchFamiliesHint,
+                  hintText: l10n.searchPeopleHint,
                   hintStyle: TextStyle(fontSize: 13, color: textSecondary),
                   prefixIcon: Icon(Icons.search, color: textSecondary, size: 20),
                   suffixIcon: _searchQuery.isNotEmpty

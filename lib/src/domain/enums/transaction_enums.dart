@@ -13,6 +13,9 @@ enum TransactionDirection {
   static const TransactionDirection mila = TransactionDirection.received;
   static const TransactionDirection diya = TransactionDirection.given;
 
+  bool get isReceived => this == TransactionDirection.received;
+  bool get isGiven => this == TransactionDirection.given;
+
   static TransactionDirection fromString(String val) {
     val = val.trim().toLowerCase();
     if (val == 'given' || val == 'diya') {
@@ -84,6 +87,9 @@ enum EventType {
   final String labelHindi;
   String get displayName => labelHindi;
   const EventType(this.labelHindi);
+
+  /// Backward-compatibility alias
+  static const EventType wedding = EventType.shaadi;
 
   static EventType fromString(String val) {
     for (final e in EventType.values) {

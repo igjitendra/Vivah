@@ -25,6 +25,12 @@ jobs:
       - name: Run Multilingual Architecture Verification
         run: python3 scripts/test-multilingual-architecture.py
 
+      - name: Run Contacts & People Management Verification
+        run: python3 scripts/test-contacts-and-people-architecture.py
+
+      - name: Run Advanced Event Architecture Verification
+        run: python3 scripts/test-advanced-event-architecture.py
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -35,6 +41,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          flutter-version: '3.41.9'
           cache: true
 
       - name: Install Flutter Dependencies

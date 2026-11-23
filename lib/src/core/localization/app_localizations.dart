@@ -536,6 +536,7 @@ class AppLocalizations {
 
   String get noFamilyMembersYet => isEnglish ? 'No members added to this family yet.' : (isUrdu ? 'اس خاندان میں ابھی کوئی رکن شامل نہیں ہے۔' : 'इस परिवार में अभी कोई सदस्य नहीं जुड़ा है।');
   String get searchFamilyOrVillageHint => isEnglish ? 'Search by family name or village...' : (isUrdu ? 'خاندان یا گاؤں سے تلاش کریں...' : 'परिवार या गाँव से खोजें...');
+  String get searchFamiliesHint => searchFamilyOrVillageHint;
   String get themeGalleryDescription => isEnglish ? 'Personalize your Vyavahaar ledger with curated themes. Your choice is always saved.' : (isUrdu ? 'اپنے کھاتے کو اپنی پسندیدہ تھیم میں سجائیں۔ یہ ترتیبات ہمیشہ محفوظ رہیں گی۔' : 'व्यवहार बही-खाते को अपने मनपसंद रंग व थीम में सजाएं। यह चयन हमेशा सुरक्षित रहेगा।');
   String get onboardingTourSubtitle => isEnglish ? 'View interactive walkthrough and guide' : (isUrdu ? 'ایپ کا تعارف اور رہنمائی دیکھیں' : 'ऐप का परिचय और मार्गदर्शन देखें');
   String get generalCategory => isEnglish ? 'General' : (isUrdu ? 'عام' : 'सामान्य');

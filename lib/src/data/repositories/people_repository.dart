@@ -217,7 +217,7 @@ class DriftPeopleRepository implements PeopleRepository {
     final draftPhones = draft.phones.map(_normalizePhone).where((p) => p.length >= 7).toList();
     if (draftPhones.isNotEmpty) {
       for (final p in existingPeople) {
-        final existingPhones = p.allPhoneNumbers.map(_normalizePhone).where((num) => num.length >= 7).toList();
+        final existingPhones = p.allPhoneNumbers.map(_normalizePhone).where((phone) => phone.length >= 7).toList();
         for (final dp in draftPhones) {
           for (final ep in existingPhones) {
             if (dp == ep || (dp.length >= 10 && ep.length >= 10 && (dp.endsWith(ep.substring(ep.length - 10)) || ep.endsWith(dp.substring(dp.length - 10))))) {

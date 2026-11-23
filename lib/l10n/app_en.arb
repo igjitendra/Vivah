@@ -277,5 +277,17 @@
   "close": "Close",
   "defaultUnit": "Count",
   "hintAmountEstimate": "e.g. 5000",
-  "hintRelationExample": "e.g. Uncle / Aunt"
+  "hintRelationExample": "e.g. Uncle / Aunt",
+  "appearanceSection": "Appearance",
+  "themeModeLabel": "Theme Mode",
+  "systemDefault": "System Default",
+  "lightMode": "Light Mode",
+  "darkMode": "Dark Mode",
+  "themePalettes": "18+ Palettes",
+  "preferencesSection": "Preferences",
+  "defaultCurrency": "Currency",
+  "currencyName": "₹ INR (Indian Rupee)",
+  "dataSection": "Data & Security",
+  "offlineGuaranteeTitle": "100% Offline & Private",
+  "offlineGuaranteeSubtitle": "All records stay strictly on your device. Zero internet, zero accounts."
 }

@@ -524,6 +524,20 @@ class AppLocalizations {
   String get defaultUnit => isEnglish ? 'Count' : (isUrdu ? 'تعداد' : 'संख्या');
   String get hintAmountEstimate => isEnglish ? 'e.g. 5000' : (isUrdu ? 'مثال: 5000' : 'उदा. 5000');
   String get hintRelationExample => isEnglish ? 'e.g. Uncle / Aunt' : (isUrdu ? 'مثال: ماموں / چچا' : 'उदा. मामा / चाचा');
+  String get appearanceSection => isEnglish ? 'Appearance' : (isUrdu ? 'ظاہری شکل اور تھیم' : 'रूप-रंग व दिखावट');
+  String get themeModeLabel => isEnglish ? 'Theme Mode' : (isUrdu ? 'تھیم موڈ' : 'थीम मोड');
+  String get systemDefault => isEnglish ? 'System Default' : (isUrdu ? 'سسٹم کے مطابق' : 'सिस्टम अनुसार');
+  String get lightMode => isEnglish ? 'Light Mode' : (isUrdu ? 'لائٹ موڈ' : 'लाइट मोड');
+  String get darkMode => isEnglish ? 'Dark Mode' : (isUrdu ? 'ڈارک موڈ' : 'डार्क मोड');
+  String get themePalettes => isEnglish ? '18+ Palettes' : (isUrdu ? '18+ پیلیٹس' : '18+ पैलेट्स');
+  String get preferencesSection => isEnglish ? 'Preferences' : (isUrdu ? 'عام ترجیحات' : 'सामान्य प्राथमिकताएं');
+  String get defaultCurrency => isEnglish ? 'Currency' : (isUrdu ? 'کرنسی' : 'मुद्रा');
+  String get currencyName => isEnglish ? '₹ INR (Indian Rupee)' : (isUrdu ? '₹ INR (ہندوستانی روپیہ)' : '₹ INR (भारतीय रुपया)');
+  String get dataSection => isEnglish ? 'Data & Security' : (isUrdu ? 'ڈیٹا اور سیکیورٹی' : 'डेटा बैकअप व सुरक्षा');
+  String get offlineGuaranteeTitle => isEnglish ? '100% Offline & Private' : (isUrdu ? '100% آف لائن اور محفوظ' : '100% ऑफ़लाइन व सुरक्षित');
+  String get offlineGuaranteeSubtitle => isEnglish
+      ? 'All records stay strictly on your device. Zero internet, zero accounts.'
+      : (isUrdu ? 'تمام ریکارڈ صرف آپ کے آلے پر محفوظ ہیں۔ کوئی کلاؤڈ یا انٹرنیٹ نہیں۔' : 'सारा बही-खाता केवल आपके डिवाइस में सुरक्षित है। कोई क्लाउड या इंटरनेट नहीं।');
   List<String> get unitOptions => isEnglish
       ? const ['Count', 'Gram', 'Tola', 'Piece', 'Metre', 'Kg', 'Box']
       : (isUrdu

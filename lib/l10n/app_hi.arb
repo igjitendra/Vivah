@@ -130,5 +130,17 @@
   "close": "बंद करें",
   "defaultUnit": "संख्या",
   "hintAmountEstimate": "उदा. 5000",
-  "hintRelationExample": "उदा. मामा / चाचा"
+  "hintRelationExample": "उदा. मामा / चाचा",
+  "appearanceSection": "रूप-रंग व दिखावट",
+  "themeModeLabel": "थीम मोड",
+  "systemDefault": "सिस्टम अनुसार",
+  "lightMode": "लाइट मोड",
+  "darkMode": "डार्क मोड",
+  "themePalettes": "18+ पैलेट्स",
+  "preferencesSection": "सामान्य प्राथमिकताएं",
+  "defaultCurrency": "मुद्रा",
+  "currencyName": "₹ INR (भारतीय रुपया)",
+  "dataSection": "डेटा बैकअप व सुरक्षा",
+  "offlineGuaranteeTitle": "100% ऑफ़लाइन व सुरक्षित",
+  "offlineGuaranteeSubtitle": "सारा बही-खाता केवल आपके डिवाइस में सुरक्षित है। कोई क्लाउड या इंटरनेट नहीं।"
 }

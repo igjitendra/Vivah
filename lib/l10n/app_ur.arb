@@ -130,5 +130,17 @@
   "close": "بند کریں",
   "defaultUnit": "تعداد",
   "hintAmountEstimate": "مثال: 5000",
-  "hintRelationExample": "مثال: ماموں / چچا"
+  "hintRelationExample": "مثال: ماموں / چچا",
+  "appearanceSection": "ظاہری شکل اور تھیم",
+  "themeModeLabel": "تھیم موڈ",
+  "systemDefault": "سسٹم کے مطابق",
+  "lightMode": "لائٹ موڈ",
+  "darkMode": "ڈارک موڈ",
+  "themePalettes": "18+ پیلیٹس",
+  "preferencesSection": "عام ترجیحات",
+  "defaultCurrency": "کرنسی",
+  "currencyName": "₹ INR (ہندوستانی روپیہ)",
+  "dataSection": "ڈیٹا اور سیکیورٹی",
+  "offlineGuaranteeTitle": "100% آف لائن اور محفوظ",
+  "offlineGuaranteeSubtitle": "تمام ریکارڈ صرف آپ کے آلے پر محفوظ ہیں۔ کوئی کلاؤڈ یا انٹرنیٹ نہیں۔"
 }

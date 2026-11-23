@@ -6,12 +6,15 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/theme/theme_notifier.dart';
+import '../../../shared/widgets/app_logo.dart';
 import '../../../shared/widgets/express_squish.dart';
 import '../../../app/app_providers.dart';
 import '../services/backup_service.dart';
 
-/// Screen managing application settings, language switching, theme selection, and offline backups.
-/// Fully theme-adaptive with Material 3 styling and tactile feedback.
+/// Clean, minimal & organized Settings screen inspired directly by InlitX/streak.
+/// Features structured section cards, distinct icon badges, right-aligned trailing values,
+/// zero AI filler text, and a native theme mode selection modal sheet.
 class SettingsScreen extends ConsumerStatefulWidget {
   final VoidCallback onOpenLanguageSelector;
   final VoidCallback onOpenReports;
@@ -37,10 +40,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final l10n = context.l10n;
     final db = ref.watch(databaseProvider);
+    final themeState = ref.watch(themeProvider);
     final backupService = BackupService(db);
 
     final scaffoldBg = theme.scaffoldBackgroundColor;
-    final headerBg = isDark ? theme.colorScheme.surface : theme.colorScheme.secondary;
     final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
     final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
     final textPrimary = theme.colorScheme.onSurface;
@@ -52,206 +55,337 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       appBar: AppBar(
         title: Text(
           l10n.settingsTitle,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+          style: TextStyle(
+            color: textPrimary,
+            fontWeight: FontWeight.w800,
+            fontSize: 22,
+            letterSpacing: -0.3,
+          ),
         ),
-        backgroundColor: headerBg,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        centerTitle: false,
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: primaryAccent))
           : ListView(
-              padding: const EdgeInsets.only(
-                left: AppSpacing.md,
-                right: AppSpacing.md,
-                top: AppSpacing.md,
-                bottom: AppSpacing.floatingTabBottomPadding + 20,
+              padding: const EdgeInsets.fromLTRB(
+                18,
+                8,
+                18,
+                AppSpacing.floatingTabBottomPadding + 28,
               ),
               children: [
-                // 1. Language & Display Card
-                _buildSectionCard(
-                  title: l10n.displayAndPreferences,
-                  icon: Icons.palette_outlined,
+                // 1. Hero Ledger Profile Banner (Streak _ProfileHero Style)
+                _StreakHeroCard(
                   cardBg: cardBg,
                   cardBorder: cardBorder,
                   textPrimary: textPrimary,
                   textSecondary: textSecondary,
-                  primaryAccent: primaryAccent,
+                  appName: l10n.appName,
+                  appTagline: l10n.appTagline,
+                  badgeText: l10n.offlineGuaranteed,
+                ),
+
+                // 2. Section: Appearance & Themes (दिखावट व थीम)
+                _SectionLabel(l10n.appearanceSection),
+                _StreakCard(
+                  cardBg: cardBg,
+                  cardBorder: cardBorder,
                   children: [
-                    ListTile(
-                      dense: true,
-                      leading: const Icon(Icons.palette_outlined, color: Color(0xFFA78BFA)),
-                      title: Text(l10n.themeAndColors, style: TextStyle(fontWeight: FontWeight.w600, color: textPrimary)),
-                      trailing: Icon(Icons.chevron_right, color: textSecondary, size: 20),
+                    _StreakRow(
+                      icon: themeState.themeMode == ThemeMode.dark
+                          ? Icons.dark_mode_outlined
+                          : (themeState.themeMode == ThemeMode.light
+                              ? Icons.light_mode_outlined
+                              : Icons.brightness_auto_outlined),
+                      tint: const Color(0xFFF59E0B),
+                      title: l10n.themeModeLabel,
+                      value: themeState.themeMode == ThemeMode.dark
+                          ? l10n.darkMode
+                          : (themeState.themeMode == ThemeMode.light
+                              ? l10n.lightMode
+                              : l10n.systemDefault),
+                      onTap: () => _showThemeModeSheet(
+                        context: context,
+                        themeState: themeState,
+                        l10n: l10n,
+                        cardBg: cardBg,
+                        textPrimary: textPrimary,
+                        textSecondary: textSecondary,
+                        primaryAccent: primaryAccent,
+                      ),
+                    ),
+                    _StreakDivider(cardBorder: cardBorder),
+                    _StreakRow(
+                      icon: Icons.palette_outlined,
+                      tint: const Color(0xFFA78BFA),
+                      title: l10n.themeAndColors,
+                      value: l10n.themePalettes,
+                      trailing: Container(
+                        width: 14,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          color: primaryAccent,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: cardBorder, width: 1.5),
+                        ),
+                      ),
                       onTap: () => context.push('/theme'),
                     ),
-                    Divider(height: 1, color: cardBorder),
-                    ListTile(
-                      dense: true,
-                      leading: Icon(Icons.translate, color: isDark ? const Color(0xFF38BDF8) : headerBg),
-                      title: Text(l10n.selectLanguage, style: TextStyle(fontWeight: FontWeight.w600, color: textPrimary)),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            l10n.locale.languageCode.toUpperCase(),
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textSecondary),
-                          ),
-                          const SizedBox(width: 4),
-                          Icon(Icons.chevron_right, color: textSecondary, size: 20),
-                        ],
-                      ),
-                      onTap: widget.onOpenLanguageSelector,
-                    ),
-
                   ],
                 ),
 
-                const SizedBox(height: AppSpacing.md),
-
-                // 2. Reports & Data Export Card
-                _buildSectionCard(
-                  title: l10n.reportsAndReminders,
-                  icon: Icons.assignment_outlined,
+                // 3. Section: General & Preferences (सामान्य व भाषा)
+                _SectionLabel(l10n.preferencesSection),
+                _StreakCard(
                   cardBg: cardBg,
                   cardBorder: cardBorder,
-                  textPrimary: textPrimary,
-                  textSecondary: textSecondary,
-                  primaryAccent: primaryAccent,
                   children: [
-                    ListTile(
-                      dense: true,
-                      leading: Icon(Icons.description_outlined, color: primaryAccent),
-                      title: Text(l10n.reports, style: TextStyle(fontWeight: FontWeight.w600, color: textPrimary)),
-                      trailing: Icon(Icons.chevron_right, color: textSecondary, size: 20),
+                    _StreakRow(
+                      icon: Icons.translate,
+                      tint: const Color(0xFF38BDF8),
+                      title: l10n.selectLanguage,
+                      value: l10n.locale.languageCode.toUpperCase(),
+                      onTap: widget.onOpenLanguageSelector,
+                    ),
+                    _StreakDivider(cardBorder: cardBorder),
+                    _StreakRow(
+                      icon: Icons.currency_rupee,
+                      tint: const Color(0xFF10B981),
+                      title: l10n.defaultCurrency,
+                      value: '₹ INR',
+                    ),
+                  ],
+                ),
+
+                // 4. Section: Ledger & Reports (बही-खाता व रिपोर्ट)
+                _SectionLabel(l10n.reportsAndReminders),
+                _StreakCard(
+                  cardBg: cardBg,
+                  cardBorder: cardBorder,
+                  children: [
+                    _StreakRow(
+                      icon: Icons.description_outlined,
+                      tint: const Color(0xFF6366F1),
+                      title: l10n.reports,
+                      value: 'PDF / CSV',
                       onTap: widget.onOpenReports,
                     ),
                     if (widget.onOpenReminders != null) ...[
-                      Divider(height: 1, color: cardBorder),
-                      ListTile(
-                        dense: true,
-                        leading: const Icon(Icons.notifications_active_outlined, color: AppColors.gold),
-                        title: Text(l10n.reminders, style: TextStyle(fontWeight: FontWeight.w600, color: textPrimary)),
-                        trailing: Icon(Icons.chevron_right, color: textSecondary, size: 20),
+                      _StreakDivider(cardBorder: cardBorder),
+                      _StreakRow(
+                        icon: Icons.notifications_active_outlined,
+                        tint: const Color(0xFFEAB308),
+                        title: l10n.reminders,
                         onTap: widget.onOpenReminders,
                       ),
                     ],
                   ],
                 ),
 
-                const SizedBox(height: AppSpacing.md),
-
-                // 3. Backup & Restore Card
-                _buildSectionCard(
-                  title: l10n.offlineBackupAndRestore,
-                  icon: Icons.security,
+                // 5. Section: Data Backup & Security (डेटा व सुरक्षा)
+                _SectionLabel(l10n.dataSection),
+                _StreakCard(
                   cardBg: cardBg,
                   cardBorder: cardBorder,
-                  textPrimary: textPrimary,
-                  textSecondary: textSecondary,
-                  primaryAccent: primaryAccent,
                   children: [
-                    ListTile(
-                      dense: true,
-                      leading: const Icon(Icons.lock_outline, color: AppColors.milaGreen),
-                      title: Text(l10n.backup, style: TextStyle(fontWeight: FontWeight.w600, color: textPrimary)),
-                      trailing: Icon(Icons.file_upload_outlined, color: textSecondary, size: 20),
+                    _StreakRow(
+                      icon: Icons.lock_outline,
+                      tint: const Color(0xFF059669),
+                      title: l10n.backup,
+                      value: 'AES-256',
                       onTap: () => _handleEncryptedBackup(backupService, cardBg, textPrimary, primaryAccent),
                     ),
-                    Divider(height: 1, color: cardBorder),
-                    ListTile(
-                      dense: true,
-                      leading: Icon(Icons.file_download_outlined, color: isDark ? const Color(0xFF38BDF8) : headerBg),
-                      title: Text(l10n.restore, style: TextStyle(fontWeight: FontWeight.w600, color: textPrimary)),
-                      trailing: Icon(Icons.chevron_right, color: textSecondary, size: 20),
+                    _StreakDivider(cardBorder: cardBorder),
+                    _StreakRow(
+                      icon: Icons.file_download_outlined,
+                      tint: const Color(0xFF2563EB),
+                      title: l10n.restore,
+                      value: '.json',
                       onTap: () => _handleRestoreBackup(backupService, cardBg, textPrimary, primaryAccent),
                     ),
                   ],
                 ),
 
-                const SizedBox(height: AppSpacing.md),
-
-                // 4. Privacy Notice Card
-                ExpressCard(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  radius: 16,
-                  color: cardBg,
-                  borderColor: cardBorder,
-                  elevation: 0,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+                // 6. Section: Privacy & Guarantee (पूर्णतः ऑफ़लाइन)
+                _SectionLabel(l10n.privacySecurity),
+                _StreakCard(
+                  cardBg: cardBg,
+                  cardBorder: cardBorder,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.shield_outlined, color: AppColors.milaGreen, size: 20),
-                          const SizedBox(width: 8),
-                          Text(
-                            l10n.offlineGuaranteed,
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary),
+                          Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: AppColors.milaGreen.withValues(alpha: isDark ? 0.20 : 0.12),
+                              borderRadius: BorderRadius.circular(9),
+                            ),
+                            child: const Icon(Icons.shield_outlined, color: AppColors.milaGreen, size: 18),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.offlineGuaranteeTitle,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: textPrimary,
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  l10n.offlineGuaranteeSubtitle,
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    height: 1.4,
+                                    fontWeight: FontWeight.w400,
+                                    color: textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        l10n.privacyPolicyNotice,
-                        style: TextStyle(color: textSecondary, fontSize: 12, height: 1.4),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
 
-                const SizedBox(height: AppSpacing.xl),
-                Center(
-                  child: Text(
-                    '${l10n.appName} v1.3.0 • ${l10n.appTagline}',
-                    style: TextStyle(color: textSecondary, fontSize: 12),
-                  ),
+                // 7. Minimal Brand Footer (InlitX/streak Signature)
+                const SizedBox(height: 36),
+                Column(
+                  children: [
+                    Text(
+                      'V Y A V A H A A R',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 3.5,
+                        color: textSecondary.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      l10n.appTagline,
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w500,
+                        color: textSecondary.withValues(alpha: 0.7),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'v1.0.4+5 • Build Stable',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0.5,
+                        color: textSecondary.withValues(alpha: 0.45),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
     );
   }
 
-  Widget _buildSectionCard({
-    required String title,
-    required IconData icon,
+  void _showThemeModeSheet({
+    required BuildContext context,
+    required ThemeState themeState,
+    required AppLocalizations l10n,
     required Color cardBg,
-    required Color cardBorder,
     required Color textPrimary,
     required Color textSecondary,
     required Color primaryAccent,
-    required List<Widget> children,
   }) {
-    return ExpressCard(
-      padding: EdgeInsets.zero,
-      radius: 16,
-      color: cardBg,
-      borderColor: cardBorder,
-      elevation: 0,
-      clip: true,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Row(
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: cardBg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(18, 12, 18, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, size: 18, color: primaryAccent),
-                const SizedBox(width: 8),
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: textSecondary.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Text(
-                  title,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: textPrimary),
+                  l10n.themeModeLabel,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _ThemeOptionTile(
+                  icon: Icons.brightness_auto,
+                  title: l10n.systemDefault,
+                  selected: themeState.themeMode == ThemeMode.system,
+                  primaryAccent: primaryAccent,
+                  textPrimary: textPrimary,
+                  onTap: () {
+                    ref.read(themeProvider.notifier).setThemeMode(ThemeMode.system);
+                    Navigator.pop(ctx);
+                  },
+                ),
+                _ThemeOptionTile(
+                  icon: Icons.light_mode_outlined,
+                  title: l10n.lightMode,
+                  selected: themeState.themeMode == ThemeMode.light,
+                  primaryAccent: primaryAccent,
+                  textPrimary: textPrimary,
+                  onTap: () {
+                    ref.read(themeProvider.notifier).setThemeMode(ThemeMode.light);
+                    Navigator.pop(ctx);
+                  },
+                ),
+                _ThemeOptionTile(
+                  icon: Icons.dark_mode_outlined,
+                  title: l10n.darkMode,
+                  selected: themeState.themeMode == ThemeMode.dark,
+                  primaryAccent: primaryAccent,
+                  textPrimary: textPrimary,
+                  onTap: () {
+                    ref.read(themeProvider.notifier).setThemeMode(ThemeMode.dark);
+                    Navigator.pop(ctx);
+                  },
                 ),
               ],
             ),
           ),
-          Divider(height: 1, color: cardBorder),
-          ...children,
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Future<void> _handleEncryptedBackup(BackupService service, Color cardBg, Color textPrimary, Color primaryAccent) async {
+  Future<void> _handleEncryptedBackup(
+    BackupService service,
+    Color cardBg,
+    Color textPrimary,
+    Color primaryAccent,
+  ) async {
     final l10n = context.l10n;
     final passwordController = TextEditingController();
     final confirmed = await showDialog<bool>(
@@ -305,7 +439,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _handleRestoreBackup(BackupService service, Color cardBg, Color textPrimary, Color primaryAccent) async {
+  Future<void> _handleRestoreBackup(
+    BackupService service,
+    Color cardBg,
+    Color textPrimary,
+    Color primaryAccent,
+  ) async {
     final l10n = context.l10n;
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -366,5 +505,316 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         }
       }
     }
+  }
+}
+
+/// Streak Hero Card for top profile / ledger branding
+class _StreakHeroCard extends StatelessWidget {
+  final Color cardBg;
+  final Color cardBorder;
+  final Color textPrimary;
+  final Color textSecondary;
+  final String appName;
+  final String appTagline;
+  final String badgeText;
+
+  const _StreakHeroCard({
+    required this.cardBg,
+    required this.cardBorder,
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.appName,
+    required this.appTagline,
+    required this.badgeText,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: cardBorder, width: 1.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.terracotta.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const AppSymbol(
+              size: 28,
+              pageColor: AppColors.warmCream,
+              checkmarkColor: AppColors.terracotta,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  appName,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.2,
+                    color: textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  appTagline,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: AppColors.milaGreen.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              badgeText,
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: AppColors.milaGreen,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Streak Section Label (uppercase, small, tracked, positioned above cards)
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  const _SectionLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final color = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 6, bottom: 8, top: 22),
+      child: Text(
+        text.toUpperCase(),
+        style: TextStyle(
+          fontSize: 11.5,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.1,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+
+/// Streak Card (rounded 20px, subtle border, anti-aliased clipping)
+class _StreakCard extends StatelessWidget {
+  final List<Widget> children;
+  final Color cardBg;
+  final Color cardBorder;
+
+  const _StreakCard({
+    required this.children,
+    required this.cardBg,
+    required this.cardBorder,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: cardBorder, width: 1.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: children,
+      ),
+    );
+  }
+}
+
+/// Streak Settings Row with soft icon badge, bold title, and right-aligned trailing value
+class _StreakRow extends StatelessWidget {
+  final IconData icon;
+  final Color tint;
+  final String title;
+  final String? value;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+
+  const _StreakRow({
+    required this.icon,
+    required this.tint,
+    required this.title,
+    this.value,
+    this.trailing,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final textPrimary = theme.colorScheme.onSurface;
+    final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+
+    final row = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+      child: Row(
+        children: [
+          // Icon Badge with soft tint
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: tint.withValues(alpha: isDark ? 0.20 : 0.12),
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: Icon(icon, color: tint, size: 16),
+          ),
+          const SizedBox(width: 14),
+
+          // Title
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 15.5,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.2,
+                color: textPrimary,
+              ),
+            ),
+          ),
+
+          // Trailing Value Text
+          if (value != null) ...[
+            const SizedBox(width: 8),
+            Text(
+              value!,
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w500,
+                color: textSecondary,
+              ),
+            ),
+          ],
+
+          if (trailing != null) ...[
+            const SizedBox(width: 8),
+            trailing!,
+          ],
+
+          // Subtle Chevron
+          if (onTap != null) ...[
+            const SizedBox(width: 6),
+            Icon(
+              Icons.chevron_right,
+              size: 18,
+              color: textSecondary.withValues(alpha: 0.5),
+            ),
+          ],
+        ],
+      ),
+    );
+
+    if (onTap == null) return row;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: row,
+      ),
+    );
+  }
+}
+
+/// Streak Divider (indented 62px past icon badge)
+class _StreakDivider extends StatelessWidget {
+  final Color cardBorder;
+  const _StreakDivider({required this.cardBorder});
+
+  @override
+  Widget build(BuildContext context) {
+    return Divider(
+      height: 1,
+      thickness: 1,
+      indent: 62,
+      endIndent: 16,
+      color: cardBorder,
+    );
+  }
+}
+
+/// Modal Sheet Tile for Theme Mode
+class _ThemeOptionTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final bool selected;
+  final Color primaryAccent;
+  final Color textPrimary;
+  final VoidCallback onTap;
+
+  const _ThemeOptionTile({
+    required this.icon,
+    required this.title,
+    required this.selected,
+    required this.primaryAccent,
+    required this.textPrimary,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon, color: selected ? primaryAccent : textPrimary),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+          color: selected ? primaryAccent : textPrimary,
+        ),
+      ),
+      trailing: selected ? Icon(Icons.check_circle, color: primaryAccent, size: 20) : null,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      onTap: onTap,
+    );
   }
 }

@@ -1,0 +1,17 @@
+# GitHub Linguist Overrides for Vyavahaar
+# Enforce accurate language detection across all platforms matching Streak
+
+*.dart linguist-detectable=true
+*.kt linguist-detectable=true
+*.swift linguist-detectable=true
+*.cpp linguist-detectable=true
+*.cc linguist-detectable=true
+*.h linguist-detectable=true
+*.cmake linguist-detectable=true
+CMakeLists.txt linguist-detectable=true
+*.iss linguist-detectable=true
+
+# Mark documentation and scripts so they do not skew programming language percentages
+docs/** linguist-documentation=true
+scripts/** linguist-documentation=true
+*.md linguist-documentation=true

@@ -5,7 +5,7 @@ import 'package:drift/drift.dart';
 class SchemaMigrations {
   SchemaMigrations._();
 
-  static const int currentSchemaVersion = 5;
+  static const int currentSchemaVersion = 6;
 
   /// Executes all required migrations sequentially from `from` to `to`.
   static Future<void> migrate(
@@ -32,6 +32,11 @@ class SchemaMigrations {
     // Migration v4 -> v5: Advanced Event Management Schema
     if (from < 5) {
       await _migrateToV5(m, db);
+    }
+
+    // Migration v5 -> v6: Advanced People & Phone Contacts Import Schema
+    if (from < 6) {
+      await _migrateToV6(m, db);
     }
 
     // Ensure foreign key integrity verification after migration
@@ -357,5 +362,79 @@ class SchemaMigrations {
         'CREATE INDEX IF NOT EXISTS idx_reminders_date ON reminders(reminder_date);');
     await db.customStatement(
         'CREATE INDEX IF NOT EXISTS idx_reminders_completed ON reminders(is_completed);');
+  }
+
+  /// Migration v5 -> v6: Advanced People, Relatives & Phone Contacts Import System
+  static Future<void> _migrateToV6(Migrator m, GeneratedDatabase db) async {
+    // 1. Extend people table with advanced profile and import columns
+    final peopleColumns = [
+      "ALTER TABLE people ADD COLUMN first_name TEXT;",
+      "ALTER TABLE people ADD COLUMN middle_name TEXT;",
+      "ALTER TABLE people ADD COLUMN last_name TEXT;",
+      "ALTER TABLE people ADD COLUMN nickname TEXT;",
+      "ALTER TABLE people ADD COLUMN gender TEXT;",
+      "ALTER TABLE people ADD COLUMN date_of_birth TEXT;",
+      "ALTER TABLE people ADD COLUMN photo_path TEXT;",
+      "ALTER TABLE people ADD COLUMN whatsapp_number TEXT;",
+      "ALTER TABLE people ADD COLUMN village TEXT;",
+      "ALTER TABLE people ADD COLUMN city TEXT;",
+      "ALTER TABLE people ADD COLUMN district TEXT;",
+      "ALTER TABLE people ADD COLUMN state TEXT;",
+      "ALTER TABLE people ADD COLUMN pin_code TEXT;",
+      "ALTER TABLE people ADD COLUMN relationship_notes TEXT;",
+      "ALTER TABLE people ADD COLUMN occupation TEXT;",
+      "ALTER TABLE people ADD COLUMN company TEXT;",
+      "ALTER TABLE people ADD COLUMN tags TEXT;",
+      "ALTER TABLE people ADD COLUMN contact_source TEXT NOT NULL DEFAULT 'manual';",
+      "ALTER TABLE people ADD COLUMN external_contact_id TEXT;",
+      "ALTER TABLE people ADD COLUMN imported_at TEXT;",
+      "ALTER TABLE people ADD COLUMN is_app_edited_after_import INTEGER NOT NULL DEFAULT 0;",
+    ];
+
+    for (final colSql in peopleColumns) {
+      try {
+        await db.customStatement(colSql);
+      } catch (_) {}
+    }
+
+    // 2. Normalized Person Secondary Phone Numbers table
+    await db.customStatement('''
+      CREATE TABLE IF NOT EXISTS person_phones (
+        id TEXT PRIMARY KEY NOT NULL,
+        person_id TEXT NOT NULL,
+        phone_number TEXT NOT NULL,
+        label TEXT,
+        is_primary INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE CASCADE
+      );
+    ''');
+
+    // 3. Normalized Person Email Addresses table
+    await db.customStatement('''
+      CREATE TABLE IF NOT EXISTS person_emails (
+        id TEXT PRIMARY KEY NOT NULL,
+        person_id TEXT NOT NULL,
+        email TEXT NOT NULL,
+        label TEXT,
+        is_primary INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE CASCADE
+      );
+    ''');
+
+    // 4. Performance Indexes for fast phone search, external ID lookup, and relations
+    try {
+      await db.customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_people_phone ON people(phone_number);');
+      await db.customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_people_ext_id ON people(external_contact_id);');
+      await db.customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_person_phones_person ON person_phones(person_id);');
+      await db.customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_person_phones_num ON person_phones(phone_number);');
+      await db.customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_person_emails_person ON person_emails(person_id);');
+    } catch (_) {}
   }
 }

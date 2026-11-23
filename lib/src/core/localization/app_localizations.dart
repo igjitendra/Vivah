@@ -242,24 +242,42 @@ class AppLocalizations {
   String eventTypeLabel(EventType type) {
     if (isEnglish) {
       return switch (type) {
-        EventType.shaadi => 'Wedding',
+        EventType.shaadi || EventType.wedding => 'Wedding',
         EventType.tilak => 'Tilak Ceremony',
         EventType.mundan => 'Mundan (Tonsure)',
         EventType.baraat => 'Baraat',
-        EventType.sagai => 'Engagement',
+        EventType.sagai || EventType.engagement => 'Engagement',
+        EventType.haldi => 'Haldi Ceremony',
+        EventType.mehndi => 'Mehndi Ceremony',
+        EventType.reception => 'Reception',
+        EventType.birthday => 'Birthday',
         EventType.anniversary => 'Anniversary',
-        EventType.grihaPravesh => 'Housewarming',
+        EventType.grihaPravesh => 'Housewarming (Griha Pravesh)',
+        EventType.religiousCeremony => 'Religious Ceremony',
+        EventType.festival => 'Festival',
+        EventType.familyGathering => 'Family Gathering',
+        EventType.funeral => 'Funeral / Shraddh',
+        EventType.communityEvent => 'Community Event',
         EventType.other => 'Other',
       };
     } else if (isUrdu) {
       return switch (type) {
-        EventType.shaadi => 'شادی',
+        EventType.shaadi || EventType.wedding => 'شادی',
         EventType.tilak => 'تلک',
         EventType.mundan => 'منڈن',
         EventType.baraat => 'بارات',
-        EventType.sagai => 'منگنی',
+        EventType.sagai || EventType.engagement => 'منگنی',
+        EventType.haldi => 'ہلدی',
+        EventType.mehndi => 'مہندی',
+        EventType.reception => 'دعوتِ ولیمہ',
+        EventType.birthday => 'سالگرہ پيدائش',
         EventType.anniversary => 'سالگرہ',
         EventType.grihaPravesh => 'تقریبِ رہائش',
+        EventType.religiousCeremony => 'مذہبی تقریب',
+        EventType.festival => 'تہوار',
+        EventType.familyGathering => 'خاندانی اجتماع',
+        EventType.funeral => 'تعزیت / فاتحہ',
+        EventType.communityEvent => 'سماجی تقریب',
         EventType.other => 'دیگر',
       };
     } else {
@@ -576,6 +594,58 @@ class AppLocalizations {
   String get filterArchived => isEnglish ? 'Archived' : (isUrdu ? 'محفوظ شدہ' : 'संग्रहीत');
   String get filterCancelled => isEnglish ? 'Cancelled' : (isUrdu ? 'منسوخ' : 'रद्द');
   String get shareInvitation => isEnglish ? 'Share Invitation' : (isUrdu ? 'دعوت نامہ شیئر کریں' : 'निमंत्रण साझा करें');
+
+  // Contact Import & Relatives Management Getters
+  String get importFromContacts => isEnglish ? 'Import from Contacts' : (isUrdu ? 'رابطوں سے درآمد کریں' : 'फ़ोन संपर्क से आयात करें');
+  String get addManually => isEnglish ? 'Add Manually' : (isUrdu ? 'دستی طور پر شامل کریں' : 'मैन्युअल जोड़ें');
+  String get importVCard => isEnglish ? 'Import vCard File' : (isUrdu ? 'vCard فائل سے درآمد کریں' : 'vCard फ़ाइल से आयात करें');
+  String get contactPermissionRationale => isEnglish
+      ? 'Vyavahaar needs contact access to let you select and import relatives directly. All data remains 100% offline on your device.'
+      : (isUrdu
+          ? 'رشتہ داروں کو درآمد کرنے کے لیے رابطوں کی اجازت درکار ہے۔ آپ کا تمام ڈیٹا 100% آف لائن محفوظ رہے گا۔'
+          : 'रिश्तेदारों को सीधे आयात करने के लिए संपर्क अनुमति की आवश्यकता है। आपका सारा डेटा 100% ऑफ़लाइन रहेगा।');
+  String get selectContactsToImport => isEnglish ? 'Select Contacts to Import' : (isUrdu ? 'درآمد کرنے کے لیے رابطے منتخب کریں' : 'आयात करने हेतु संपर्क चुनें');
+  String get importContactsCount => isEnglish ? 'Import Contacts' : (isUrdu ? 'رابطے درآمد کریں' : 'संपर्क आयात करें');
+  String get importSuccess => isEnglish ? 'Contacts imported successfully' : (isUrdu ? 'رابطے کامیابی کے ساتھ درآمد ہو گئے' : 'संपर्क सफलतापूर्वक आयात किए गए');
+  String get noContactsSelected => isEnglish ? 'No contacts selected' : (isUrdu ? 'کوئی رابطہ منتخب نہیں کیا گیا' : 'कोई संपर्क नहीं चुना गया');
+  String get duplicateFoundTitle => isEnglish ? 'Possible Duplicate Detected' : (isUrdu ? 'ممکنہ ڈپلیکیٹ رابطہ پایا گیا' : 'संभावित डुप्लीकेट संपर्क मिला');
+  String get duplicateFoundDesc => isEnglish
+      ? 'This contact appears to already exist in your directory.'
+      : (isUrdu ? 'یہ رابطہ پہلے ہی آپ کی فہرست میں موجود لگتا ہے۔' : 'यह संपर्क पहले से आपकी सूची में मौजूद प्रतीत होता है।');
+  String get skipImport => isEnglish ? 'Skip' : (isUrdu ? 'چھوڑیں' : 'छोड़ें');
+  String get importAsSeparate => isEnglish ? 'Add as Separate Person' : (isUrdu ? 'علیحدہ شخص کے طور پر شامل کریں' : 'अलग व्यक्ति के रूप में जोड़ें');
+  String get mergeWithExisting => isEnglish ? 'Merge with Existing' : (isUrdu ? 'موجودہ شخص میں ضم کریں' : 'मौजूदा व्यक्ति में विलय करें');
+  String get compareBoth => isEnglish ? 'Review & Compare' : (isUrdu ? 'موازنہ کریں' : 'तुलना करें');
+  String get primaryPhone => isEnglish ? 'Primary Mobile' : (isUrdu ? 'بنیادی موبائل نمبر' : 'मुख्य मोबाइल नंबर');
+  String get secondaryPhones => isEnglish ? 'Additional Phone Numbers' : (isUrdu ? 'اضافی فون نمبر' : 'अतिरिक्त फ़ोन नंबर');
+  String get whatsappNumber => isEnglish ? 'WhatsApp Number' : (isUrdu ? 'واٹس ایپ نمبر' : 'व्हाट्सएप नंबर');
+  String get emailAddresses => isEnglish ? 'Email Addresses' : (isUrdu ? 'ای میل پتے' : 'ईमेल पते');
+  String get village => isEnglish ? 'Village / Town' : (isUrdu ? 'گاؤں / قصبہ' : 'गाँव / कस्बा');
+  String get city => isEnglish ? 'City' : (isUrdu ? 'شہر' : 'शहर');
+  String get district => isEnglish ? 'District' : (isUrdu ? 'ضلع' : 'ज़िला');
+  String get state => isEnglish ? 'State' : (isUrdu ? 'صوبہ / ریاست' : 'राज्य');
+  String get pinCode => isEnglish ? 'PIN Code' : (isUrdu ? 'پن کوڈ' : 'पिन कोड');
+  String get occupation => isEnglish ? 'Occupation' : (isUrdu ? 'پیشہ' : 'व्यवसाय / पेशा');
+  String get company => isEnglish ? 'Company / Organization' : (isUrdu ? 'کمپنی / ادارہ' : 'कंपनी / संस्थान');
+  String get tags => isEnglish ? 'Tags' : (isUrdu ? 'ٹیگز' : 'टैग');
+  String get contactSource => isEnglish ? 'Source' : (isUrdu ? 'ذریعہ' : 'स्रोत');
+  String get contactSourceManual => isEnglish ? 'Manual Entry' : (isUrdu ? 'دستی اندراج' : 'मैन्युअल प्रविष्टि');
+  String get contactSourcePhone => isEnglish ? 'Phone Contact' : (isUrdu ? 'فون رابطہ' : 'फ़ोन संपर्क');
+  String get callAction => isEnglish ? 'Call' : (isUrdu ? 'کال کریں' : 'कॉल करें');
+  String get smsAction => isEnglish ? 'SMS' : (isUrdu ? 'پیغام بھیجیں' : 'संदेश भेजें');
+  String get whatsappAction => isEnglish ? 'WhatsApp' : (isUrdu ? 'واٹس ایپ' : 'व्हाट्सएप');
+  String get emailAction => isEnglish ? 'Email' : (isUrdu ? 'ای میل بھیجیں' : 'ईमेल भेजें');
+  String get shareContactAction => isEnglish ? 'Share Contact' : (isUrdu ? 'رابطہ شیئر کریں' : 'संपर्क साझा करें');
+  String get exportVCardAction => isEnglish ? 'Export as vCard (.vcf)' : (isUrdu ? 'vCard (.vcf) برآمد کریں' : 'vCard (.vcf) निर्यात करें');
+  String get exportCsvAction => isEnglish ? 'Export as CSV' : (isUrdu ? 'CSV برآمد کریں' : 'CSV निर्यात करें');
+  String get bulkActions => isEnglish ? 'Bulk Actions' : (isUrdu ? 'اجتماعی کارروائیاں' : 'थोक क्रियाएं');
+  String get bulkAssignFamily => isEnglish ? 'Assign to Family' : (isUrdu ? 'خاندان میں شامل کریں' : 'परिवार से जोड़ें');
+  String get bulkAddTag => isEnglish ? 'Add Tag' : (isUrdu ? 'ٹیگ شامل کریں' : 'टैग लगाएं');
+  String get bulkArchive => isEnglish ? 'Archive Selected' : (isUrdu ? 'منتخب کو محفوظ کریں' : 'चयनित संग्रहित करें');
+  String get selectedCount => isEnglish ? 'Selected' : (isUrdu ? 'منتخب' : 'चयनित');
+  String get confirmMerge => isEnglish ? 'Confirm Merge' : (isUrdu ? 'ضم کرنے کی تصدیق کریں' : 'विलय की पुष्टि करें');
+  String get keepExisting => isEnglish ? 'Keep Existing' : (isUrdu ? 'موجودہ رکھیں' : 'मौजूदा रखें');
+  String get keepIncoming => isEnglish ? 'Use Incoming' : (isUrdu ? 'نیا استعمال کریں' : 'नया उपयोग करें');
   List<String> get unitOptions => isEnglish
       ? const ['Count', 'Gram', 'Tola', 'Piece', 'Metre', 'Kg', 'Box']
       : (isUrdu

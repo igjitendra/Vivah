@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
-import '../../domain/entities/entities.dart';
-import '../../domain/enums/transaction_enums.dart';
+import '../../../domain/entities/entities.dart';
+import '../../../domain/enums/transaction_enums.dart';
 import '../app_database.dart';
 import '../tables/events_table.dart';
 import '../tables/entries_table.dart';

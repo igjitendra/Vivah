@@ -28,10 +28,42 @@ class Person {
   final String id;
   final String? familyId;
   final String fullName;
-  final String? phoneNumber;
-  final String? relationshipLabel;
+  final String? firstName;
+  final String? middleName;
+  final String? lastName;
+  final String? nickname;
+  final String? gender; // 'male', 'female', 'other'
+  final String? dateOfBirth; // YYYY-MM-DD
+  final String? photoPath;
+
+  // Contact Info
+  final String? phoneNumber; // Primary phone
+  final List<String> secondaryPhones;
+  final String? whatsappNumber;
+  final List<String> emails;
+
+  // Address
   final String? address;
+  final String? village;
+  final String? city;
+  final String? district;
+  final String? state;
+  final String? pinCode;
+
+  // Relationship & Notes
+  final String? relationshipLabel;
+  final String? relationshipNotes;
   final String? notes;
+
+  // Professional & Metadata
+  final String? occupation;
+  final String? company;
+  final List<String> tags;
+  final String contactSource; // 'manual' or 'phone_import'
+  final String? externalContactId;
+  final DateTime? importedAt;
+  final bool isAppEditedAfterImport;
+
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? archivedAt;
@@ -40,22 +72,254 @@ class Person {
     required this.id,
     this.familyId,
     required this.fullName,
+    this.firstName,
+    this.middleName,
+    this.lastName,
+    this.nickname,
+    this.gender,
+    this.dateOfBirth,
+    this.photoPath,
     this.phoneNumber,
-    this.relationshipLabel,
+    this.secondaryPhones = const [],
+    this.whatsappNumber,
+    this.emails = const [],
     this.address,
+    this.village,
+    this.city,
+    this.district,
+    this.state,
+    this.pinCode,
+    this.relationshipLabel,
+    this.relationshipNotes,
     this.notes,
+    this.occupation,
+    this.company,
+    this.tags = const [],
+    this.contactSource = 'manual',
+    this.externalContactId,
+    this.importedAt,
+    this.isAppEditedAfterImport = false,
     required this.createdAt,
     required this.updatedAt,
     this.archivedAt,
   });
 
   bool get isArchived => archivedAt != null;
+  bool get isPhoneImported => contactSource == 'phone_import';
 
   // Backward compatibility getters
   String get name => fullName;
   String? get phone => phoneNumber;
-  String? get village => address;
   String? get relationship => relationshipLabel;
+
+  String get displayName => (nickname != null && nickname!.trim().isNotEmpty)
+      ? '$fullName ($nickname)'
+      : fullName;
+
+  String get initials {
+    final trimmed = fullName.trim();
+    if (trimmed.isEmpty) return 'व्य';
+    final parts = trimmed.split(RegExp(r'\s+'));
+    if (parts.length >= 2) {
+      final p1 = parts[0].isNotEmpty ? parts[0].characters.first : '';
+      final p2 = parts[1].isNotEmpty ? parts[1].characters.first : '';
+      return '$p1$p2';
+    }
+    return trimmed.characters.take(2).toString();
+  }
+
+  String? get primaryOrAnyPhone {
+    if (phoneNumber != null && phoneNumber!.trim().isNotEmpty) {
+      return phoneNumber!.trim();
+    }
+    if (secondaryPhones.isNotEmpty && secondaryPhones.first.trim().isNotEmpty) {
+      return secondaryPhones.first.trim();
+    }
+    return null;
+  }
+
+  List<String> get allPhoneNumbers {
+    final list = <String>[];
+    if (phoneNumber != null && phoneNumber!.trim().isNotEmpty) {
+      list.add(phoneNumber!.trim());
+    }
+    for (final p in secondaryPhones) {
+      final trimmed = p.trim();
+      if (trimmed.isNotEmpty && !list.contains(trimmed)) {
+        list.add(trimmed);
+      }
+    }
+    return list;
+  }
+
+  String get fullAddress {
+    final parts = <String>[];
+    if (address != null && address!.trim().isNotEmpty) parts.add(address!.trim());
+    if (village != null && village!.trim().isNotEmpty && village != address) parts.add(village!.trim());
+    if (city != null && city!.trim().isNotEmpty) parts.add(city!.trim());
+    if (district != null && district!.trim().isNotEmpty) parts.add(district!.trim());
+    if (state != null && state!.trim().isNotEmpty) parts.add(state!.trim());
+    if (pinCode != null && pinCode!.trim().isNotEmpty) parts.add(pinCode!.trim());
+    return parts.join(', ');
+  }
+
+  Person copyWith({
+    String? id,
+    String? familyId,
+    String? fullName,
+    String? firstName,
+    String? middleName,
+    String? lastName,
+    String? nickname,
+    String? gender,
+    String? dateOfBirth,
+    String? photoPath,
+    String? phoneNumber,
+    List<String>? secondaryPhones,
+    String? whatsappNumber,
+    List<String>? emails,
+    String? address,
+    String? village,
+    String? city,
+    String? district,
+    String? state,
+    String? pinCode,
+    String? relationshipLabel,
+    String? relationshipNotes,
+    String? notes,
+    String? occupation,
+    String? company,
+    List<String>? tags,
+    String? contactSource,
+    String? externalContactId,
+    DateTime? importedAt,
+    bool? isAppEditedAfterImport,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? archivedAt,
+  }) {
+    return Person(
+      id: id ?? this.id,
+      familyId: familyId ?? this.familyId,
+      fullName: fullName ?? this.fullName,
+      firstName: firstName ?? this.firstName,
+      middleName: middleName ?? this.middleName,
+      lastName: lastName ?? this.lastName,
+      nickname: nickname ?? this.nickname,
+      gender: gender ?? this.gender,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      photoPath: photoPath ?? this.photoPath,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      secondaryPhones: secondaryPhones ?? this.secondaryPhones,
+      whatsappNumber: whatsappNumber ?? this.whatsappNumber,
+      emails: emails ?? this.emails,
+      address: address ?? this.address,
+      village: village ?? this.village,
+      city: city ?? this.city,
+      district: district ?? this.district,
+      state: state ?? this.state,
+      pinCode: pinCode ?? this.pinCode,
+      relationshipLabel: relationshipLabel ?? this.relationshipLabel,
+      relationshipNotes: relationshipNotes ?? this.relationshipNotes,
+      notes: notes ?? this.notes,
+      occupation: occupation ?? this.occupation,
+      company: company ?? this.company,
+      tags: tags ?? this.tags,
+      contactSource: contactSource ?? this.contactSource,
+      externalContactId: externalContactId ?? this.externalContactId,
+      importedAt: importedAt ?? this.importedAt,
+      isAppEditedAfterImport: isAppEditedAfterImport ?? this.isAppEditedAfterImport,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      archivedAt: archivedAt ?? this.archivedAt,
+    );
+  }
+}
+
+/// Normalized Secondary Phone record
+class PersonPhone {
+  final String id;
+  final String personId;
+  final String phoneNumber;
+  final String? label;
+  final bool isPrimary;
+
+  const PersonPhone({
+    required this.id,
+    required this.personId,
+    required this.phoneNumber,
+    this.label,
+    this.isPrimary = false,
+  });
+}
+
+/// Normalized Email record
+class PersonEmail {
+  final String id;
+  final String personId;
+  final String email;
+  final String? label;
+  final bool isPrimary;
+
+  const PersonEmail({
+    required this.id,
+    required this.personId,
+    required this.email,
+    this.label,
+    this.isPrimary = false,
+  });
+}
+
+/// Draft Contact representing a phone contact or vCard entry before database persistence
+class ContactDraft {
+  final String id;
+  final String name;
+  final String? firstName;
+  final String? middleName;
+  final String? lastName;
+  final String? nickname;
+  final List<String> phones;
+  final List<String> emails;
+  final String? address;
+  final String? village;
+  final String? city;
+  final String? district;
+  final String? state;
+  final String? pinCode;
+  final String? company;
+  final String? jobTitle;
+  final String? birthday;
+  final String? photoPath;
+  final String? externalId;
+  final String source; // 'phone_contacts' or 'vcard_file'
+  final String? notes;
+
+  const ContactDraft({
+    required this.id,
+    required this.name,
+    this.firstName,
+    this.middleName,
+    this.lastName,
+    this.nickname,
+    this.phones = const [],
+    this.emails = const [],
+    this.address,
+    this.village,
+    this.city,
+    this.district,
+    this.state,
+    this.pinCode,
+    this.company,
+    this.jobTitle,
+    this.birthday,
+    this.photoPath,
+    this.externalId,
+    this.source = 'phone_contacts',
+    this.notes,
+  });
+
+  String? get primaryPhone => phones.isNotEmpty ? phones.first : null;
+  List<String> get secondaryPhones => phones.length > 1 ? phones.sublist(1) : const [];
 }
 
 /// Ceremonial Event Entity (सामाजिक व पारिवारिक कार्यक्रम)

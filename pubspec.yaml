@@ -1,7 +1,7 @@
 name: vyavahaar
 description: "व्यवहार (Vyavahaar) — Digital Family Ledger. रिश्तों का हिसाब, हमेशा याद।"
 publish_to: "none"
-version: 1.0.5+6
+version: 1.0.6+7
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
@@ -39,6 +39,10 @@ dependencies:
   csv: ^6.0.0
   file_picker: ^8.3.7
   share_plus: ^10.0.0
+
+  # Native Contacts & External Actions
+  flutter_contacts: ^1.1.9+2
+  url_launcher: ^6.3.0
 
   # Formatting & Localization
   intl: any

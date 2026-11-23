@@ -189,11 +189,38 @@ if os.path.isfile(root_gradle_groovy):
     else:
         print("ℹ️ Root build.gradle already contains compileSdk 36 subprojects block")
 
-# 4. Patch AndroidManifest.xml for label and permissions
+# 4. Patch AndroidManifest.xml for label, permissions, and package queries
 manifest_files = [
     os.path.join(android_dir, "app", "src", "main", "AndroidManifest.xml"),
     os.path.join(android_dir, "app", "src", "debug", "AndroidManifest.xml"),
 ]
+
+permissions_and_queries = """
+    <!-- Contact Book & Intent Permissions for Vyavahaar Offline Contacts Import -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+
+    <!-- Android 11+ Package Visibility Queries for Dial, SMS, Mail & WhatsApp -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.DIAL" />
+            <data android:scheme="tel" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="smsto" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="mailto" />
+        </intent>
+        <package android:name="com.whatsapp" />
+        <package android:name="com.whatsapp.w4b" />
+    </queries>
+
+    <application"""
+
 for mf in manifest_files:
     if os.path.isfile(mf):
         with open(mf, "r", encoding="utf-8") as f:
@@ -202,9 +229,12 @@ for mf in manifest_files:
         mcontent = re.sub(r'android:label="[^"]*"', 'android:label="व्यवहार"', mcontent)
         # Strip android:extractNativeLibs to prevent AGP 8 PackageAndroidArtifact error
         mcontent = re.sub(r'\s+android:extractNativeLibs="[^"]*"', '', mcontent)
+        # Inject permissions if not present
+        if "android.permission.READ_CONTACTS" not in mcontent and "<application" in mcontent:
+            mcontent = mcontent.replace("<application", permissions_and_queries, 1)
         with open(mf, "w", encoding="utf-8") as f:
             f.write(mcontent)
-        print(f"✅ Configured {os.path.relpath(mf, root_dir)} with android:label='व्यवहार'")
+        print(f"✅ Configured {os.path.relpath(mf, root_dir)} with android:label='व्यवहार' and contacts permissions")
 
 print("=" * 60)
 print("🎉 Android configuration completed successfully!")

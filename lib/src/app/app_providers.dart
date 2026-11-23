@@ -56,6 +56,12 @@ final activePeopleListProvider = StreamProvider<List<Person>>((ref) {
   return repo.watchActivePeople();
 });
 
+/// Archived people stream provider
+final archivedPeopleListProvider = StreamProvider<List<Person>>((ref) {
+  final repo = ref.watch(peopleRepositoryProvider);
+  return repo.watchArchivedPeople();
+});
+
 /// Active events stream provider
 final activeEventsListProvider = StreamProvider<List<Event>>((ref) {
   final repo = ref.watch(eventsRepositoryProvider);

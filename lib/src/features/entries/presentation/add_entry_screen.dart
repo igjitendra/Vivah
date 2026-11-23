@@ -607,7 +607,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                           title: Text(e.title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary)),
                           subtitle: Text(
                             [
-                              AppDateUtils.formatIsoToIndianDate(e.eventDate),
+                              AppDateUtils.formatIsoDate(e.eventDate),
                               if (e.venue != null && e.venue!.isNotEmpty) e.venue!,
                             ].join(' • '),
                             style: TextStyle(fontSize: 12, color: textSecondary),
@@ -1212,7 +1212,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                                   const SizedBox(height: 2),
                                   Text(
                                     selectedEvent != null
-                                        ? '${AppDateUtils.formatIsoToIndianDate(selectedEvent.eventDate)}${selectedEvent.venue != null ? ' • ${selectedEvent.venue}' : ''}'
+                                        ? '${AppDateUtils.formatIsoDate(selectedEvent.eventDate)}${selectedEvent.venue != null ? ' • ${selectedEvent.venue}' : ''}'
                                         : l10n.selectEventSubtitle,
                                     style: TextStyle(fontSize: 11.5, color: textSecondary),
                                     maxLines: 1,
@@ -1271,7 +1271,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                               ExpressSquish(
                                 scale: 0.92,
                                 onTap: () => setState(() => _amountController.clear()),
-                                child: Icon(Icons.clear, size: 16, style: TextStyle(fontSize: 12, color: primaryAccent, fontWeight: FontWeight.bold)),
+                                child: Icon(Icons.clear, size: 18, color: primaryAccent),
                               ),
                           ],
                         ),
@@ -1582,7 +1582,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                                       Icon(Icons.calendar_month_outlined, size: 16, color: primaryAccent),
                                       const SizedBox(width: 6),
                                       Text(
-                                        AppDateUtils.formatIsoToIndianDate(_transactionDate),
+                                        AppDateUtils.formatIsoDate(_transactionDate),
                                         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textPrimary),
                                       ),
                                     ],

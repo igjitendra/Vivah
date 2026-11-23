@@ -37,12 +37,25 @@ if os.path.isfile(gradle_props):
     new_props = []
     if "android.suppressUnsupportedCompileSdk" not in content:
         new_props.append("android.suppressUnsupportedCompileSdk=36")
+    if "kotlin.suppressGradlePluginWarnings" not in content:
+        new_props.append("kotlin.suppressGradlePluginWarnings=DeprecatedGradleVersionWarning")
     if new_props:
         with open(gradle_props, "a", encoding="utf-8") as f:
             f.write("\n" + "\n".join(new_props) + "\n")
         print("✅ Added properties to gradle.properties:", new_props)
     else:
         print("ℹ️ gradle.properties already configured with required properties")
+
+# 1b. Update gradle-wrapper.properties to gradle-8.14.4-all.zip
+wrapper_props = os.path.join(android_dir, "gradle", "wrapper", "gradle-wrapper.properties")
+if os.path.isfile(wrapper_props):
+    with open(wrapper_props, "r", encoding="utf-8") as f:
+        wcontent = f.read()
+    wcontent = re.sub(r'distributionUrl=.*', r'distributionUrl=https\\://services.gradle.org/distributions/gradle-8.14.4-all.zip', wcontent)
+    wcontent = re.sub(r'distributionSha256Sum=.*\n?', '', wcontent)
+    with open(wrapper_props, "w", encoding="utf-8") as f:
+        f.write(wcontent)
+    print("✅ Configured gradle-wrapper.properties with Gradle 8.14.4")
 
 # 2. Update android/app/build.gradle.kts or android/app/build.gradle
 app_gradle_kts = os.path.join(android_dir, "app", "build.gradle.kts")

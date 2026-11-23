@@ -46,6 +46,7 @@ dependencies:
 
   # Formatting & Localization
   intl: any
+  characters: ^1.3.0
 
   # UUID generation for primary keys
   uuid: ^4.0.0

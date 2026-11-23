@@ -49,5 +49,27 @@ void main() {
       final regex = RegExp(r'^\d{4}-\d{2}-\d{2}$');
       expect(regex.hasMatch(today), isTrue);
     });
+
+    test('isToday correctly identifies today', () {
+      final now = DateTime.now();
+      expect(AppDateUtils.isToday(now), isTrue);
+      expect(AppDateUtils.isToday(AppDateUtils.getTodayIsoString()), isTrue);
+      expect(AppDateUtils.isToday(now.subtract(const Duration(days: 1))), isFalse);
+    });
+
+    test('isYesterday correctly identifies yesterday', () {
+      final yesterday = DateTime.now().subtract(const Duration(days: 1));
+      expect(AppDateUtils.isYesterday(yesterday), isTrue);
+      expect(AppDateUtils.isYesterday(DateTime.now()), isFalse);
+    });
+
+    test('formatRelativeDate returns authentic localized labels', () {
+      final today = DateTime.now();
+      final yesterday = today.subtract(const Duration(days: 1));
+      expect(AppDateUtils.formatRelativeDate(today, 'hi'), equals('आज'));
+      expect(AppDateUtils.formatRelativeDate(yesterday, 'hi'), equals('कल'));
+      expect(AppDateUtils.formatRelativeDate(today, 'en'), equals('Today'));
+      expect(AppDateUtils.formatRelativeDate(yesterday, 'en'), equals('Yesterday'));
+    });
   });
 }

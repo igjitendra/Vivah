@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:drift/drift.dart';
 import '../../domain/entities/entities.dart';
 import '../../domain/enums/transaction_enums.dart';
@@ -7,6 +8,7 @@ import '../database/app_database.dart';
 /// Abstract contract for Entries repository
 abstract class EntriesRepository {
   Future<DashboardSummary> getDashboardSummary();
+  Stream<DashboardSummary> watchDashboardSummary();
   Stream<List<TransactionEntry>> watchEntries({
     TransactionDirection? direction,
     TransactionStatus? status,
@@ -29,7 +31,9 @@ abstract class EntriesRepository {
   Future<void> markPlannedEntryRecorded(String id);
   Future<void> archiveEntry(String id);
   Future<Map<String, int>> getPersonHistoryStats(String personId);
+  Stream<Map<String, int>> watchPersonHistoryStats(String personId);
   Future<Map<String, int>> getEventHistoryStats(String eventId);
+  Stream<Map<String, int>> watchEventHistoryStats(String eventId);
 }
 
 /// Implementation of EntriesRepository backed by Drift AppDatabase
@@ -77,6 +81,33 @@ class DriftEntriesRepository implements EntriesRepository {
       recentEventTitle: recentEvent?.title,
       recentEventDate: recentEvent?.eventDate,
     );
+  }
+
+  @override
+  Stream<DashboardSummary> watchDashboardSummary() async* {
+    yield await getDashboardSummary();
+
+    final controller = StreamController<void>.broadcast();
+    final s1 = _db.select(_db.entries).watch().listen((_) {
+      if (!controller.isClosed) controller.add(null);
+    });
+    final s2 = _db.select(_db.people).watch().listen((_) {
+      if (!controller.isClosed) controller.add(null);
+    });
+    final s3 = _db.select(_db.events).watch().listen((_) {
+      if (!controller.isClosed) controller.add(null);
+    });
+
+    try {
+      await for (final _ in controller.stream) {
+        yield await getDashboardSummary();
+      }
+    } finally {
+      await s1.cancel();
+      await s2.cancel();
+      await s3.cancel();
+      await controller.close();
+    }
   }
 
   @override
@@ -266,6 +297,25 @@ class DriftEntriesRepository implements EntriesRepository {
   }
 
   @override
+  Stream<Map<String, int>> watchPersonHistoryStats(String personId) async* {
+    yield await getPersonHistoryStats(personId);
+
+    final controller = StreamController<void>.broadcast();
+    final sub = (_db.select(_db.entries)..where((t) => t.personId.equals(personId))).watch().listen((_) {
+      if (!controller.isClosed) controller.add(null);
+    });
+
+    try {
+      await for (final _ in controller.stream) {
+        yield await getPersonHistoryStats(personId);
+      }
+    } finally {
+      await sub.cancel();
+      await controller.close();
+    }
+  }
+
+  @override
   Future<Map<String, int>> getEventHistoryStats(String eventId) async {
     final received = await _db.entriesDao.getEventReceivedTotal(eventId);
     final given = await _db.entriesDao.getEventGivenTotal(eventId);
@@ -273,6 +323,25 @@ class DriftEntriesRepository implements EntriesRepository {
       'received_paise': received,
       'given_paise': given,
     };
+  }
+
+  @override
+  Stream<Map<String, int>> watchEventHistoryStats(String eventId) async* {
+    yield await getEventHistoryStats(eventId);
+
+    final controller = StreamController<void>.broadcast();
+    final sub = (_db.select(_db.entries)..where((t) => t.eventId.equals(eventId))).watch().listen((_) {
+      if (!controller.isClosed) controller.add(null);
+    });
+
+    try {
+      await for (final _ in controller.stream) {
+        yield await getEventHistoryStats(eventId);
+      }
+    } finally {
+      await sub.cancel();
+      await controller.close();
+    }
   }
 
   TransactionEntry _mapToEntity(

@@ -29,7 +29,7 @@ class _DuplicateReviewDialogState extends State<DuplicateReviewDialog> {
   bool _useIncomingPhone = false;
   bool _useIncomingAddress = true;
   bool _useIncomingJob = true;
-  bool _useIncomingCompany = true;
+  final bool _useIncomingCompany = true;
 
   bool _isMergeMode = false;
 
@@ -212,19 +212,43 @@ class _DuplicateReviewDialogState extends State<DuplicateReviewDialog> {
                 ),
                 if (widget.existingPerson.phoneNumber != null) ...[
                   const SizedBox(height: 4),
-                  Text('📞 ${widget.existingPerson.phoneNumber}', style: TextStyle(fontSize: 12, color: secondary)),
+                  Row(
+                    children: [
+                      Icon(Icons.phone_outlined, size: 12, color: secondary),
+                      const SizedBox(width: 4),
+                      Text(widget.existingPerson.phoneNumber!, style: TextStyle(fontSize: 12, color: secondary)),
+                    ],
+                  ),
                 ],
                 if (widget.existingPerson.emails.isNotEmpty) ...[
                   const SizedBox(height: 4),
-                  Text('✉️ ${widget.existingPerson.emails.first}', style: TextStyle(fontSize: 12, color: secondary)),
+                  Row(
+                    children: [
+                      Icon(Icons.email_outlined, size: 12, color: secondary),
+                      const SizedBox(width: 4),
+                      Text(widget.existingPerson.emails.first, style: TextStyle(fontSize: 12, color: secondary)),
+                    ],
+                  ),
                 ],
                 if (widget.existingPerson.address != null) ...[
                   const SizedBox(height: 4),
-                  Text('📍 ${widget.existingPerson.address}', style: TextStyle(fontSize: 12, color: secondary)),
+                  Row(
+                    children: [
+                      Icon(Icons.location_on_outlined, size: 12, color: secondary),
+                      const SizedBox(width: 4),
+                      Expanded(child: Text(widget.existingPerson.address!, style: TextStyle(fontSize: 12, color: secondary))),
+                    ],
+                  ),
                 ],
                 if (widget.existingPerson.relationshipLabel != null) ...[
                   const SizedBox(height: 4),
-                  Text('🏷️ ${widget.existingPerson.relationshipLabel}', style: TextStyle(fontSize: 12, color: secondary)),
+                  Row(
+                    children: [
+                      Icon(Icons.label_outlined, size: 12, color: secondary),
+                      const SizedBox(width: 4),
+                      Text(widget.existingPerson.relationshipLabel!, style: TextStyle(fontSize: 12, color: secondary)),
+                    ],
+                  ),
                 ],
               ],
             ),
@@ -245,12 +269,12 @@ class _DuplicateReviewDialogState extends State<DuplicateReviewDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  children: [
-                    const Icon(Icons.contacts, size: 14, color: Colors.blue),
-                    const SizedBox(width: 4),
+                  children: const [
+                    Icon(Icons.contacts, size: 14, color: Colors.blue),
+                    SizedBox(width: 4),
                     Text(
                       'नया संपर्क (Incoming)',
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.blue),
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.blue),
                     ),
                   ],
                 ),
@@ -261,19 +285,43 @@ class _DuplicateReviewDialogState extends State<DuplicateReviewDialog> {
                 ),
                 if (widget.incomingDraft.phones.isNotEmpty) ...[
                   const SizedBox(height: 4),
-                  Text('📞 ${widget.incomingDraft.phones.join(", ")}', style: TextStyle(fontSize: 12, color: secondary)),
+                  Row(
+                    children: [
+                      Icon(Icons.phone_outlined, size: 12, color: secondary),
+                      const SizedBox(width: 4),
+                      Expanded(child: Text(widget.incomingDraft.phones.join(', '), style: TextStyle(fontSize: 12, color: secondary))),
+                    ],
+                  ),
                 ],
                 if (widget.incomingDraft.emails.isNotEmpty) ...[
                   const SizedBox(height: 4),
-                  Text('✉️ ${widget.incomingDraft.emails.join(", ")}', style: TextStyle(fontSize: 12, color: secondary)),
+                  Row(
+                    children: [
+                      Icon(Icons.email_outlined, size: 12, color: secondary),
+                      const SizedBox(width: 4),
+                      Expanded(child: Text(widget.incomingDraft.emails.join(', '), style: TextStyle(fontSize: 12, color: secondary))),
+                    ],
+                  ),
                 ],
                 if (widget.incomingDraft.address != null) ...[
                   const SizedBox(height: 4),
-                  Text('📍 ${widget.incomingDraft.address}', style: TextStyle(fontSize: 12, color: secondary)),
+                  Row(
+                    children: [
+                      Icon(Icons.location_on_outlined, size: 12, color: secondary),
+                      const SizedBox(width: 4),
+                      Expanded(child: Text(widget.incomingDraft.address!, style: TextStyle(fontSize: 12, color: secondary))),
+                    ],
+                  ),
                 ],
                 if (widget.incomingDraft.company != null || widget.incomingDraft.jobTitle != null) ...[
                   const SizedBox(height: 4),
-                  Text('💼 ${[widget.incomingDraft.jobTitle, widget.incomingDraft.company].where((s) => s != null).join(" @ ")}', style: TextStyle(fontSize: 12, color: secondary)),
+                  Row(
+                    children: [
+                      Icon(Icons.work_outline, size: 12, color: secondary),
+                      const SizedBox(width: 4),
+                      Expanded(child: Text([widget.incomingDraft.jobTitle, widget.incomingDraft.company].where((s) => s != null).join(' @ '), style: TextStyle(fontSize: 12, color: secondary))),
+                    ],
+                  ),
                 ],
               ],
             ),

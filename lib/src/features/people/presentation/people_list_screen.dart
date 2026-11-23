@@ -472,7 +472,7 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
                         textSecondary: textSecondary,
                       ),
                       _buildFilterChip(
-                        label: '📱 फ़ोन से आयातित',
+                        label: 'फ़ोन से आयातित',
                         isSelected: _activeFilter == PeopleFilter.phoneImported,
                         onTap: () => setState(() => _activeFilter = PeopleFilter.phoneImported),
                         primaryAccent: primaryAccent,
@@ -480,7 +480,7 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
                         textSecondary: textSecondary,
                       ),
                       _buildFilterChip(
-                        label: '✍️ मैन्युअल प्रविष्टि',
+                        label: 'मैन्युअल प्रविष्टि',
                         isSelected: _activeFilter == PeopleFilter.manual,
                         onTap: () => setState(() => _activeFilter = PeopleFilter.manual),
                         primaryAccent: primaryAccent,

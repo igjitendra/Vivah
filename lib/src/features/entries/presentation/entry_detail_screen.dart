@@ -169,6 +169,8 @@ class _EntryDetailScreenState extends ConsumerState<EntryDetailScreen> {
             onPressed: () async {
               Navigator.pop(ctx);
               await ref.read(entriesRepositoryProvider).archiveEntry(widget.entryId);
+              ref.invalidate(dashboardSummaryProvider);
+              ref.invalidate(entriesListProvider);
               if (widget.onClose != null) {
                 widget.onClose!();
               } else if (context.mounted) {
@@ -525,6 +527,8 @@ class _EntryDetailScreenState extends ConsumerState<EntryDetailScreen> {
                   ),
                   onPressed: () async {
                     await entriesRepo.cancelPlannedEntry(entry.id);
+                    ref.invalidate(dashboardSummaryProvider);
+                    ref.invalidate(entriesListProvider);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text(l10n.planCancelledSuccess)),

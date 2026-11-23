@@ -410,7 +410,7 @@ class Event {
   int? get totalDiyaPaise => totalGivenPaise;
   int get actualExpensePaise {
     if (budgetCategories.isNotEmpty) {
-      return budgetCategories.fold<int>(0, (sum, c) => sum + (c.actualAmountPaise ?? 0));
+      return budgetCategories.fold<int>(0, (sum, c) => sum + c.actualAmountPaise);
     }
     return totalGivenPaise ?? 0;
   }

@@ -475,7 +475,9 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
       variables: [
         Variable.withString(s.id),
         Variable.withString(s.eventId),
-        Variable.withString(s.functionId ?? ''),
+        s.functionId != null && s.functionId!.trim().isNotEmpty
+            ? Variable.withString(s.functionId!.trim())
+            : const Variable<String>(null),
         Variable.withString(s.title),
         Variable.withString(s.activityDate),
         Variable.withString(s.startTime),

@@ -20,7 +20,7 @@ class PeopleDao extends DatabaseAccessor<AppDatabase> with _$PeopleDaoMixin {
   /// Get all active (non-archived) people rows
   Future<List<PersonRow>> getAllActivePeople() {
     return (select(people)
-          ..where((t) => t.archivedAt.isNull())
+          ..where((t) => t.archivedAt.isNull() | t.archivedAt.equals(''))
           ..orderBy([(t) => OrderingTerm.asc(t.fullName)]))
         .get();
   }
@@ -28,7 +28,7 @@ class PeopleDao extends DatabaseAccessor<AppDatabase> with _$PeopleDaoMixin {
   /// Watch all active people rows
   Stream<List<PersonRow>> watchActivePeople() {
     return (select(people)
-          ..where((t) => t.archivedAt.isNull())
+          ..where((t) => t.archivedAt.isNull() | t.archivedAt.equals(''))
           ..orderBy([(t) => OrderingTerm.asc(t.fullName)]))
         .watch();
   }
@@ -36,7 +36,7 @@ class PeopleDao extends DatabaseAccessor<AppDatabase> with _$PeopleDaoMixin {
   /// Watch all archived people rows
   Stream<List<PersonRow>> watchArchivedPeople() {
     return (select(people)
-          ..where((t) => t.archivedAt.isNotNull())
+          ..where((t) => t.archivedAt.isNotNull() & t.archivedAt.isNotValue(''))
           ..orderBy([(t) => OrderingTerm.asc(t.fullName)]))
         .watch();
   }
@@ -47,7 +47,7 @@ class PeopleDao extends DatabaseAccessor<AppDatabase> with _$PeopleDaoMixin {
     return (select(people)
           ..where((t) =>
               (t.fullName.like(pattern) | t.phoneNumber.like(pattern) | t.address.like(pattern)) &
-              t.archivedAt.isNull())
+              (t.archivedAt.isNull() | t.archivedAt.equals('')))
           ..orderBy([(t) => OrderingTerm.asc(t.fullName)]))
         .get();
   }
@@ -55,7 +55,7 @@ class PeopleDao extends DatabaseAccessor<AppDatabase> with _$PeopleDaoMixin {
   /// Get people belonging to a family
   Future<List<PersonRow>> getPeopleByFamily(String familyId) {
     return (select(people)
-          ..where((t) => t.familyId.equals(familyId) & t.archivedAt.isNull())
+          ..where((t) => t.familyId.equals(familyId) & (t.archivedAt.isNull() | t.archivedAt.equals('')))
           ..orderBy([(t) => OrderingTerm.asc(t.fullName)]))
         .get();
   }
@@ -151,6 +151,13 @@ class PeopleDao extends DatabaseAccessor<AppDatabase> with _$PeopleDaoMixin {
     }
   }
 
+  Variable<String> _nullableString(String? val) {
+    if (val == null || val.trim().isEmpty) {
+      return const Variable<String>(null);
+    }
+    return Variable.withString(val.trim());
+  }
+
   /// Save or update complete person with all extended columns, phones, and emails
   Future<void> saveExtendedPerson(Person person) async {
     await transaction(() async {
@@ -173,36 +180,36 @@ class PeopleDao extends DatabaseAccessor<AppDatabase> with _$PeopleDaoMixin {
         ''',
         variables: [
           Variable.withString(person.id),
-          Variable.withString(person.familyId ?? ''),
+          _nullableString(person.familyId),
           Variable.withString(person.fullName),
-          Variable.withString(person.phoneNumber ?? ''),
-          Variable.withString(person.relationshipLabel ?? ''),
-          Variable.withString(person.address ?? ''),
-          Variable.withString(person.notes ?? ''),
-          Variable.withString(person.firstName ?? ''),
-          Variable.withString(person.middleName ?? ''),
-          Variable.withString(person.lastName ?? ''),
-          Variable.withString(person.nickname ?? ''),
-          Variable.withString(person.gender ?? ''),
-          Variable.withString(person.dateOfBirth ?? ''),
-          Variable.withString(person.photoPath ?? ''),
-          Variable.withString(person.whatsappNumber ?? ''),
-          Variable.withString(person.village ?? ''),
-          Variable.withString(person.city ?? ''),
-          Variable.withString(person.district ?? ''),
-          Variable.withString(person.state ?? ''),
-          Variable.withString(person.pinCode ?? ''),
-          Variable.withString(person.relationshipNotes ?? ''),
-          Variable.withString(person.occupation ?? ''),
-          Variable.withString(person.company ?? ''),
-          Variable.withString(person.tags.join(',')),
-          Variable.withString(person.contactSource),
-          Variable.withString(person.externalContactId ?? ''),
-          Variable.withString(person.importedAt?.toIso8601String() ?? ''),
+          _nullableString(person.phoneNumber),
+          _nullableString(person.relationshipLabel),
+          _nullableString(person.address),
+          _nullableString(person.notes),
+          _nullableString(person.firstName),
+          _nullableString(person.middleName),
+          _nullableString(person.lastName),
+          _nullableString(person.nickname),
+          _nullableString(person.gender),
+          _nullableString(person.dateOfBirth),
+          _nullableString(person.photoPath),
+          _nullableString(person.whatsappNumber),
+          _nullableString(person.village),
+          _nullableString(person.city),
+          _nullableString(person.district),
+          _nullableString(person.state),
+          _nullableString(person.pinCode),
+          _nullableString(person.relationshipNotes),
+          _nullableString(person.occupation),
+          _nullableString(person.company),
+          _nullableString(person.tags.isNotEmpty ? person.tags.join(',') : null),
+          Variable.withString(person.contactSource.trim().isNotEmpty ? person.contactSource : 'manual'),
+          _nullableString(person.externalContactId),
+          _nullableString(person.importedAt?.toIso8601String()),
           Variable.withInt(person.isAppEditedAfterImport ? 1 : 0),
           Variable.withString(person.createdAt.toIso8601String()),
           Variable.withString(person.updatedAt.toIso8601String()),
-          Variable.withString(person.archivedAt?.toIso8601String() ?? ''),
+          _nullableString(person.archivedAt?.toIso8601String()),
         ],
       );
 
@@ -263,7 +270,7 @@ class PeopleDao extends DatabaseAccessor<AppDatabase> with _$PeopleDaoMixin {
         await customUpdate(
           'UPDATE people SET family_id = ?, updated_at = datetime("now") WHERE id = ?',
           variables: [
-            Variable.withString(familyId ?? ''),
+            _nullableString(familyId),
             Variable.withString(id),
           ],
         );

@@ -63,6 +63,7 @@ class DashboardScreen extends ConsumerWidget {
     final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
     final primaryAccent = theme.colorScheme.primary;
 
+    ref.watch(liveDateProvider); // Live date reactivity ticker
     final entriesAsync = ref.watch(entriesListProvider(null));
 
     return Scaffold(
@@ -120,17 +121,53 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-                ExpressSquish(
-                  scale: 0.90,
-                  onTap: onOpenSettings,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.14),
-                      shape: BoxShape.circle,
+                Row(
+                  children: [
+                    // Live Date Capsule Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 7,
+                            height: 7,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF4ADE80), // Live pulse green dot
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            AppDateUtils.getLiveTodayHeaderString(l10n.locale.languageCode),
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    padding: const EdgeInsets.all(9),
-                    child: const Icon(Icons.settings_outlined, color: Colors.white, size: 20),
-                  ),
+                    const SizedBox(width: 8),
+                    ExpressSquish(
+                      scale: 0.90,
+                      onTap: onOpenSettings,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.14),
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: const Icon(Icons.settings_outlined, color: Colors.white, size: 20),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -618,10 +655,11 @@ class DashboardScreen extends ConsumerWidget {
                                               const SizedBox(width: 4),
                                             ],
                                             Text(
-                                              AppDateUtils.formatIsoDate(entry.transactionDate, l10n.locale.languageCode),
+                                              AppDateUtils.formatRelativeDate(entry.transactionDate, l10n.locale.languageCode),
                                               style: TextStyle(
                                                 fontSize: 11,
-                                                color: textSecondary,
+                                                fontWeight: AppDateUtils.isToday(entry.transactionDate) ? FontWeight.bold : FontWeight.normal,
+                                                color: AppDateUtils.isToday(entry.transactionDate) ? primaryAccent : textSecondary,
                                               ),
                                             ),
                                           ],

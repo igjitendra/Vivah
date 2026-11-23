@@ -1188,12 +1188,12 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
 
   void _copyInvitationToClipboard(Event event) {
     final text = StringBuffer();
-    text.writeln('🌸 सादर निमंत्रण 🌸');
+    text.writeln('--- सादर निमंत्रण ---');
     text.writeln('आप हमारे पारिवारिक कार्यक्रम "${event.title}" में सपरिवार सादर आमंत्रित हैं।');
-    text.writeln('📅 दिनांक: ${event.eventDate}');
-    if (event.startTime != null) text.writeln('⏰ समय: ${event.startTime}');
-    if (event.venue != null) text.writeln('📍 स्थल: ${event.venue}');
-    if (event.mapLink != null) text.writeln('🗺️ नक्शा: ${event.mapLink}');
+    text.writeln('दिनांक: ${event.eventDate}');
+    if (event.startTime != null) text.writeln('समय: ${event.startTime}');
+    if (event.venue != null) text.writeln('स्थल: ${event.venue}');
+    if (event.mapLink != null) text.writeln('नक्शा: ${event.mapLink}');
     text.writeln('— विनीत: समस्त परिवार');
 
     Clipboard.setData(ClipboardData(text: text.toString()));

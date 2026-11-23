@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/entities.dart';
@@ -12,6 +13,7 @@ abstract class EventsRepository {
   Future<List<Event>> getPastEvents();
   Future<List<Event>> searchEvents(String query);
   Future<Event?> getEventById(String id);
+  Stream<Event?> watchEventById(String id);
   Future<void> createEvent(Event event);
   Future<void> updateEvent(Event event);
   Future<void> archiveEvent(String id);
@@ -166,6 +168,29 @@ class DriftEventsRepository implements EventsRepository {
       activityLogs: activityLogs,
       reminders: reminders,
     );
+  }
+
+  @override
+  Stream<Event?> watchEventById(String id) async* {
+    yield await getEventById(id);
+
+    final controller = StreamController<void>.broadcast();
+    final s1 = (_db.select(_db.events)..where((t) => t.id.equals(id))).watch().listen((_) {
+      if (!controller.isClosed) controller.add(null);
+    });
+    final s2 = (_db.select(_db.entries)..where((t) => t.eventId.equals(id))).watch().listen((_) {
+      if (!controller.isClosed) controller.add(null);
+    });
+
+    try {
+      await for (final _ in controller.stream) {
+        yield await getEventById(id);
+      }
+    } finally {
+      await s1.cancel();
+      await s2.cancel();
+      await controller.close();
+    }
   }
 
   @override

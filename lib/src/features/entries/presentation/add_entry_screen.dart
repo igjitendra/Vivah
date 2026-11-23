@@ -65,7 +65,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
   void initState() {
     super.initState();
     _direction = widget.initialDirection ?? TransactionDirection.received;
-    _transactionDate = DateTime.now().toIso8601String().split('T').first;
+    _transactionDate = AppDateUtils.getTodayIsoString();
     _selectedEventId = widget.initialEventId;
     _selectedPersonId = widget.initialPersonId;
   }
@@ -82,7 +82,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
   void _setDatePreset(int offsetDays) {
     final target = DateTime.now().add(Duration(days: offsetDays));
     setState(() {
-      _transactionDate = target.toIso8601String().split('T').first;
+      _transactionDate = AppDateUtils.toIsoDateString(target);
     });
   }
 
@@ -98,7 +98,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
 
     if (picked != null) {
       setState(() {
-        _transactionDate = picked.toIso8601String().split('T').first;
+        _transactionDate = AppDateUtils.toIsoDateString(picked);
       });
     }
   }
@@ -764,6 +764,17 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
       );
 
       await repo.saveEntryWithItemsAtomic(entry: entry, items: preparedItems);
+
+      // Reactive invalidation for instant cross-app live numbers update
+      ref.invalidate(dashboardSummaryProvider);
+      ref.invalidate(entriesListProvider);
+      if (_selectedPersonId != null) {
+        ref.invalidate(personHistoryStatsProvider(_selectedPersonId!));
+      }
+      if (_selectedEventId != null) {
+        ref.invalidate(eventDetailProvider(_selectedEventId!));
+      }
+
       return true;
     } catch (err) {
       if (mounted) {
@@ -1542,7 +1553,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                             Expanded(
                               child: _buildDatePreset(
                                 label: l10n.today,
-                                isSelected: _transactionDate == DateTime.now().toIso8601String().split('T').first,
+                                isSelected: AppDateUtils.isToday(_transactionDate),
                                 onTap: () => _setDatePreset(0),
                                 primaryAccent: primaryAccent,
                                 inputBg: inputBg,
@@ -1555,7 +1566,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                             Expanded(
                               child: _buildDatePreset(
                                 label: l10n.yesterday,
-                                isSelected: _transactionDate == DateTime.now().subtract(const Duration(days: 1)).toIso8601String().split('T').first,
+                                isSelected: AppDateUtils.isYesterday(_transactionDate),
                                 onTap: () => _setDatePreset(-1),
                                 primaryAccent: primaryAccent,
                                 inputBg: inputBg,

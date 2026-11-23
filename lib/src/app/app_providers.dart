@@ -38,10 +38,10 @@ final settingsRepositoryProvider = Provider<SettingsRepository>((ref) {
   return DriftSettingsRepository(db);
 });
 
-/// Dashboard summary async provider
-final dashboardSummaryProvider = FutureProvider<DashboardSummary>((ref) async {
+/// Dashboard summary reactive stream provider (100% live updates on every entry/event/person change)
+final dashboardSummaryProvider = StreamProvider<DashboardSummary>((ref) {
   final repo = ref.watch(entriesRepositoryProvider);
-  return repo.getDashboardSummary();
+  return repo.watchDashboardSummary();
 });
 
 /// Filtered entries stream provider
@@ -74,10 +74,10 @@ final archivedEventsListProvider = StreamProvider<List<Event>>((ref) {
   return repo.watchArchivedEvents();
 });
 
-/// Event detail future provider by ID
-final eventDetailProvider = FutureProvider.family<Event?, String>((ref, id) {
+/// Event detail reactive stream provider by ID (100% live financial & status updates)
+final eventDetailProvider = StreamProvider.family<Event?, String>((ref, id) {
   final repo = ref.watch(eventsRepositoryProvider);
-  return repo.getEventById(id);
+  return repo.watchEventById(id);
 });
 
 /// Active families stream provider
@@ -86,8 +86,17 @@ final activeFamiliesListProvider = StreamProvider<List<Family>>((ref) {
   return repo.watchActiveFamilies();
 });
 
-/// Person transaction history statistics provider (received_paise, given_paise)
-final personHistoryStatsProvider = FutureProvider.family<Map<String, int>, String>((ref, personId) async {
+/// Person transaction history statistics reactive stream provider (received_paise, given_paise)
+final personHistoryStatsProvider = StreamProvider.family<Map<String, int>, String>((ref, personId) {
   final repo = ref.watch(entriesRepositoryProvider);
-  return repo.getPersonHistoryStats(personId);
+  return repo.watchPersonHistoryStats(personId);
+});
+
+/// Live Today Date Provider (Emits current date and auto-rolls over periodically)
+final liveDateProvider = StreamProvider<DateTime>((ref) async* {
+  yield DateTime.now();
+  while (true) {
+    await Future.delayed(const Duration(seconds: 30));
+    yield DateTime.now();
+  }
 });

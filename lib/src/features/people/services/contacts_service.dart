@@ -464,7 +464,7 @@ class ContactsService {
   /// Share person contact card via system share sheet
   static Future<void> sharePersonCard(Person p) async {
     final buffer = StringBuffer();
-    buffer.writeln('📇 संपर्क विवरण: ${p.displayName}');
+    buffer.writeln('संपर्क विवरण: ${p.displayName}');
     if (p.relationshipLabel != null && p.relationshipLabel!.isNotEmpty) {
       buffer.writeln('रिश्ता: ${p.relationshipLabel}');
     }

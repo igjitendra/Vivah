@@ -538,6 +538,44 @@ class AppLocalizations {
   String get offlineGuaranteeSubtitle => isEnglish
       ? 'All records stay strictly on your device. Zero internet, zero accounts.'
       : (isUrdu ? 'تمام ریکارڈ صرف آپ کے آلے پر محفوظ ہیں۔ کوئی کلاؤڈ یا انٹرنیٹ نہیں۔' : 'सारा बही-खाता केवल आपके डिवाइस में सुरक्षित है। कोई क्लाउड या इंटरनेट नहीं।');
+
+  // Advanced Event Management Getters
+  String get eventOverview => isEnglish ? 'Overview' : (isUrdu ? 'جائزہ' : 'अवलोकन');
+  String get eventFunctions => isEnglish ? 'Functions' : (isUrdu ? 'رسومات' : 'रस्में व कार्यक्रम');
+  String get eventPeople => isEnglish ? 'People' : (isUrdu ? 'لوگ' : 'लोग व परिवार');
+  String get eventGuests => isEnglish ? 'Guests' : (isUrdu ? 'مہمان' : 'निमंत्रण व मेहमान');
+  String get eventTasks => isEnglish ? 'Tasks' : (isUrdu ? 'کام' : 'कार्य व चेकलिस्ट');
+  String get eventBudget => isEnglish ? 'Budget' : (isUrdu ? 'بجٹ' : 'बजट व व्यवहार');
+  String get eventNotesTab => isEnglish ? 'Notes' : (isUrdu ? 'نوٹس' : 'नोट्स व दस्तावेज़');
+  String get eventRemindersTab => isEnglish ? 'Reminders' : (isUrdu ? 'یاد دہانیاں' : 'अनुस्मारक');
+  String get eventHistoryTab => isEnglish ? 'History' : (isUrdu ? 'تاریخ' : 'गतिविधि इतिहास');
+  String get addFunctionTitle => isEnglish ? 'Add Function' : (isUrdu ? 'نئی تقریب شامل کریں' : 'नई रस्म जोड़ें');
+  String get addTaskTitle => isEnglish ? 'Add Task' : (isUrdu ? 'نیا کام شامل کریں' : 'नया कार्य जोड़ें');
+  String get addGuestTitle => isEnglish ? 'Add Guest' : (isUrdu ? 'مہمان شامل کریں' : 'अतिथि जोड़ें');
+  String get addBudgetCategoryTitle => isEnglish ? 'Add Category' : (isUrdu ? 'بجٹ کیٹیگری شامل کریں' : 'बजट श्रेणी जोड़ें');
+  String get estimatedBudget => isEnglish ? 'Estimated Budget' : (isUrdu ? 'تخمینی بجٹ' : 'अनुमानित बजट');
+  String get actualExpense => isEnglish ? 'Actual Expense' : (isUrdu ? 'اصل خرچ' : 'वास्तविक खर्च');
+  String get remainingBudget => isEnglish ? 'Remaining Budget' : (isUrdu ? 'باقی بجٹ' : 'शेष बजट');
+  String get budgetUtilization => isEnglish ? 'Budget Utilization' : (isUrdu ? 'بجٹ کا استعمال' : 'बजट उपयोग');
+  String get checklistProgress => isEnglish ? 'Checklist Progress' : (isUrdu ? 'چیک لسٹ پیش رفت' : 'चेकलिस्ट प्रगति');
+  String get guestCountSummary => isEnglish ? 'Guest Summary' : (isUrdu ? 'مہمانوں کی تفصیل' : 'अतिथि विवरण');
+  String get invitationStatusLabel => isEnglish ? 'Invitation Status' : (isUrdu ? 'دعوت کی حیثیت' : 'निमंत्रण स्थिति');
+  String get attendanceStatusLabel => isEnglish ? 'Attendance' : (isUrdu ? 'حاضری' : 'उपस्थिति');
+  String get conflictWarning => isEnglish ? 'Conflict Warning' : (isUrdu ? 'ممکنہ تصادم' : 'संभावित टकराव');
+  String get duplicateEventTitle => isEnglish ? 'Duplicate Event' : (isUrdu ? 'تقریب کی نقل بنائیں' : 'कार्यक्रम की प्रतिलिपि बनाएं');
+  String get cancelEventTitle => isEnglish ? 'Cancel Event' : (isUrdu ? 'تقریب منسوخ کریں' : 'कार्यक्रम रद्द करें');
+  String get archiveEventTitle => isEnglish ? 'Archive Event' : (isUrdu ? 'تقریب محفوظ کریں' : 'कार्यक्रम संग्रहीत करें');
+  String get restoreEventTitle => isEnglish ? 'Restore Event' : (isUrdu ? 'بحال کریں' : 'पुनर्स्थापित करें');
+  String get calendarView => isEnglish ? 'Calendar' : (isUrdu ? 'کیلنڈر ویو' : 'कैलेंडर दृश्य');
+  String get listView => isEnglish ? 'List' : (isUrdu ? 'لسٹ ویو' : 'सूची दृश्य');
+  String get filterAll => isEnglish ? 'All' : (isUrdu ? 'سب' : 'सभी');
+  String get filterUpcoming => isEnglish ? 'Upcoming' : (isUrdu ? 'آنے والی' : 'आगामी');
+  String get filterToday => isEnglish ? 'Today' : (isUrdu ? 'آج' : 'आज');
+  String get filterCompleted => isEnglish ? 'Completed' : (isUrdu ? 'مکمل' : 'सम्पन्न');
+  String get filterDraft => isEnglish ? 'Draft' : (isUrdu ? 'ڈرافٹ' : 'ड्राफ़्ट');
+  String get filterArchived => isEnglish ? 'Archived' : (isUrdu ? 'محفوظ شدہ' : 'संग्रहीत');
+  String get filterCancelled => isEnglish ? 'Cancelled' : (isUrdu ? 'منسوخ' : 'रद्द');
+  String get shareInvitation => isEnglish ? 'Share Invitation' : (isUrdu ? 'دعوت نامہ شیئر کریں' : 'निमंत्रण साझा करें');
   List<String> get unitOptions => isEnglish
       ? const ['Count', 'Gram', 'Tola', 'Piece', 'Metre', 'Kg', 'Box']
       : (isUrdu

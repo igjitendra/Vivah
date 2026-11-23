@@ -155,14 +155,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       _SlidePoint(
                         icon: Icons.receipt_long_rounded,
                         title: l10n.received,
-                        detail: isDark
-                            ? 'शादी, मुंडन या किसी भी अवसर पर मिला व दिया हमेशा अलग दर्ज होता है।'
-                            : 'शादी, मुंडन या किसी भी अवसर पर मिला व दिया हमेशा अलग दर्ज होता है।',
+                        detail: l10n.onboardingSlide1Detail1,
                       ),
                       _SlidePoint(
                         icon: Icons.card_giftcard_rounded,
                         title: l10n.giftItem,
-                        detail: 'नकद राशि और भौतिक उपहार दोनों का अलग-अलग पारदर्शी हिसाब।',
+                        detail: l10n.onboardingSlide1Detail2,
                       ),
                     ],
                     cardBg: cardBg,
@@ -171,7 +169,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     textSecondary: textSecondary,
                   ),
 
-                  // Slide 2: Cultural Dignity & Zero Debt
+                  // Slide 2: Cultural Dignity & Zero Stress
                   _buildSlide(
                     context: context,
                     icon: Icons.volunteer_activism_rounded,
@@ -185,13 +183,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     points: [
                       _SlidePoint(
                         icon: Icons.handshake_outlined,
-                        title: 'पारस्परिक सम्मान',
-                        detail: 'पारिवारिक लेन-देन में कोई कर्ज़ या ब्याज का तनाव नहीं होता।',
+                        title: l10n.onboardingSlide2TitlePoint1,
+                        detail: l10n.onboardingSlide2Detail1,
                       ),
                       _SlidePoint(
                         icon: Icons.event_available_rounded,
                         title: l10n.planned,
-                        detail: 'आगामी कार्यक्रमों के लिए पहले से योजना बनाकर बजट तैयार करें।',
+                        detail: l10n.onboardingSlide2Detail2,
                       ),
                     ],
                     cardBg: cardBg,
@@ -214,13 +212,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     points: [
                       _SlidePoint(
                         icon: Icons.lock_outline_rounded,
-                        title: 'सुरक्षित एन्क्रिप्शन',
-                        detail: 'AES-256-GCM मिलिट्री-ग्रेड पासवर्ड एन्क्रिप्टेड बैकअप।',
+                        title: l10n.onboardingSlide3TitlePoint1,
+                        detail: l10n.onboardingSlide3Detail1,
                       ),
                       _SlidePoint(
                         icon: Icons.picture_as_pdf_outlined,
-                        title: 'रिपोर्ट व निर्यात',
-                        detail: 'हिंदी A4 PDF और Excel (CSV) में सम्पूर्ण बही डाउनलोड करें।',
+                        title: l10n.onboardingSlide3TitlePoint2,
+                        detail: l10n.onboardingSlide3Detail2,
                       ),
                     ],
                     cardBg: cardBg,

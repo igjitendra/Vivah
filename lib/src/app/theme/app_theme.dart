@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
 import '../../core/theme/theme_palette.dart';
+import '../../core/theme/express_type.dart';
 
 /// Centralized Material 3 Dynamic Theme Builder for व्यवहार (Vyavahaar)
 class AppTheme {
@@ -10,12 +11,22 @@ class AppTheme {
   static ThemeData get lightTheme => fromPalette(ThemePalette.porcelain);
   static ThemeData get darkTheme => fromPalette(ThemePalette.midnightAurora);
 
-  static ThemeData fromPalette(ThemePalette palette) {
+  static const List<String> fontFallbacks = [
+    'Poppins',
+    'Figtree',
+    'NotoSansDevanagari',
+    'sans-serif',
+  ];
+
+  static ThemeData fromPalette(ThemePalette palette, {Locale? locale}) {
     final brightness = palette.isDark ? Brightness.dark : Brightness.light;
+    final isEnglish = locale?.languageCode == 'en';
+    final primaryFamily = isEnglish ? 'Figtree' : 'Poppins';
 
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
+      textTheme: ExpressType.theme(palette.textPrimary, locale: locale),
       colorScheme: ColorScheme(
         brightness: brightness,
         primary: palette.primary,
@@ -28,14 +39,16 @@ class AppTheme {
         onError: Colors.white,
       ),
       scaffoldBackgroundColor: palette.background,
-      fontFamily: 'NotoSansDevanagari',
+      fontFamily: primaryFamily,
+      fontFamilyFallback: fontFallbacks,
       appBarTheme: AppBarTheme(
         backgroundColor: palette.isDark ? palette.surface : palette.secondary,
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
-        titleTextStyle: const TextStyle(
-          fontFamily: 'NotoSansDevanagari',
+        titleTextStyle: TextStyle(
+          fontFamily: primaryFamily,
+          fontFamilyFallback: fontFallbacks,
           fontSize: 22,
           fontWeight: FontWeight.w800,
           color: Colors.white,
@@ -61,8 +74,9 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
-          textStyle: const TextStyle(
-            fontFamily: 'NotoSansDevanagari',
+          textStyle: TextStyle(
+            fontFamily: primaryFamily,
+            fontFamilyFallback: fontFallbacks,
             fontSize: 15,
             fontWeight: FontWeight.w700,
           ),

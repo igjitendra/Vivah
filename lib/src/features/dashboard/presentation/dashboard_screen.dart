@@ -567,7 +567,7 @@ class DashboardScreen extends ConsumerWidget {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          entry.personName,
+                                          entry.personName ?? l10n.unknownPerson,
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w700,

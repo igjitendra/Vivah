@@ -399,6 +399,129 @@ class AppLocalizations {
   String get selectEventToViewDetails => isEnglish ? 'Select an event to view celebration ledger' : (isUrdu ? 'تفصیلات دیکھنے کے لیے کوئی تقریب منتخب کریں' : 'विवरण देखने के लिए कोई कार्यक्रम चुनें');
   String get selectEventSubtitle => isEnglish ? 'Click any ceremony to inspect shagun received and given' : (isUrdu ? 'تقریب میں ملا اور دیا گیا شگون دیکھنے کے لیے کلک کریں' : 'कार्यक्रम में मिला व दिया शगुन देखने के लिए क्लिक करें');
 
+  // Shortcuts & Navigation
+  String get shortcutHome => isEnglish ? 'Home Dashboard' : (isUrdu ? 'ہوم ڈیش بورڈ' : 'होम डैशबोर्ड');
+  String get shortcutBahi => isEnglish ? 'Bahi Ledger' : (isUrdu ? 'بہی کھاتہ' : 'बही-खाता');
+  String get shortcutEvents => isEnglish ? 'Events Directory' : (isUrdu ? 'خاندانی تقاریب' : 'पारिवारिक कार्यक्रम');
+  String get shortcutPeople => isEnglish ? 'People & Relatives' : (isUrdu ? 'افراد و رشتہ دار' : 'लोग व रिश्तेदार');
+  String get shortcutSettings => isEnglish ? 'Settings' : (isUrdu ? 'ترتیبات' : 'सेटिंग्स');
+  String get shortcutNewEntry => isEnglish ? 'New Transaction' : (isUrdu ? 'نیا اندراج' : 'नया व्यवहार दर्ज करें');
+  String get shortcutSearch => isEnglish ? 'Search' : (isUrdu ? 'تلاش' : 'खोजें');
+  String get shortcutGuide => isEnglish ? 'Keyboard Shortcuts Guide' : (isUrdu ? 'کی بورڈ شارٹ کٹس' : 'कीबोर्ड शॉर्टकट्स गाइड');
+  String get shortcutClose => isEnglish ? 'Close / Back' : (isUrdu ? 'بند کریں / واپس' : 'बंद करें / पीछे जाएं');
+  String get desktopShortcutsHint => isEnglish ? 'Ctrl+N New • Ctrl+F Search • F1 Shortcuts' : (isUrdu ? 'Ctrl+N نیا • Ctrl+F تلاش • F1 شارٹ کٹس' : 'Ctrl+N नया जोड़ें • Ctrl+F खोजें • F1 शॉर्टकट');
+
+  // Onboarding Highlights
+  String get onboardingSlide1Detail1 => isEnglish
+      ? 'Separation of money received and given in weddings, ceremonies or any occasion.'
+      : (isUrdu ? 'شادی یا کسی بھی تقریب میں ملا اور دیا گیا ہمیشہ الگ درج ہوتا ہے۔' : 'शादी, मुंडन या किसी भी अवसर पर मिला व दिया हमेशा अलग दर्ज होता है।');
+  String get onboardingSlide1Detail2 => isEnglish
+      ? 'Transparent records for both cash and physical gifts.'
+      : (isUrdu ? 'نقد رقم اور تحائف دونوں کا الگ الگ شفاف حساب۔' : 'नकद राशि और भौतिक उपहार दोनों का अलग-अलग पारदर्शी हिसाब।');
+  String get onboardingSlide2TitlePoint1 => isEnglish ? 'Mutual Respect' : (isUrdu ? 'باہمی احترام' : 'पारस्परिक सम्मान');
+  String get onboardingSlide2Detail1 => isEnglish
+      ? 'No financial stress or pressure in familial social exchanges.'
+      : (isUrdu ? 'خاندانی لین دین میں کسی بوجھ یا دباؤ کا نام نہیں۔' : 'पारिवारिक लेन-देन में कोई तनाव या दबाव नहीं होता।');
+  String get onboardingSlide2Detail2 => isEnglish
+      ? 'Plan ahead and prepare budgets for upcoming family ceremonies.'
+      : (isUrdu ? 'آنے والی تقاریب کے لیے پہلے سے بجٹ اور منصوبہ بندی کریں۔' : 'आगामी कार्यक्रमों के लिए पहले से योजना बनाकर बजट तैयार करें।');
+  String get onboardingSlide3TitlePoint1 => isEnglish ? 'Secure Encryption' : (isUrdu ? 'محفوظ انکرپشن' : 'सुरक्षित एन्क्रिप्शन');
+  String get onboardingSlide3Detail1 => isEnglish
+      ? 'Military-grade AES-256-GCM password-encrypted backup.'
+      : (isUrdu ? 'پاس ورڈ سے محفوظ انکرپٹڈ بیک اپ۔' : 'AES-256-GCM मिलिट्री-ग्रेड पासवर्ड एन्क्रिप्टेड बैकअप।');
+  String get onboardingSlide3TitlePoint2 => isEnglish ? 'Reports & Exports' : (isUrdu ? 'رپورٹس اور برآمد' : 'रिपोर्ट व निर्यात');
+  String get onboardingSlide3Detail2 => isEnglish
+      ? 'Download complete ledger in A4 PDF and Excel CSV format.'
+      : (isUrdu ? 'مکمل کھاتہ پی ڈی ایف اور ایکسل میں ڈاؤن لوڈ کریں۔' : 'A4 PDF और Excel (CSV) में सम्पूर्ण बही डाउनलोड करें।');
+
+  // Quick Suggestion Tags & Gifts
+  String get quickTagWedding => isEnglish ? 'Wedding Shagun' : (isUrdu ? 'شادی شگون' : 'विवाह शगुन');
+  String get quickTagBhaat => isEnglish ? 'Bhaat / Mayra' : (isUrdu ? 'بھات / مائرا' : 'भात / मायरा');
+  String get quickTagDikhawa => isEnglish ? 'Dikhawa / Teeka' : (isUrdu ? 'دکھاوا / ٹیکا' : 'दिखावा / टीका');
+  String get quickTagGrihaPravesh => isEnglish ? 'Housewarming' : (isUrdu ? 'گھر میں داخلہ' : 'गृह प्रवेश');
+  String get quickTagMundan => isEnglish ? 'Tonsure Ceremony' : (isUrdu ? 'عقیقہ / منڈن' : 'मुंडन संस्कार');
+  String get quickTagBirthday => isEnglish ? 'Birthday' : (isUrdu ? 'سالگرہ' : 'जन्मदिन');
+
+  List<String> get quickTags => [
+    quickTagWedding,
+    quickTagBhaat,
+    quickTagDikhawa,
+    quickTagGrihaPravesh,
+    quickTagMundan,
+    quickTagBirthday,
+  ];
+
+  String get quickGiftGoldRing => isEnglish ? 'Gold Ring' : (isUrdu ? 'سونے کی انگوٹھی' : 'सोने की अंगूठी');
+  String get quickGiftSilverCoin => isEnglish ? 'Silver Coin' : (isUrdu ? 'چاندی کا سکہ' : 'चांदी का सिक्का');
+  String get quickGiftClothes => isEnglish ? 'Clothes / Suit' : (isUrdu ? 'کپڑے / سوٹ' : 'कपड़े / सूट');
+  String get quickGiftUtensils => isEnglish ? 'Utensils Set' : (isUrdu ? 'برتنوں کا سیٹ' : 'बर्तन सेट');
+  String get quickGiftSweetsFruit => isEnglish ? 'Sweets / Fruit' : (isUrdu ? 'مٹھائی / پھل' : 'मिठाई / फल');
+
+  List<String> get quickGiftSuggestions => [
+    quickGiftGoldRing,
+    quickGiftSilverCoin,
+    quickGiftClothes,
+    quickGiftUtensils,
+    quickGiftSweetsFruit,
+  ];
+
+  // Quick Relationships
+  String get relMama => isEnglish ? 'Maternal Uncle (Mama)' : (isUrdu ? 'ماموں' : 'मामा');
+  String get relChacha => isEnglish ? 'Paternal Uncle (Chacha)' : (isUrdu ? 'چچا' : 'चाचा');
+  String get relTau => isEnglish ? 'Elder Uncle (Tau)' : (isUrdu ? 'تایا' : 'ताऊ');
+  String get relBua => isEnglish ? 'Paternal Aunt (Bua)' : (isUrdu ? 'پھوپھی' : 'बुआ');
+  String get relMausi => isEnglish ? 'Maternal Aunt (Mausi)' : (isUrdu ? 'خالہ' : 'मौसी');
+  String get relFufa => isEnglish ? 'Uncle-in-law (Fufa)' : (isUrdu ? 'پھوپا' : 'फूफा');
+  String get relJija => isEnglish ? 'Brother-in-law (Jija)' : (isUrdu ? 'بہنوئی' : 'जीजा');
+  String get relSala => isEnglish ? 'Brother-in-law (Sala)' : (isUrdu ? 'سالا' : 'साला');
+  String get relSamdhi => isEnglish ? 'In-law (Samdhi)' : (isUrdu ? 'سمدھی' : 'समधी');
+  String get relMitra => isEnglish ? 'Friend' : (isUrdu ? 'دوست' : 'मित्र');
+  String get relPadosi => isEnglish ? 'Neighbor' : (isUrdu ? 'پڑوسی' : 'पड़ोसी');
+  String get relOther => isEnglish ? 'Other' : (isUrdu ? 'دیگر' : 'अन्य');
+
+  List<String> get quickRelations => [
+    relMama,
+    relChacha,
+    relTau,
+    relBua,
+    relMausi,
+    relFufa,
+    relJija,
+    relSala,
+    relSamdhi,
+    relMitra,
+    relPadosi,
+    relOther,
+  ];
+
+  // Quick Event Suggestions
+  String get eventBirthday => isEnglish ? 'Birthday' : (isUrdu ? 'سالگرہ' : 'जन्मदिन');
+  String get eventNamkaran => isEnglish ? 'Naming Ceremony' : (isUrdu ? 'نام رکھنے کی تقریب' : 'नामकरण');
+  String get eventJaneu => isEnglish ? 'Sacred Thread' : (isUrdu ? 'رسم دھاگہ' : 'जनेऊ / उपनयन');
+  String get eventChhathi => isEnglish ? 'Chhathi' : (isUrdu ? 'چھٹی' : 'छठी');
+  String get eventGodhBharai => isEnglish ? 'Baby Shower' : (isUrdu ? 'گود بھرائی' : 'गोद भराई');
+  String get eventSatsang => isEnglish ? 'Prayer Gathering' : (isUrdu ? 'محفل / دعا' : 'सत्संग / जगराता');
+  String get eventRetirement => isEnglish ? 'Retirement' : (isUrdu ? 'ریٹائرمنٹ' : 'रिटायरमेंट');
+  String get eventMemorial => isEnglish ? 'Memorial Ceremony' : (isUrdu ? 'فاتحہ خوانی / برسی' : 'श्राद्ध / तेरहवीं');
+
+  List<String> get quickCustomEvents => [
+    eventBirthday,
+    eventNamkaran,
+    eventJaneu,
+    eventChhathi,
+    eventGodhBharai,
+    eventSatsang,
+    eventRetirement,
+    eventMemorial,
+  ];
+
+  String get noFamilyMembersYet => isEnglish ? 'No members added to this family yet.' : (isUrdu ? 'اس خاندان میں ابھی کوئی رکن شامل نہیں ہے۔' : 'इस परिवार में अभी कोई सदस्य नहीं जुड़ा है।');
+  String get searchFamilyOrVillageHint => isEnglish ? 'Search by family name or village...' : (isUrdu ? 'خاندان یا گاؤں سے تلاش کریں...' : 'परिवार या गाँव से खोजें...');
+  String get themeGalleryDescription => isEnglish ? 'Personalize your Vyavahaar ledger with curated themes. Your choice is always saved.' : (isUrdu ? 'اپنے کھاتے کو اپنی پسندیدہ تھیم میں سجائیں۔ یہ ترتیبات ہمیشہ محفوظ رہیں گی۔' : 'व्यवहार बही-खाते को अपने मनपसंद रंग व थीम में सजाएं। यह चयन हमेशा सुरक्षित रहेगा।');
+  String get onboardingTourSubtitle => isEnglish ? 'View interactive walkthrough and guide' : (isUrdu ? 'ایپ کا تعارف اور رہنمائی دیکھیں' : 'ऐप का परिचय और मार्गदर्शन देखें');
+  String get generalCategory => isEnglish ? 'General' : (isUrdu ? 'عام' : 'सामान्य');
+  String get close => isEnglish ? 'Close' : (isUrdu ? 'بند کریں' : 'बंद करें');
+
   // Plurals
   String entryCount(int count) {
     if (isEnglish) {

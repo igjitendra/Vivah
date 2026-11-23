@@ -52,25 +52,6 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
   // Quick increment amounts
   static const List<int> _incrementAmounts = [100, 500, 1000];
 
-  // Quick cultural ceremony tags
-  static const List<String> _quickTags = [
-    'विवाह शगुन',
-    'भात / मायरा',
-    'दिखावा / टीका',
-    'गृह प्रवेश',
-    'मुंडन संस्कार',
-    'जन्मदिन',
-  ];
-
-  // Quick common gift suggestions
-  static const List<String> _quickGiftSuggestions = [
-    'सोने की अंगूठी',
-    'चांदी का सिक्का',
-    'कपड़े / सूट',
-    'बर्तन सेट',
-    'मिठाई / फल',
-  ];
-
   @override
   void initState() {
     super.initState();

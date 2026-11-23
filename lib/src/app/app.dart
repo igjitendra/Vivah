@@ -81,8 +81,8 @@ class _VyavahaarAppState extends ConsumerState<VyavahaarApp> {
       title: activeLocale.languageCode == 'en' ? AppStrings.appNameEnglish : AppStrings.appName,
       debugShowCheckedModeBanner: false,
       themeMode: themeState.themeMode,
-      theme: AppTheme.fromPalette(themeState.lightPalette),
-      darkTheme: AppTheme.fromPalette(themeState.darkPalette),
+      theme: AppTheme.fromPalette(themeState.lightPalette, locale: activeLocale),
+      darkTheme: AppTheme.fromPalette(themeState.darkPalette, locale: activeLocale),
       routerConfig: appRouter,
       localizationsDelegates: const [
         AppLocalizations.delegate,

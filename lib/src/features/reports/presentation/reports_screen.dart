@@ -441,7 +441,4 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       ),
     );
   }
-      ),
-    );
-  }
 }

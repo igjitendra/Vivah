@@ -147,7 +147,7 @@ class ShortcutsSheet extends StatelessWidget {
 
               const SizedBox(height: 16),
               ExpressButton(
-                label: 'समझ गया (Done)',
+                label: l10n.done,
                 tone: ExpressTone.filled,
                 expand: true,
                 compact: true,

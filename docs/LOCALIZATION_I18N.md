@@ -76,3 +76,24 @@ The application supports real-time searching across people, families, events, an
 - **NFC Normalization**: All input is compared using Unicode canonical decomposition/composition to prevent duplicate glyph mismatches.
 - **Diacritic & Matra Preservation**: Combining vowel signs (*matras*, *nuktas*, *viramas*) are preserved to prevent altering Hindi/Indic root words.
 - **Prefix & Substring Matching**: Implemented in `UnicodeSearchUtils.matches()`.
+
+---
+
+## 7. Zero Hardcoded Strings Policy & Complete Key Parity
+
+1. **Strict UI Zero-Hardcoding Mandate**:
+   - All presentation layers (`lib/src/features/` and `lib/src/shared/`) must resolve user-facing copy exclusively via `context.l10n` (`AppLocalizations`).
+   - Hardcoding raw Devanagari or English strings inside `.dart` widgets is prohibited.
+
+2. **Complete ARB Key Parity**:
+   - 100% key parity across `app_en.arb`, `app_hi.arb`, and `app_ur.arb` catalogs, verified continuously via `scripts/test-multilingual-architecture.py`.
+
+3. **Centralized Localized Helper Collections**:
+   - `quickTags`: Cultural occasion chips (विवाह शगुन, भात / मायरा, दिखावा / टीका, गृह प्रवेश, etc.).
+   - `quickGiftSuggestions`: Traditional physical gift suggestions (सोने की अंगूठी, चांदी का सिक्का, कपड़े / सूट, etc.).
+   - `quickRelations`: Kinship chips (मामा, चाचा, ताऊ, बुआ, मौसी, फूफा, जीजा, etc.).
+   - `quickCustomEvents`: Auspicious ceremonies (नामकरण, जनेऊ / उपनयन, छठी, गोद भराई, etc.).
+   - `unitOptions`: Physical item measurement units (संख्या, ग्राम, तोला, पीस, थान / मीटर, किलो, डिब्बा).
+
+4. **Cultural Semantics (No Debt/Loan Terminology)**:
+   - Commercial credit and debt terminology (`loan`, `credit`, `debt`, `कर्ज`, `ऋण`) is strictly forbidden across all translation resource bundles and UI copy. Social transactions are tracked purely as *Mila* (Received) and *Diya* (Given).

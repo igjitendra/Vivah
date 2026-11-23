@@ -274,5 +274,8 @@
   "themeGalleryDescription": "Personalize your Vyavahaar ledger with curated themes. Your choice is always saved.",
   "onboardingTourSubtitle": "View interactive walkthrough and guide",
   "generalCategory": "General",
-  "close": "Close"
+  "close": "Close",
+  "defaultUnit": "Count",
+  "hintAmountEstimate": "e.g. 5000",
+  "hintRelationExample": "e.g. Uncle / Aunt"
 }

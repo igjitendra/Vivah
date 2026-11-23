@@ -5,6 +5,29 @@
 
 ---
 
+## [1.4.12] — 2026-11-23
+
+### Added
+- **Dual-Primary Typography Architecture (Poppins & Figtree)**:
+  - Bundled authentic **Poppins** font family (`assets/fonts/Poppins-*.ttf`, weights 400 to 800) designed by Indian Type Foundry (ITF) for authentic Devanagari ligature shaping.
+  - Bundled **Figtree** font family (`assets/fonts/Figtree-*.ttf`, weights 300 to 900) directly matched from the InlitX/streak aesthetic for geometric sans-serif Latin typography.
+  - Wired dynamic, locale-aware font resolution via `AppTheme.fromPalette(palette, locale: activeLocale)` and `ExpressType.theme(onSurface, locale: locale)` with fallback chain `['Poppins', 'Figtree', 'NotoSansDevanagari', 'sans-serif']`.
+  - Registered all font weights in `pubspec.yaml`.
+
+### Refactored
+- **Complete Elimination of Hard-Coded Strings Across UI Screens**:
+  - Replaced hard-coded strings across all screens (`AddEntryScreen`, `AddPersonScreen`, `AddEventScreen`, `OnboardingScreen`, `PeopleListScreen`, `ThemeGalleryScreen`, `ReportsScreen`, `ShortcutsSheet`, `EmptyDetailPane`, and detail screens tooltips).
+  - Expanded `AppLocalizations` with type-safe getters and helper collections:
+    - `quickTags`: Cultural occasion chips (विवाह शगुन, भात, दिखावा, गृह प्रवेश, etc.).
+    - `quickGiftSuggestions`: Common physical gifts (सोने की अंगूठी, चांदी का सिक्का, कपड़े, बर्तन, etc.).
+    - `quickRelations`: Traditional kinship chips (मामा, चाचा, ताऊ, बुआ, मौसी, etc.).
+    - `quickCustomEvents`: Ceremonies (जन्मदिन, नामकरण, जनेऊ, छठी, गोद भराई, etc.).
+    - `unitOptions` & `defaultUnit`: Physical gift units (संख्या, ग्राम, तोला, पीस, आदि).
+    - `desktopShortcutsHint`, `shortcutGuide`, `themeGalleryDescription`, `noFamilyMembersYet`, etc.
+  - Achieved 100% key parity across `app_en.arb`, `app_hi.arb`, and `app_ur.arb` verified by automated test suites.
+
+---
+
 ## [1.4.11] — 2026-11-23
 
 ### Fixed

@@ -27,7 +27,7 @@ class PeopleListScreen extends ConsumerStatefulWidget {
 }
 
 class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
-  int _currentTab = 0; // 0 = People (लोग), 1 = Families (परिवार)
+  int _currentTab = 0; // 0 = People, 1 = Families
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String? _selectedPersonId;

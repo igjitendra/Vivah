@@ -148,8 +148,12 @@ Vyavahaar incorporates fluid spring physics and tactile scale gestures directly 
   - Heights: Compact (`40dp`, horizontal pad `16dp`, label `13.5sp`) vs Regular (`52dp`, horizontal pad `22dp`, label `15sp`).
 - **`ExpressIconButton`**: 40dp squircle icon button with mouse hover highlight and bouncy tap scale.
 
-### 6.2 ExpressType Typography Scale (Streak-Aligned)
+### 6.2 ExpressType Typography Scale (Streak-Aligned with Poppins & Figtree)
 - **Source**: `lib/src/core/theme/express_type.dart`
+- **Dual-Primary Typography Architecture**:
+  - **Hindi & Indic Scripts**: `Poppins` (Indian Type Foundry / Google Fonts, weights 400 to 800 in `assets/fonts/Poppins-*.ttf`).
+  - **English & Latin Script**: `Figtree` (geometric sans-serif matched from InlitX/streak, weights 300 to 900 in `assets/fonts/Figtree-*.ttf`).
+  - **Dynamic Locale Switching**: Handled reactively via `AppTheme.fromPalette(palette, locale: activeLocale)` with fallback chain `['Poppins', 'Figtree', 'NotoSansDevanagari', 'sans-serif']`.
 - Display: `displayLarge` (57sp, -0.25 spacing), `displayMedium` (45sp), `displaySmall` (36sp).
 - Headline: `headlineLarge` (32sp), `headlineMedium` (28sp), `headlineSmall` (24sp) with weight 700.
 - Title: `titleLarge` (22sp), `titleMedium` (16sp), `titleSmall` (14sp) with weight 800.

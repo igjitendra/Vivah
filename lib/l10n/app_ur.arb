@@ -127,5 +127,8 @@
   "themeGalleryDescription": "اپنے کھاتے کو اپنی پسندیدہ تھیم میں سجائیں۔ یہ ترتیبات ہمیشہ محفوظ رہیں گی۔",
   "onboardingTourSubtitle": "ایپ کا تعارف اور رہنمائی دیکھیں",
   "generalCategory": "عام",
-  "close": "بند کریں"
+  "close": "بند کریں",
+  "defaultUnit": "تعداد",
+  "hintAmountEstimate": "مثال: 5000",
+  "hintRelationExample": "مثال: ماموں / چچا"
 }

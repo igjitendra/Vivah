@@ -521,6 +521,14 @@ class AppLocalizations {
   String get onboardingTourSubtitle => isEnglish ? 'View interactive walkthrough and guide' : (isUrdu ? 'ایپ کا تعارف اور رہنمائی دیکھیں' : 'ऐप का परिचय और मार्गदर्शन देखें');
   String get generalCategory => isEnglish ? 'General' : (isUrdu ? 'عام' : 'सामान्य');
   String get close => isEnglish ? 'Close' : (isUrdu ? 'بند کریں' : 'बंद करें');
+  String get defaultUnit => isEnglish ? 'Count' : (isUrdu ? 'تعداد' : 'संख्या');
+  String get hintAmountEstimate => isEnglish ? 'e.g. 5000' : (isUrdu ? 'مثال: 5000' : 'उदा. 5000');
+  String get hintRelationExample => isEnglish ? 'e.g. Uncle / Aunt' : (isUrdu ? 'مثال: ماموں / چچا' : 'उदा. मामा / चाचा');
+  List<String> get unitOptions => isEnglish
+      ? const ['Count', 'Gram', 'Tola', 'Piece', 'Metre', 'Kg', 'Box']
+      : (isUrdu
+          ? const ['تعداد', 'گرام', 'تولہ', 'پیس', 'میٹر', 'کلو', 'ڈبہ']
+          : const ['संख्या', 'ग्राम', 'तोला', 'पीस', 'थान / मीटर', 'किलो', 'डिब्बा']);
 
   // Plurals
   String entryCount(int count) {

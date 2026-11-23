@@ -1,29 +1,42 @@
 # Multilingual Font and Script Support Guide — व्यवहार (Vyavahaar)
 
 > **Typography Mandate**: 100% offline bundling; zero missing glyph boxes; correct conjunct ligature shaping across all Indian writing systems.  
-> **Last Updated**: 2026-11-21  
+> **Last Updated**: 2026-11-23  
 
 ---
 
-## 1. Script & Font Coverage Architecture
+## 1. Primary Typography & Script Coverage Architecture
 
-Vyavahaar uses the Google **Noto** ("No More Tofu") font family licensed under the **SIL Open Font License (OFL) v1.1**, permitting free commercial bundling, modification, and offline redistribution across all 5 target platforms.
+Vyavahaar employs a dual-primary typography system aligned with the **InlitX/streak** design language and authentic Indian typographic design:
+
+1. **Hindi & Indic Scripts — Poppins**:
+   - Designed by Indian Type Foundry (ITF) and Google Fonts.
+   - Bundled weights: Regular (400), Medium (500), SemiBold (600), Bold (700), and ExtraBold (800) in `assets/fonts/Poppins-*.ttf`.
+   - Offers natural Devanagari letter proportions, open counters, and high legibility for mobile and desktop screens.
+
+2. **English & Latin Script — Figtree**:
+   - Clean, geometric sans-serif typeface matching the InlitX/streak core aesthetic.
+   - Bundled weights: Light (300), Regular (400), Medium (500), SemiBold (600), Bold (700), ExtraBold (800), and Black (900) in `assets/fonts/Figtree-*.ttf`.
+
+3. **Dynamic Locale-Aware Font Resolution**:
+   - `AppTheme.fromPalette(palette, locale: activeLocale)` dynamically sets `primaryFamily = isEnglish ? 'Figtree' : 'Poppins'`.
+   - `fontFamilyFallback: const ['Poppins', 'Figtree', 'NotoSansDevanagari', 'sans-serif']` ensures that if mixed scripts are encountered, glyphs render seamlessly without tofu blocks.
 
 | Script Name | ISO 15924 | Covered Scheduled Languages | Primary Font Asset | Fallback Chain |
 | :--- | :--- | :--- | :--- | :--- |
-| **Devanagari** | `Deva` | Hindi, Bodo, Dogri, Konkani, Maithili, Marathi, Nepali, Sanskrit, Kashmiri/Sindhi (Deva) | `NotoSansDevanagari` | `NotoSerifDevanagari`, `Roboto` |
-| **Bengali-Assamese**| `Beng` | Assamese, Bengali, Manipuri (Bengali script) | `NotoSansBengali` | `NotoSerifBengali`, `Roboto` |
-| **Gujarati** | `Gujr` | Gujarati | `NotoSansGujarati` | `NotoSerifGujarati`, `Roboto` |
-| **Gurmukhi** | `Guru` | Punjabi | `NotoSansGurmukhi` | `NotoSerifGurmukhi`, `Roboto` |
-| **Kannada** | `Knda` | Kannada | `NotoSansKannada` | `NotoSerifKannada`, `Roboto` |
-| **Malayalam** | `Mlym` | Malayalam | `NotoSansMalayalam` | `NotoSerifMalayalam`, `Roboto` |
-| **Meitei Mayek** | `Mtei` | Manipuri (Meitei) | `NotoSansMeeteiMayek` | `NotoSansBengali`, `Roboto` |
-| **Odia** | `Orya` | Odia | `NotoSansOriya` | `NotoSerifOriya`, `Roboto` |
-| **Ol Chiki** | `Olck` | Santali | `NotoSansOlChiki` | `Roboto` |
-| **Perso-Arabic** | `Arab` | Urdu, Kashmiri (Arabic), Sindhi (Arabic) | `NotoNastaliqUrdu` | `NotoSansArabic`, `Roboto` |
-| **Tamil** | `Taml` | Tamil | `NotoSansTamil` | `NotoSerifTamil`, `Roboto` |
-| **Telugu** | `Telu` | Telugu | `NotoSansTelugu` | `NotoSerifTelugu`, `Roboto` |
-| **Latin** | `Latn` | English | `Roboto` | `NotoSans` |
+| **Devanagari** | `Deva` | Hindi, Bodo, Dogri, Konkani, Maithili, Marathi, Nepali, Sanskrit, Kashmiri/Sindhi (Deva) | `Poppins` | `NotoSansDevanagari`, `Figtree`, `sans-serif` |
+| **Latin** | `Latn` | English | `Figtree` | `Poppins`, `NotoSansDevanagari`, `sans-serif` |
+| **Bengali-Assamese**| `Beng` | Assamese, Bengali, Manipuri (Bengali script) | `NotoSansBengali` | `Poppins`, `Roboto` |
+| **Gujarati** | `Gujr` | Gujarati | `NotoSansGujarati` | `Poppins`, `Roboto` |
+| **Gurmukhi** | `Guru` | Punjabi | `NotoSansGurmukhi` | `Poppins`, `Roboto` |
+| **Kannada** | `Knda` | Kannada | `NotoSansKannada` | `Poppins`, `Roboto` |
+| **Malayalam** | `Mlym` | Malayalam | `NotoSansMalayalam` | `Poppins`, `Roboto` |
+| **Meitei Mayek** | `Mtei` | Manipuri (Meitei) | `NotoSansMeeteiMayek` | `Poppins`, `Roboto` |
+| **Odia** | `Orya` | Odia | `NotoSansOriya` | `Poppins`, `Roboto` |
+| **Ol Chiki** | `Olck` | Santali | `NotoSansOlChiki` | `Poppins`, `Roboto` |
+| **Perso-Arabic** | `Arab` | Urdu, Kashmiri (Arabic), Sindhi (Arabic) | `NotoNastaliqUrdu` | `NotoSansArabic`, `Poppins` |
+| **Tamil** | `Taml` | Tamil | `NotoSansTamil` | `Poppins`, `Roboto` |
+| **Telugu** | `Telu` | Telugu | `NotoSansTelugu` | `Poppins`, `Roboto` |
 
 ---
 

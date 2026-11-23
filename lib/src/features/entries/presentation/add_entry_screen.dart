@@ -106,7 +106,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
       entryId: '',
       itemName: name,
       quantity: 1.0,
-      unit: context.l10n.isEnglish ? 'Count' : (context.l10n.isUrdu ? 'تعداد' : 'संख्या'),
+      unit: context.l10n.defaultUnit,
       createdAt: now,
       updatedAt: now,
     );
@@ -121,11 +121,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
     final qtyController = TextEditingController(text: '1');
     final estValueController = TextEditingController();
 
-    final unitOptions = l10n.isEnglish
-        ? const ['Count', 'Gram', 'Tola', 'Piece', 'Metre', 'Kg', 'Box']
-        : (l10n.isUrdu
-            ? const ['تعداد', 'گرام', 'تولہ', 'پیس', 'میٹر', 'کلو', 'ڈبہ']
-            : const ['संख्या', 'ग्राम', 'तोला', 'पीस', 'थान / मीटर', 'किलो', 'डिब्बा']);
+    final unitOptions = l10n.unitOptions;
 
     String selectedUnit = unitOptions.first;
 
@@ -209,7 +205,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     prefixText: '₹ ',
-                    hintText: l10n.isEnglish ? 'e.g. 5000' : (l10n.isUrdu ? 'مثال: 5000' : 'उदा. 5000'),
+                    hintText: l10n.hintAmountEstimate,
                     filled: true,
                     fillColor: inputBg,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
@@ -555,7 +551,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                   controller: relController,
                   style: TextStyle(color: textPrimary, fontSize: 14),
                   decoration: InputDecoration(
-                    hintText: l10n.isEnglish ? 'e.g. Uncle / Aunt' : (l10n.isUrdu ? 'مثال: ماموں / چچا' : 'उदा. मामा / चाचा'),
+                    hintText: l10n.hintRelationExample,
                     hintStyle: TextStyle(color: textSecondary, fontSize: 13),
                     filled: true,
                     fillColor: inputBg,

@@ -127,5 +127,8 @@
   "themeGalleryDescription": "व्यवहार बही-खाते को अपने मनपसंद रंग व थीम में सजाएं। यह चयन हमेशा सुरक्षित रहेगा।",
   "onboardingTourSubtitle": "ऐप का परिचय और मार्गदर्शन देखें",
   "generalCategory": "सामान्य",
-  "close": "बंद करें"
+  "close": "बंद करें",
+  "defaultUnit": "संख्या",
+  "hintAmountEstimate": "उदा. 5000",
+  "hintRelationExample": "उदा. मामा / चाचा"
 }

@@ -231,7 +231,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             IconButton(
               icon: const Icon(Icons.close),
               onPressed: widget.onClose,
-              tooltip: 'बंद करें',
+              tooltip: l10n.close,
             ),
         ],
       ),

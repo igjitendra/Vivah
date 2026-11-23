@@ -391,5 +391,7 @@
   "thankYouTemplate": "Greetings! Wholehearted gratitude for your love, blessings and shagun in our family celebration.",
   "createNewEventInline": "+ Create New Event",
   "newRelativeFullForm": "+ Add New Relative",
-  "rapidEntrySuccess": "Entry saved. Ready for next relative entry."
+  "rapidEntrySuccess": "Entry saved. Ready for next relative entry.",
+  "copy": "Copy",
+  "copiedToClipboard": "Copied to clipboard"
 }

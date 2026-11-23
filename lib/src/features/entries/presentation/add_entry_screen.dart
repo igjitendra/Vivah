@@ -558,7 +558,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                       autofocus: false,
                       style: TextStyle(color: textPrimary, fontSize: 14),
                       decoration: InputDecoration(
-                        hintText: l10n.searchEvent,
+                        hintText: l10n.searchEventsHint,
                         hintStyle: TextStyle(color: textSecondary, fontSize: 13),
                         prefixIcon: Icon(Icons.search, color: textSecondary, size: 20),
                         filled: true,
@@ -578,7 +578,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                       child: Icon(Icons.clear, size: 18, color: _selectedEventId == null ? Colors.white : textSecondary),
                     ),
                     title: Text(l10n.noEvent, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary)),
-                    subtitle: Text(l10n.generalTransaction, style: TextStyle(fontSize: 12, color: textSecondary)),
+                    subtitle: Text(l10n.generalCategory, style: TextStyle(fontSize: 12, color: textSecondary)),
                     trailing: _selectedEventId == null ? Icon(Icons.check_circle, color: primaryAccent, size: 20) : null,
                     onTap: () {
                       setState(() => _selectedEventId = null);
@@ -607,7 +607,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                           title: Text(e.title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary)),
                           subtitle: Text(
                             [
-                              DateUtilsCustom.formatIsoToIndianDate(e.eventDate),
+                              AppDateUtils.formatIsoToIndianDate(e.eventDate),
                               if (e.venue != null && e.venue!.isNotEmpty) e.venue!,
                             ].join(' • '),
                             style: TextStyle(fontSize: 12, color: textSecondary),
@@ -1212,7 +1212,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                                   const SizedBox(height: 2),
                                   Text(
                                     selectedEvent != null
-                                        ? '${DateUtilsCustom.formatIsoToIndianDate(selectedEvent.eventDate)}${selectedEvent.venue != null ? ' • ${selectedEvent.venue}' : ''}'
+                                        ? '${AppDateUtils.formatIsoToIndianDate(selectedEvent.eventDate)}${selectedEvent.venue != null ? ' • ${selectedEvent.venue}' : ''}'
                                         : l10n.selectEventSubtitle,
                                     style: TextStyle(fontSize: 11.5, color: textSecondary),
                                     maxLines: 1,
@@ -1264,14 +1264,14 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              '${l10n.amount} (₹)',
+                              '${l10n.amountRupees} (₹)',
                               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary),
                             ),
                             if (_amountController.text.isNotEmpty)
                               ExpressSquish(
                                 scale: 0.92,
                                 onTap: () => setState(() => _amountController.clear()),
-                                child: Text(l10n.clear, style: TextStyle(fontSize: 12, color: primaryAccent, fontWeight: FontWeight.bold)),
+                                child: Icon(Icons.clear, size: 16, style: TextStyle(fontSize: 12, color: primaryAccent, fontWeight: FontWeight.bold)),
                               ),
                           ],
                         ),
@@ -1317,7 +1317,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                             if (val != null && val.isNotEmpty) {
                               final numVal = int.tryParse(val.trim());
                               if (numVal == null || numVal <= 0) {
-                                return l10n.validAmount;
+                                return l10n.amountRequired;
                               }
                             }
                             return null;
@@ -1329,7 +1329,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
 
                         // Shagun Denominations (₹101, 251, 501, 1100, 2100, 5100, 11000)
                         Text(
-                          l10n.shagunPresets,
+                          l10n.quickShagun,
                           style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: textSecondary),
                         ),
                         const SizedBox(height: 6),
@@ -1386,7 +1386,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          l10n.transactionType,
+                          l10n.type,
                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary),
                         ),
                         const SizedBox(height: 10),
@@ -1408,7 +1408,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                             Expanded(
                               child: _buildTypeChip(
                                 type: TransactionType.item,
-                                label: l10n.gift,
+                                label: l10n.giftItem,
                                 icon: Icons.card_giftcard_outlined,
                                 isDark: isDark,
                                 primaryAccent: primaryAccent,
@@ -1421,7 +1421,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                             Expanded(
                               child: _buildTypeChip(
                                 type: TransactionType.cashAndItem,
-                                label: l10n.cashAndGift,
+                                label: l10n.cashAndItem,
                                 icon: Icons.redeem_outlined,
                                 isDark: isDark,
                                 primaryAccent: primaryAccent,
@@ -1439,7 +1439,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(l10n.giftItems, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: textPrimary)),
+                              Text(l10n.items, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: textPrimary)),
                               ExpressSquish(
                                 scale: 0.94,
                                 onTap: () => _showAddItemDialog(theme, inputBg, cardBg),
@@ -1487,7 +1487,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                               ),
                               child: Center(
                                 child: Text(
-                                  l10n.noGiftItemsAdded,
+                                  l10n.addAtLeastOneItemError,
                                   style: TextStyle(fontSize: 12, color: textSecondary),
                                 ),
                               ),
@@ -1534,7 +1534,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(l10n.date, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary)),
+                        Text(l10n.transactionDate, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary)),
                         const SizedBox(height: 10),
                         Row(
                           children: [
@@ -1582,7 +1582,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                                       Icon(Icons.calendar_month_outlined, size: 16, color: primaryAccent),
                                       const SizedBox(width: 6),
                                       Text(
-                                        DateUtilsCustom.formatIsoToIndianDate(_transactionDate),
+                                        AppDateUtils.formatIsoToIndianDate(_transactionDate),
                                         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textPrimary),
                                       ),
                                     ],

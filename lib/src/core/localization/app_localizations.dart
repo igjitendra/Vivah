@@ -713,6 +713,8 @@ class AppLocalizations {
       : (isUrdu
           ? 'لین دین محفوظ ہو گیا۔ اگلے رشتہ دار کے اندراج کے لیے تیار۔'
           : 'व्यवहार दर्ज हुआ। अगले रिश्तेदार की एंट्री के लिए तैयार।');
+  String get copy => isEnglish ? 'Copy' : (isUrdu ? 'کاپی کریں' : 'कॉपी करें');
+  String get copiedToClipboard => isEnglish ? 'Copied to clipboard' : (isUrdu ? 'کلپ بورڈ پر کاپی کیا گیا' : 'क्लिपबोर्ड पर कॉपी किया गया');
 
   String personCount(int count) {
     if (isEnglish) {

@@ -304,7 +304,7 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> {
                     controller: notesController,
                     maxLines: 2,
                     decoration: InputDecoration(
-                      hintText: l10n.notesHint,
+                      hintText: l10n.notesOptionalHint,
                       filled: true,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
                     ),

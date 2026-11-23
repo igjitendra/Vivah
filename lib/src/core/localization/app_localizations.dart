@@ -342,6 +342,7 @@ class AppLocalizations {
   String get change => changeDate;
   String get notesOptional => isEnglish ? 'Notes (Optional)' : (isUrdu ? 'نوٹس (اختیاری)' : 'टिप्पणी (वैकल्पिक)');
   String get notesOptionalHint => isEnglish ? 'Add extra details' : (isUrdu ? 'اضافی تفصیلات لکھیں' : 'अतिरिक्त विवरण लिखें');
+  String get notesHint => notesOptionalHint;
 
   // Reports
   String get completeLedgerPdf => isEnglish ? 'Complete Ledger (PDF)' : (isUrdu ? 'مکمل بہی کھاتہ (پی ڈی ایف)' : 'सम्पूर्ण बही-खाता (PDF)');

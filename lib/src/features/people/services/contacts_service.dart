@@ -328,7 +328,7 @@ class ContactsService {
     final file = File('${tempDir.path}/$fileName');
     await file.writeAsString(buffer.toString());
 
-    await SharePlus.shareXFiles(
+    await Share.shareXFiles(
       [XFile(file.path)],
       subject: 'व्यवहार संपर्क सूची (vCard)',
       text: '${people.length} संपर्क व्यवहार ऐप से निर्यात किए गए।',
@@ -388,7 +388,7 @@ class ContactsService {
     final file = File('${tempDir.path}/$fileName');
     await file.writeAsString(csvContent);
 
-    await SharePlus.shareXFiles(
+    await Share.shareXFiles(
       [XFile(file.path)],
       subject: 'व्यवहार संपर्क सूची (CSV)',
       text: '${people.length} संपर्क व्यवहार ऐप से CSV में निर्यात किए गए।',
@@ -482,7 +482,7 @@ class ContactsService {
     }
     buffer.writeln('\n— व्यवहार (Vyavahaar) डिजिटल फैमिली लेजर');
 
-    await SharePlus.share(
+    await Share.share(
       buffer.toString(),
       subject: 'संपर्क: ${p.fullName}',
     );

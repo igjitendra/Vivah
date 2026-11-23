@@ -835,7 +835,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                         controller: _notesController,
                         maxLines: 3,
                         style: TextStyle(color: textPrimary, fontSize: 14),
-                        decoration: _inputDecoration(l10n.notesHint, inputBg, textSecondary),
+                        decoration: _inputDecoration(l10n.notesOptionalHint, inputBg, textSecondary),
                       ),
                     ],
                   ),

@@ -29,8 +29,11 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Generate Android Platform Wrapper
-        run: flutter create --platforms=android --org com.procsctools --no-pub .
+      - name: Verify Android Platform Wrapper
+        run: |
+          if [ ! -d "android" ]; then
+            flutter create --platforms=android --org com.procsctools --no-pub .
+          fi
 
       - name: Configure Android Keystore & Signing
         run: |

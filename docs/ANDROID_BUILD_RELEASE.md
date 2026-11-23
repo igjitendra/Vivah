@@ -10,17 +10,19 @@
 
 ## 1. Android Configuration
 
-In the Flutter Android project configuration:
+The repository tracks a full, dedicated native Android platform project directly under `android/`:
 - **Application ID / Package Name**: `com.procsctools.vyavahaar`
-- **Application Label**: व्यवहार
-- **Version Name**: `1.0.0`
-- **Version Code**: `1`
-- **Orientation**: `portrait`
+- **Application Label**: `व्यवहार` (Vyavahaar)
+- **Primary Language**: 100% Kotlin (`.kt`) with Gradle Kotlin DSL (`build.gradle.kts`)
+- **Native Architecture**:
+  - `MainActivity.kt` extending `FlutterFragmentActivity` with `vyavahaar/security` MethodChannel for hardware-backed privacy.
+  - Native home widgets, notification bridges, and local file storage helpers.
+  - Zero-network manifest: explicitly removes `INTERNET` and `ACCESS_NETWORK_STATE` permissions.
 
 ### Target SDK Specifications:
-- **Minimum SDK (`minSdkVersion`)**: Android 8.0 (API Level 26) — Supports 95%+ of active Android devices in India.
-- **Target SDK (`targetSdkVersion`)**: Android 15 (API Level 35) — Complies with Google Play Store 2025/2026 submission mandates.
-- **Compile SDK (`compileSdkVersion`)**: Android 15 (API Level 35)
+- **Minimum SDK (`minSdk`)**: Android 5.0 (API Level 21) / Target baseline API 26
+- **Target SDK (`targetSdk`)**: Android 15 (API Level 35) — Complies with Google Play Store mandates.
+- **Compile SDK (`compileSdk`)**: Android 16 Preview / Android 15 (API Level 36/35) with `android.suppressUnsupportedCompileSdk=36`
 - **Supported ABIs**: `arm64-v8a`, `armeabi-v7a`, `x86_64`
 
 ---

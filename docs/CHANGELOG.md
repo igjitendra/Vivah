@@ -5,6 +5,25 @@
 
 ---
 
+## [1.4.13] — 2026-11-23
+
+### Added
+- **Native Multi-Platform Runners Tracked Directly in Repository**:
+  - **Android Platform (`android/`)**:
+    - Complete native Android project written in **Kotlin** with Gradle Kotlin DSL (`build.gradle.kts`).
+    - Configured package namespace `com.procsctools.vyavahaar`, compileSdk 36, targetSdk 35, and minSdk 21.
+    - Zero-network offline manifest hardening stripping `INTERNET` and `ACCESS_NETWORK_STATE`.
+    - Integrated native Kotlin components (`MainActivity.kt`, widgets, bridges, and storage helpers).
+  - **Apple iOS & macOS Platform Projects (`ios/`, `macos/`)**:
+    - Complete native Apple runner projects configured with **Swift** (`AppDelegate.swift`, `MainFlutterWindow.swift`).
+    - Xcode project definitions, configurations, entitlements, and Podfile specifications matching bundle identifier `com.procsctools.vyavahaar`.
+  - **GitHub Linguist Multi-Language Breakdown Parity**:
+    - Matches InlitX/streak repository structure: **Dart** (~70%), **Kotlin** (~21%), **Swift** (~4%), **C++** (~3%), **CMake** (~1%), and **Inno Setup** (~0.1%).
+  - **CI Workflow Optimization**:
+    - Updated `.github/workflows/build-apk.yml` to preserve and build against the committed repository `android/` project rather than recreating it on the fly.
+
+---
+
 ## [1.4.12] — 2026-11-23
 
 ### Added

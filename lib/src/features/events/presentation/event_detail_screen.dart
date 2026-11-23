@@ -1333,7 +1333,6 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
     final notesCtrl = TextEditingController(text: event.notes ?? '');
     EventType selType = event.eventType;
     EventStatus selStatus = event.status;
-    String selDate = event.eventDate;
 
     showDialog(
       context: context,
@@ -1630,7 +1629,6 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
       case EventStatus.archived:
         return Colors.grey;
       case EventStatus.planned:
-      default:
         return const Color(0xFF38BDF8);
     }
   }

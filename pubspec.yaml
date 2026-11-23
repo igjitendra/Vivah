@@ -64,6 +64,9 @@ dev_dependencies:
   # Static Analysis
   flutter_lints: ^4.0.0
 
+dependency_overrides:
+  archive: 4.0.8
+
 flutter:
   uses-material-design: true
   generate: true

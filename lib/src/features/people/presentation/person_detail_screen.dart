@@ -41,9 +41,7 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> {
     final dobController = TextEditingController(text: person.dateOfBirth ?? '');
 
     final phoneController = TextEditingController(text: person.phoneNumber ?? '');
-    final secondaryPhones = List<String>.from(person.secondaryPhones);
     final whatsappController = TextEditingController(text: person.whatsappNumber ?? '');
-    final emails = List<String>.from(person.emails);
 
     final villageController = TextEditingController(text: person.village ?? person.address ?? '');
     final cityController = TextEditingController(text: person.city ?? '');

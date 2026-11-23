@@ -37,10 +37,8 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
   String _searchQuery = '';
   String? _selectedPersonId;
 
-  // Sorting & Filtering
-  PeopleSort _activeSort = PeopleSort.nameAsc;
+  // Filtering
   PeopleFilter _activeFilter = PeopleFilter.all;
-  String? _selectedFamilyFilter;
 
   // Multi-Select Bulk Mode
   bool _isMultiSelectMode = false;

@@ -1,3 +1,4 @@
+import 'package:characters/characters.dart';
 import '../enums/transaction_enums.dart';
 
 /// Family Entity (परिवार / कुल)
@@ -121,11 +122,11 @@ class Person {
     if (trimmed.isEmpty) return 'व्य';
     final parts = trimmed.split(RegExp(r'\s+'));
     if (parts.length >= 2) {
-      final p1 = parts[0].isNotEmpty ? String.fromCharCode(parts[0].runes.first) : '';
-      final p2 = parts[1].isNotEmpty ? String.fromCharCode(parts[1].runes.first) : '';
+      final p1 = parts[0].isNotEmpty ? parts[0].characters.first : '';
+      final p2 = parts[1].isNotEmpty ? parts[1].characters.first : '';
       return '$p1$p2';
     }
-    return String.fromCharCodes(trimmed.runes.take(2));
+    return trimmed.characters.take(2).toString();
   }
 
   String? get primaryOrAnyPhone {
@@ -407,7 +408,12 @@ class Event {
   // Backward compatibility aliases
   int? get totalMilaPaise => totalReceivedPaise;
   int? get totalDiyaPaise => totalGivenPaise;
-  int get actualExpensePaise => totalGivenPaise ?? 0;
+  int get actualExpensePaise {
+    if (budgetCategories.isNotEmpty) {
+      return budgetCategories.fold<int>(0, (sum, c) => sum + (c.actualAmountPaise ?? 0));
+    }
+    return totalGivenPaise ?? 0;
+  }
   int get remainingBudgetPaise => (budgetEstimatedPaise ?? 0) - actualExpensePaise;
   double get budgetUtilizationPercent =>
       (budgetEstimatedPaise != null && budgetEstimatedPaise! > 0)

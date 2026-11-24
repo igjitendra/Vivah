@@ -4,12 +4,29 @@ import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/enums/transaction_enums.dart';
 import '../../../shared/widgets/express_button.dart';
 import '../../../app/app_providers.dart';
 
+/// Sub-event item helper for ceremonies and functions
+class _SubEventItem {
+  final String id;
+  String title;
+  String date;
+  TimeOfDay? time;
+
+  _SubEventItem({
+    required this.id,
+    required this.title,
+    required this.date,
+    this.time,
+  });
+}
+
 /// Clean, focused, and responsive Event Creation Form for व्यवहार (Vyavahaar)
+/// with full sub-events (उप-कार्यक्रम व रस्में) support and individual date selection.
 class AddEventScreen extends ConsumerStatefulWidget {
   const AddEventScreen({super.key});
 
@@ -33,12 +50,30 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
   bool _isAllDay = false;
   bool _isSaving = false;
 
+  final List<_SubEventItem> _subEvents = [];
   List<String> _conflictWarnings = [];
+
+  List<String> get _quickSubEventSuggestions {
+    switch (_selectedType) {
+      case EventType.shaadi:
+      case EventType.wedding:
+        return const ['तिलक', 'हल्दी', 'मेहंदी', 'संगीत', 'बारात', 'रिसेप्शन'];
+      case EventType.engagement:
+      case EventType.sagayi:
+        return const ['रोका', 'अंगूठी रस्म', 'प्रीतिभोज'];
+      case EventType.mundan:
+        return const ['हवन / पूजा', 'मुंडन संस्कार', 'भोज'];
+      case EventType.grihaPravesh:
+        return const ['वास्तु शांति', 'गृह प्रवेश पूजा', 'भोज'];
+      default:
+        return const ['मुख्य समारोह', 'प्रीतिभोज / दावत', 'पूजा'];
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    _eventDate = DateTime.now().toIso8601String().split('T').first;
+    _eventDate = AppDateUtils.getTodayIsoString();
   }
 
   @override
@@ -78,8 +113,13 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
       lastDate: DateTime(2100),
     );
     if (picked != null) {
+      final newDate = AppDateUtils.toIsoDateString(picked);
       setState(() {
-        _eventDate = picked.toIso8601String().split('T').first;
+        _eventDate = newDate;
+        // Optionally update sub-events that had the old default date
+        for (final sub in _subEvents) {
+          if (sub.date.isEmpty) sub.date = newDate;
+        }
       });
       _checkConflicts();
     }
@@ -104,6 +144,110 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
     if (picked != null) {
       setState(() => _endTime = picked);
     }
+  }
+
+  void _addSubEventQuick(String title) {
+    if (_subEvents.any((s) => s.title == title)) return;
+    setState(() {
+      _subEvents.add(_SubEventItem(
+        id: const Uuid().v4(),
+        title: title,
+        date: _eventDate,
+      ));
+    });
+  }
+
+  void _showAddSubEventDialog(AppLocalizations l10n) {
+    final titleController = TextEditingController();
+    String subDate = _eventDate;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          final theme = Theme.of(ctx);
+          final textPrimary = theme.colorScheme.onSurface;
+          final primaryAccent = theme.colorScheme.primary;
+
+          return AlertDialog(
+            title: const Text('उप-कार्यक्रम / रस्म जोड़ें', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('रस्म का नाम', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: titleController,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(
+                    hintText: 'उदा. महिला संगीत, भात / मायरा',
+                    filled: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text('रस्म की तारीख', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary)),
+                const SizedBox(height: 6),
+                InkWell(
+                  onTap: () async {
+                    final initialDate = DateTime.tryParse(subDate) ?? DateTime.now();
+                    final picked = await showDatePicker(
+                      context: ctx,
+                      initialDate: initialDate,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) {
+                      setDialogState(() {
+                        subDate = AppDateUtils.toIsoDateString(picked);
+                      });
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Theme.of(ctx).brightness == Brightness.dark ? const Color(0xFF161A24) : const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          AppDateUtils.formatIsoDate(subDate, l10n.locale.languageCode),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary),
+                        ),
+                        Icon(Icons.calendar_month_outlined, size: 18, color: primaryAccent),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.cancel)),
+              ElevatedButton(
+                onPressed: () {
+                  final text = titleController.text.trim();
+                  if (text.isEmpty) return;
+                  setState(() {
+                    _subEvents.add(_SubEventItem(
+                      id: const Uuid().v4(),
+                      title: text,
+                      date: subDate,
+                    ));
+                  });
+                  Navigator.pop(ctx);
+                },
+                child: Text(l10n.add, style: const TextStyle(color: Colors.white)),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   Future<void> _handleSave() async {
@@ -137,7 +281,19 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
         priority: EventPriority.normal,
         createdAt: now,
         updatedAt: now,
-        functions: const [],
+        functions: _subEvents.map((s) => EventFunction(
+          id: s.id,
+          eventId: eventId,
+          title: s.title,
+          functionDate: s.date,
+          startTime: s.time != null
+              ? '${s.time!.hour.toString().padLeft(2, '0')}:${s.time!.minute.toString().padLeft(2, '0')}'
+              : null,
+          venue: _venueController.text.trim().isNotEmpty ? _venueController.text.trim() : null,
+          status: EventStatus.planned,
+          createdAt: now,
+          updatedAt: now,
+        )).toList(),
         participants: const [],
         tasks: const [],
         reminders: [
@@ -153,6 +309,10 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
       );
 
       await repo.createEvent(event);
+
+      // Reactive invalidation for instant numbers update
+      ref.invalidate(dashboardSummaryProvider);
+      ref.invalidate(activeEventsListProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -421,7 +581,173 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
 
                   const SizedBox(height: 14),
 
-                  // 3. Location & Notes Card
+                  // 3. Sub-Events & Ceremonies Card (उप-कार्यक्रम व रस्में)
+                  _buildSectionCard(
+                    title: 'उप-कार्यक्रम व रस्में (${_subEvents.length})',
+                    icon: Icons.event_note_outlined,
+                    cardBg: cardBg,
+                    cardBorder: cardBorder,
+                    textPrimary: textPrimary,
+                    primaryAccent: primaryAccent,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'कार्यक्रम से जुड़ी मुख्य रस्में जोड़ें:',
+                              style: TextStyle(fontSize: 12.5, color: textSecondary, fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          TextButton.icon(
+                            onPressed: () => _showAddSubEventDialog(l10n),
+                            icon: const Icon(Icons.add, size: 15),
+                            label: const Text('अन्य रस्म', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+
+                      // Quick Suggestion Chips
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: _quickSubEventSuggestions.map((title) {
+                          final isAlreadyAdded = _subEvents.any((s) => s.title == title);
+                          return InkWell(
+                            onTap: isAlreadyAdded ? null : () => _addSubEventQuick(title),
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: isAlreadyAdded
+                                    ? primaryAccent.withValues(alpha: 0.15)
+                                    : inputBg,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: isAlreadyAdded ? primaryAccent : cardBorder,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    isAlreadyAdded ? Icons.check : Icons.add,
+                                    size: 13,
+                                    color: isAlreadyAdded ? primaryAccent : textSecondary,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    title,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: isAlreadyAdded ? FontWeight.bold : FontWeight.w500,
+                                      color: isAlreadyAdded ? primaryAccent : textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+
+                      if (_subEvents.isNotEmpty) ...[
+                        const SizedBox(height: 14),
+                        const Divider(height: 1),
+                        const SizedBox(height: 12),
+                        ..._subEvents.asMap().entries.map((entry) {
+                          final idx = entry.key;
+                          final sub = entry.value;
+
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: inputBg,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: cardBorder),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.stars_rounded, size: 16, color: primaryAccent),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    sub.title,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13.5,
+                                      color: textPrimary,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+
+                                // Sub-Event Date Selector Chip
+                                InkWell(
+                                  onTap: () async {
+                                    final initialDate = DateTime.tryParse(sub.date) ?? DateTime.now();
+                                    final picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: initialDate,
+                                      firstDate: DateTime(2000),
+                                      lastDate: DateTime(2100),
+                                    );
+                                    if (picked != null) {
+                                      setState(() {
+                                        sub.date = AppDateUtils.toIsoDateString(picked);
+                                      });
+                                    }
+                                  },
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: primaryAccent.withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: primaryAccent.withValues(alpha: 0.3)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.calendar_month, size: 13, color: primaryAccent),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          AppDateUtils.formatIsoDate(sub.date, l10n.locale.languageCode),
+                                          style: TextStyle(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: primaryAccent,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(width: 4),
+                                IconButton(
+                                  icon: const Icon(Icons.close, size: 16, color: Colors.red),
+                                  visualDensity: VisualDensity.compact,
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                                  tooltip: 'हटाएं',
+                                  onPressed: () => setState(() => _subEvents.removeAt(idx)),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                    ],
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // 4. Location & Notes Card
                   _buildSectionCard(
                     title: 'स्थान व अतिरिक्त नोट्स',
                     icon: Icons.location_on_outlined,

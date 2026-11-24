@@ -102,7 +102,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
           backgroundColor: scaffoldBg,
           appBar: AppBar(
             backgroundColor: headerBg,
-            elevation: 0,
+            elevation: 0.5,
             leading: widget.showBackButton
                 ? IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -115,16 +115,74 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                     },
                   )
                 : null,
-            title: Text(
-              event.title,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  event.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16.5,
+                    letterSpacing: 0.1,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        l10n.eventTypeLabel(event.eventType, customCategory: event.category),
+                        style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '• ${event.eventDate}',
+                      style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.85), fontWeight: FontWeight.w400),
+                    ),
+                  ],
+                ),
+              ],
             ),
             actions: [
+              IconButton(
+                tooltip: 'कार्यक्रम संपादित करें (Edit Event)',
+                icon: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.edit_outlined, color: Colors.white, size: 14),
+                      SizedBox(width: 4),
+                      Text(
+                        'एडिट',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11.5),
+                      ),
+                    ],
+                  ),
+                ),
+                onPressed: () => _showFullEditEventDialog(event),
+              ),
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert, color: Colors.white),
                 onSelected: (val) => _handleMenuAction(val, event, linkedEntries),
                 itemBuilder: (ctx) => [
-                  const PopupMenuItem(value: 'edit', child: Text('संपादित करें (Edit)')),
+                  const PopupMenuItem(value: 'edit', child: Text('पूर्ण विवरण संपादित करें (Full Edit)')),
                   const PopupMenuItem(value: 'duplicate', child: Text('प्रतिलिपि बनाएं (Duplicate)')),
                   const PopupMenuItem(value: 'share', child: Text('निमंत्रण साझा करें (Share)')),
                   const PopupMenuItem(value: 'export_pdf', child: Text('बही-खाता PDF निर्यात')),
@@ -142,7 +200,15 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(48),
               child: Container(
-                color: isDark ? const Color(0xFF141722) : Colors.white,
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF131722) : const Color(0xFFF8FAFC),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: isDark ? const Color(0xFF262D3D) : const Color(0xFFE2E8F0),
+                      width: 1,
+                    ),
+                  ),
+                ),
                 child: TabBar(
                   controller: _tabController,
                   isScrollable: true,
@@ -211,6 +277,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
     Color primaryAccent,
   ) {
     final l10n = context.l10n;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final totalReceived = linkedEntries
         .where((e) => e.direction.value == 'received' && e.status.value == 'recorded')
         .fold(0, (sum, e) => sum + (e.amountPaise ?? 0));
@@ -234,62 +301,115 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _statusColor(event.status).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      event.status.labelHindi,
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: _statusColor(event.status)),
-                    ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _statusColor(event.status).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          event.status.labelHindi,
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: _statusColor(event.status)),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: primaryAccent.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          l10n.eventTypeLabel(event.eventType, customCategory: event.category),
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryAccent),
+                        ),
+                      ),
+                    ],
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: primaryAccent.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      side: BorderSide(color: primaryAccent.withValues(alpha: 0.6)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
-                    child: Text(
-                      l10n.eventTypeLabel(event.eventType, customCategory: event.category),
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryAccent),
+                    icon: Icon(Icons.edit_outlined, size: 14, color: primaryAccent),
+                    label: Text(
+                      'संपादित करें',
+                      style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: primaryAccent),
                     ),
+                    onPressed: () => _showFullEditEventDialog(event),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
               Text(event.title, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20, color: textPrimary)),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Icons.calendar_today, size: 15, color: textSecondary),
+                  Icon(Icons.calendar_month, size: 16, color: primaryAccent),
                   const SizedBox(width: 6),
                   Text(
                     '${event.eventDate}${event.endDate != null ? " से ${event.endDate!}" : ""}',
-                    style: TextStyle(fontSize: 13, color: textSecondary, fontWeight: FontWeight.w500),
+                    style: TextStyle(fontSize: 13, color: textSecondary, fontWeight: FontWeight.w600),
                   ),
                   if (event.startTime != null) ...[
                     const SizedBox(width: 8),
                     Text('• ${event.startTime}', style: TextStyle(fontSize: 13, color: textSecondary)),
                   ],
+                  if (event.isAllDay) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text('पूरा दिन', style: TextStyle(fontSize: 10.5, color: Colors.blue, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
                 ],
               ),
               if (event.venue != null && event.venue!.isNotEmpty) ...[
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Row(
                   children: [
                     Icon(Icons.location_on_outlined, size: 16, color: primaryAccent),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        event.venue!,
-                        style: TextStyle(fontSize: 13, color: textPrimary, fontWeight: FontWeight.w600),
+                        '${event.venue!}${event.villageCity != null && event.villageCity!.isNotEmpty ? ", ${event.villageCity!}" : ""}',
+                        style: TextStyle(fontSize: 13, color: textPrimary, fontWeight: FontWeight.w500),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
+                ),
+              ],
+              if (event.budgetEstimatedPaise != null && event.budgetEstimatedPaise! > 0) ...[
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Icon(Icons.account_balance_wallet_outlined, size: 16, color: AppColors.milaGreen),
+                    const SizedBox(width: 6),
+                    Text(
+                      'अनुमानित बजट: ${CurrencyUtils.formatPaise(event.budgetEstimatedPaise!)}',
+                      style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.milaGreen),
+                    ),
+                  ],
+                ),
+              ],
+              if (event.notes != null && event.notes!.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  event.notes!,
+                  style: TextStyle(fontSize: 12, color: textSecondary, fontStyle: FontStyle.italic),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ],
@@ -510,18 +630,33 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                     ),
                     const SizedBox(width: 14),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(fn.title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5, color: textPrimary)),
-                          const SizedBox(height: 3),
-                          Text('${fn.functionDate}${fn.startTime != null ? " • ${fn.startTime!}" : ""}', style: TextStyle(fontSize: 12, color: textSecondary)),
-                          if (fn.venue != null) Text('स्थल: ${fn.venue}', style: TextStyle(fontSize: 11.5, color: primaryAccent)),
-                        ],
+                      child: InkWell(
+                        onTap: () => _showEditFunctionDialog(event, fn),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(fn.title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5, color: textPrimary)),
+                            const SizedBox(height: 3),
+                            Text(
+                              '${fn.functionDate}${fn.startTime != null ? " • ${fn.startTime!}" : ""}${fn.endTime != null ? " - ${fn.endTime!}" : ""}',
+                              style: TextStyle(fontSize: 12, color: textSecondary),
+                            ),
+                            if (fn.venue != null && fn.venue!.isNotEmpty) Text('स्थल: ${fn.venue}', style: TextStyle(fontSize: 11.5, color: primaryAccent)),
+                            if (fn.description != null && fn.description!.isNotEmpty)
+                              Text(fn.description!, style: TextStyle(fontSize: 11, color: textSecondary, fontStyle: FontStyle.italic), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          ],
+                        ),
                       ),
                     ),
                     IconButton(
+                      icon: Icon(Icons.edit_outlined, size: 18, color: primaryAccent),
+                      tooltip: 'संपादित करें',
+                      onPressed: () => _showEditFunctionDialog(event, fn),
+                    ),
+                    IconButton(
                       icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                      tooltip: 'हटाएं',
                       onPressed: () async {
                         await ref.read(eventsRepositoryProvider).deleteFunction(fn.id);
                         _triggerRefresh();
@@ -581,17 +716,29 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(p.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary)),
-                          Text(p.role.labelHindi, style: TextStyle(fontSize: 12, color: primaryAccent, fontWeight: FontWeight.w600)),
-                          if (p.phone != null && p.phone!.isNotEmpty) Text('फ़ोन: ${p.phone}', style: TextStyle(fontSize: 11, color: textSecondary)),
-                        ],
+                      child: InkWell(
+                        onTap: () => _showEditParticipantDialog(event, p),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(p.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary)),
+                            Text(p.role.labelHindi, style: TextStyle(fontSize: 12, color: primaryAccent, fontWeight: FontWeight.w600)),
+                            if (p.phone != null && p.phone!.isNotEmpty) Text('फ़ोन: ${p.phone}', style: TextStyle(fontSize: 11, color: textSecondary)),
+                            if (p.notes != null && p.notes!.isNotEmpty)
+                              Text(p.notes!, style: TextStyle(fontSize: 10.5, color: textSecondary, fontStyle: FontStyle.italic)),
+                          ],
+                        ),
                       ),
                     ),
                     IconButton(
+                      icon: Icon(Icons.edit_outlined, size: 18, color: primaryAccent),
+                      tooltip: 'संपादित करें',
+                      onPressed: () => _showEditParticipantDialog(event, p),
+                    ),
+                    IconButton(
                       icon: const Icon(Icons.close, size: 18, color: Colors.grey),
+                      tooltip: 'हटाएं',
                       onPressed: () async {
                         await ref.read(eventsRepositoryProvider).removeParticipant(p.id);
                         _triggerRefresh();
@@ -674,19 +821,33 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(g.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: textPrimary)),
-                          Text(
-                            'निमंत्रण: ${g.invitationStatus.labelHindi} • उपस्थिति: ${g.attendanceStatus.labelHindi}',
-                            style: TextStyle(fontSize: 11, color: textSecondary),
-                          ),
-                        ],
+                      child: InkWell(
+                        onTap: () => _showEditGuestDialog(event, g),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(g.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: textPrimary)),
+                            Text(
+                              'निमंत्रण: ${g.invitationStatus.labelHindi} • उपस्थिति: ${g.attendanceStatus.labelHindi}',
+                              style: TextStyle(fontSize: 11, color: textSecondary),
+                            ),
+                            if (g.familyOrGroup != null && g.familyOrGroup!.isNotEmpty)
+                              Text('समूह/परिवार: ${g.familyOrGroup}', style: TextStyle(fontSize: 10.5, color: textSecondary)),
+                            if (g.notes != null && g.notes!.isNotEmpty)
+                              Text(g.notes!, style: TextStyle(fontSize: 10.5, color: textSecondary, fontStyle: FontStyle.italic)),
+                          ],
+                        ),
                       ),
                     ),
                     IconButton(
+                      icon: Icon(Icons.edit_outlined, size: 18, color: primaryAccent),
+                      tooltip: 'संपादित करें',
+                      onPressed: () => _showEditGuestDialog(event, g),
+                    ),
+                    IconButton(
                       icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                      tooltip: 'हटाएं',
                       onPressed: () async {
                         await ref.read(eventsRepositoryProvider).deleteGuest(g.id);
                         _triggerRefresh();
@@ -791,25 +952,45 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                     },
                   ),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          task.title,
-                          style: TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w600,
-                            color: isDone ? textSecondary : textPrimary,
-                            decoration: isDone ? TextDecoration.lineThrough : null,
+                    child: InkWell(
+                      onTap: () => _showEditTaskDialog(event, task),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            task.title,
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                              color: isDone ? textSecondary : textPrimary,
+                              decoration: isDone ? TextDecoration.lineThrough : null,
+                            ),
                           ),
-                        ),
-                        if (task.dueDate != null)
-                          Text('अंतिम तिथि: ${task.dueDate}', style: TextStyle(fontSize: 11, color: isDone ? Colors.grey : Colors.orange.shade800)),
-                      ],
+                          Row(
+                            children: [
+                              if (task.dueDate != null)
+                                Text('अंतिम तिथि: ${task.dueDate}', style: TextStyle(fontSize: 11, color: isDone ? Colors.grey : Colors.orange.shade800)),
+                              if (task.assignedTo != null && task.assignedTo!.isNotEmpty) ...[
+                                const SizedBox(width: 8),
+                                Text('• जिम्मा: ${task.assignedTo}', style: TextStyle(fontSize: 11, color: textSecondary)),
+                              ],
+                            ],
+                          ),
+                          if (task.description != null && task.description!.isNotEmpty)
+                            Text(task.description!, style: TextStyle(fontSize: 10.5, color: textSecondary, fontStyle: FontStyle.italic)),
+                        ],
+                      ),
                     ),
                   ),
                   IconButton(
+                    icon: Icon(Icons.edit_outlined, size: 16, color: primaryAccent),
+                    tooltip: 'संपादित करें',
+                    onPressed: () => _showEditTaskDialog(event, task),
+                  ),
+                  IconButton(
                     icon: const Icon(Icons.close, size: 16, color: Colors.grey),
+                    tooltip: 'हटाएं',
                     onPressed: () async {
                       await ref.read(eventsRepositoryProvider).deleteTask(task.id);
                       _triggerRefresh();
@@ -836,6 +1017,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
     Color primaryAccent,
   ) {
     final l10n = context.l10n;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final totalReceived = linkedEntries
         .where((e) => e.direction.value == 'received' && e.status.value == 'recorded')
         .fold(0, (sum, e) => sum + (e.amountPaise ?? 0));
@@ -896,6 +1078,94 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                   ),
                 ],
               ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 14),
+
+        // Budget Categories Breakdown Card
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: cardBg,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: cardBorder),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('बजट श्रेणियां (${event.budgetCategories.length})', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary)),
+                  ElevatedButton.icon(
+                    onPressed: () => _showAddBudgetCategoryDialog(event),
+                    icon: const Icon(Icons.add, size: 14),
+                    label: const Text('श्रेणी जोड़ें', style: TextStyle(fontSize: 12)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryAccent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              if (event.budgetCategories.isEmpty)
+                Text('कोई बजट श्रेणी नहीं जुड़ी है। जैसे खान-पान, सजावट, टेंट आदि जोड़ने के लिए ऊपर टैप करें।', style: TextStyle(fontSize: 11.5, color: textSecondary))
+              else
+                ...event.budgetCategories.map((cat) => Container(
+                      margin: const EdgeInsets.only(bottom: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: () => _showEditBudgetCategoryDialog(event, cat),
+                              borderRadius: BorderRadius.circular(6),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(cat.categoryName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: textPrimary)),
+                                  const SizedBox(height: 2),
+                                  Row(
+                                    children: [
+                                      Text('अनुमान: ${CurrencyUtils.formatPaise(cat.estimatedAmountPaise)}', style: TextStyle(fontSize: 11, color: textSecondary)),
+                                      const SizedBox(width: 8),
+                                      Text('वास्तविक: ${CurrencyUtils.formatPaise(cat.actualAmountPaise)}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.diyaRed)),
+                                    ],
+                                  ),
+                                  if (cat.notes != null && cat.notes!.isNotEmpty)
+                                    Text(cat.notes!, style: TextStyle(fontSize: 10, color: textSecondary, fontStyle: FontStyle.italic)),
+                                ],
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.edit_outlined, size: 16, color: primaryAccent),
+                            tooltip: 'संपादित करें',
+                            visualDensity: VisualDensity.compact,
+                            onPressed: () => _showEditBudgetCategoryDialog(event, cat),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, size: 16, color: Colors.red),
+                            tooltip: 'हटाएं',
+                            visualDensity: VisualDensity.compact,
+                            onPressed: () async {
+                              await ref.read(eventsRepositoryProvider).deleteBudgetCategory(cat.id);
+                              _triggerRefresh();
+                            },
+                          ),
+                        ],
+                      ),
+                    )),
             ],
           ),
         ),
@@ -1024,17 +1294,27 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                     const Icon(Icons.notes, color: Colors.amber, size: 20),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(n.title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: textPrimary)),
-                          const SizedBox(height: 3),
-                          Text(n.content, style: TextStyle(fontSize: 12, color: textSecondary)),
-                        ],
+                      child: InkWell(
+                        onTap: () => _showEditNoteDialog(event, n),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(n.title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: textPrimary)),
+                            const SizedBox(height: 3),
+                            Text(n.content, style: TextStyle(fontSize: 12, color: textSecondary)),
+                          ],
+                        ),
                       ),
                     ),
                     IconButton(
+                      icon: Icon(Icons.edit_outlined, size: 16, color: primaryAccent),
+                      tooltip: 'संपादित करें',
+                      onPressed: () => _showEditNoteDialog(event, n),
+                    ),
+                    IconButton(
                       icon: const Icon(Icons.close, size: 16, color: Colors.grey),
+                      tooltip: 'हटाएं',
                       onPressed: () async {
                         await ref.read(eventsRepositoryProvider).deleteNote(n.id);
                         _triggerRefresh();
@@ -1327,106 +1607,865 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
     );
   }
 
-  void _showEditEventDialog(Event event) {
+  void _showEditEventDialog(Event event) => _showFullEditEventDialog(event);
+
+  void _showFullEditEventDialog(Event event) {
     final titleCtrl = TextEditingController(text: event.title);
     final venueCtrl = TextEditingController(text: event.venue ?? '');
+    final villageCityCtrl = TextEditingController(text: event.villageCity ?? '');
+    final budgetCtrl = TextEditingController(
+      text: event.budgetEstimatedPaise != null && event.budgetEstimatedPaise! > 0
+          ? (event.budgetEstimatedPaise! / 100).round().toString()
+          : '',
+    );
     final notesCtrl = TextEditingController(text: event.notes ?? '');
     final customCtrl = TextEditingController(text: event.category ?? '');
     EventType selType = event.eventType;
     EventStatus selStatus = event.status;
+    String selDate = event.eventDate;
+    String? selEndDate = event.endDate;
+    bool isAllDay = event.isAllDay;
+    TimeOfDay? selStartTime = event.startTime != null && event.startTime!.contains(':')
+        ? TimeOfDay(
+            hour: int.tryParse(event.startTime!.split(':')[0]) ?? 0,
+            minute: int.tryParse(event.startTime!.split(':')[1]) ?? 0,
+          )
+        : null;
+    TimeOfDay? selEndTime = event.endTime != null && event.endTime!.contains(':')
+        ? TimeOfDay(
+            hour: int.tryParse(event.endTime!.split(':')[0]) ?? 0,
+            minute: int.tryParse(event.endTime!.split(':')[1]) ?? 0,
+          )
+        : null;
+
     final l10n = context.l10n;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDlgState) => AlertDialog(
-          title: Text(l10n.editEvent),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(controller: titleCtrl, decoration: InputDecoration(labelText: '${l10n.eventName} *')),
-                const SizedBox(height: 10),
-                DropdownButtonFormField<EventType>(
-                  value: selType,
-                  items: [
-                    EventType.shaadi,
-                    EventType.sagai,
-                    EventType.tilak,
-                    EventType.baraat,
-                    EventType.haldi,
-                    EventType.mehndi,
-                    EventType.reception,
-                    EventType.grihaPravesh,
-                    EventType.namkaran,
-                    EventType.mundan,
-                    EventType.janeu,
-                    EventType.godhBharai,
-                    EventType.chhathi,
-                    EventType.birthday,
-                    EventType.anniversary,
-                    EventType.katha,
-                    EventType.religiousCeremony,
-                    EventType.festival,
-                    EventType.familyGathering,
-                    EventType.retirement,
-                    EventType.inauguration,
-                    EventType.funeral,
-                    EventType.communityEvent,
-                    EventType.other,
-                  ].map((t) => DropdownMenuItem(value: t, child: Text(l10n.eventTypeLabel(t)))).toList(),
-                  onChanged: (val) => setDlgState(() => selType = val ?? EventType.shaadi),
-                  decoration: InputDecoration(labelText: l10n.eventType),
+          title: Row(
+            children: [
+              const Icon(Icons.edit_note, color: AppColors.terracotta, size: 24),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'कार्यक्रम पूर्ण विवरण संपादित करें',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-                if (selType == EventType.other) ...[
-                  const SizedBox(height: 10),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: 480,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title
                   TextField(
-                    controller: customCtrl,
+                    controller: titleCtrl,
                     decoration: InputDecoration(
-                      labelText: l10n.customCeremony,
-                      hintText: l10n.customCeremonyHint,
+                      labelText: '${l10n.eventName} *',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Event Type
+                  DropdownButtonFormField<EventType>(
+                    value: selType,
+                    items: [
+                      EventType.shaadi,
+                      EventType.sagai,
+                      EventType.tilak,
+                      EventType.baraat,
+                      EventType.haldi,
+                      EventType.mehndi,
+                      EventType.reception,
+                      EventType.grihaPravesh,
+                      EventType.namkaran,
+                      EventType.mundan,
+                      EventType.janeu,
+                      EventType.godhBharai,
+                      EventType.chhathi,
+                      EventType.birthday,
+                      EventType.anniversary,
+                      EventType.katha,
+                      EventType.religiousCeremony,
+                      EventType.festival,
+                      EventType.familyGathering,
+                      EventType.retirement,
+                      EventType.inauguration,
+                      EventType.funeral,
+                      EventType.communityEvent,
+                      EventType.other,
+                    ].map((t) => DropdownMenuItem(value: t, child: Text(l10n.eventTypeLabel(t)))).toList(),
+                    onChanged: (val) => setDlgState(() => selType = val ?? EventType.shaadi),
+                    decoration: InputDecoration(
+                      labelText: l10n.eventType,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  if (selType == EventType.other) ...[
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: customCtrl,
+                      decoration: InputDecoration(
+                        labelText: l10n.customCeremony,
+                        hintText: l10n.customCeremonyHint,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+
+                  // Date Picker (Primary Event Date)
+                  const Text('कार्यक्रम दिनांक (Event Date) *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 5),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.tryParse(selDate) ?? DateTime.now(),
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2100),
+                      );
+                      if (picked != null) {
+                        setDlgState(() => selDate = picked.toIso8601String().split('T').first);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade400),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(selDate, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                          const Icon(Icons.calendar_month, color: AppColors.terracotta, size: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // End Date (Optional)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('समाप्ति दिनांक (वैकल्पिक)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      if (selEndDate != null)
+                        InkWell(
+                          onTap: () => setDlgState(() => selEndDate = null),
+                          child: const Text('हटाएं', style: TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold)),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 5),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.tryParse(selEndDate ?? selDate) ?? DateTime.now(),
+                        firstDate: DateTime.tryParse(selDate) ?? DateTime(2000),
+                        lastDate: DateTime(2100),
+                      );
+                      if (picked != null) {
+                        setDlgState(() => selEndDate = picked.toIso8601String().split('T').first);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade400),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            selEndDate ?? 'समाप्ति दिनांक चुनें (यदि बहु-दिवसीय है)',
+                            style: TextStyle(fontSize: 13, color: selEndDate != null ? null : Colors.grey),
+                          ),
+                          const Icon(Icons.date_range, color: Colors.grey, size: 18),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // All Day Switch
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('पूरा दिन (All-Day Event)', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
+                    value: isAllDay,
+                    onChanged: (val) => setDlgState(() => isAllDay = val),
+                  ),
+
+                  // Times (if not all day)
+                  if (!isAllDay) ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: () async {
+                              final picked = await showTimePicker(
+                                context: context,
+                                initialTime: selStartTime ?? const TimeOfDay(hour: 10, minute: 0),
+                              );
+                              if (picked != null) {
+                                setDlgState(() => selStartTime = picked);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade400),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    selStartTime != null ? selStartTime!.format(context) : 'प्रारंभ समय',
+                                    style: TextStyle(fontSize: 12, color: selStartTime != null ? null : Colors.grey),
+                                  ),
+                                  const Icon(Icons.access_time, size: 16),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () async {
+                              final picked = await showTimePicker(
+                                context: context,
+                                initialTime: selEndTime ?? const TimeOfDay(hour: 22, minute: 0),
+                              );
+                              if (picked != null) {
+                                setDlgState(() => selEndTime = picked);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade400),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    selEndTime != null ? selEndTime!.format(context) : 'समाप्ति समय',
+                                    style: TextStyle(fontSize: 12, color: selEndTime != null ? null : Colors.grey),
+                                  ),
+                                  const Icon(Icons.access_time_filled, size: 16),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+
+                  // Status
+                  DropdownButtonFormField<EventStatus>(
+                    value: selStatus,
+                    items: EventStatus.values.map((s) => DropdownMenuItem(value: s, child: Text(s.labelHindi))).toList(),
+                    onChanged: (val) => setDlgState(() => selStatus = val ?? EventStatus.planned),
+                    decoration: InputDecoration(
+                      labelText: 'कार्यक्रम स्थिति (Status)',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Venue & Village/City
+                  TextField(
+                    controller: venueCtrl,
+                    decoration: InputDecoration(
+                      labelText: l10n.eventLocation,
+                      hintText: 'उदा. शुभ विवाह भवन / होटल राजमहल',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: villageCityCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'गाँव / शहर / कस्बा',
+                      hintText: 'उदा. जयपुर / वाराणसी / बदायूँ',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Estimated Budget
+                  TextField(
+                    controller: budgetCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'अनुमानित बजट राशि (Budget Estimate)',
+                      prefixText: '₹ ',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Notes
+                  TextField(
+                    controller: notesCtrl,
+                    maxLines: 2,
+                    decoration: InputDecoration(
+                      labelText: l10n.notes,
+                      hintText: 'अतिरिक्त विवरण या महत्वपूर्ण निर्देश...',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
                 ],
-                const SizedBox(height: 10),
-                DropdownButtonFormField<EventStatus>(
-                  value: selStatus,
-                  items: EventStatus.values.map((s) => DropdownMenuItem(value: s, child: Text(s.labelHindi))).toList(),
-                  onChanged: (val) => setDlgState(() => selStatus = val ?? EventStatus.planned),
-                  decoration: const InputDecoration(labelText: 'स्थिति (Status)'),
-                ),
-                const SizedBox(height: 10),
-                TextField(controller: venueCtrl, decoration: InputDecoration(labelText: l10n.eventLocation)),
-                const SizedBox(height: 10),
-                TextField(controller: notesCtrl, decoration: InputDecoration(labelText: l10n.notes)),
-              ],
+              ),
             ),
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.cancel)),
             ElevatedButton(
               onPressed: () async {
+                final title = titleCtrl.text.trim();
+                if (title.isEmpty) return;
                 final customCat = customCtrl.text.trim();
+                final budgetPaise = (int.tryParse(budgetCtrl.text.trim()) ?? 0) * 100;
+                final startTimeStr = selStartTime != null
+                    ? '${selStartTime!.hour.toString().padLeft(2, '0')}:${selStartTime!.minute.toString().padLeft(2, '0')}'
+                    : null;
+                final endTimeStr = selEndTime != null
+                    ? '${selEndTime!.hour.toString().padLeft(2, '0')}:${selEndTime!.minute.toString().padLeft(2, '0')}'
+                    : null;
+
                 final updated = event.copyWith(
-                  title: titleCtrl.text.trim(),
+                  title: title,
                   eventType: selType,
                   category: selType == EventType.other && customCat.isNotEmpty ? customCat : null,
+                  eventDate: selDate,
+                  endDate: selEndDate != null && selEndDate!.isNotEmpty ? selEndDate : null,
+                  startTime: startTimeStr,
+                  endTime: endTimeStr,
+                  isAllDay: isAllDay,
                   status: selStatus,
                   venue: venueCtrl.text.trim().isNotEmpty ? venueCtrl.text.trim() : null,
+                  villageCity: villageCityCtrl.text.trim().isNotEmpty ? villageCityCtrl.text.trim() : null,
+                  budgetEstimatedPaise: budgetPaise > 0 ? budgetPaise : null,
                   notes: notesCtrl.text.trim().isNotEmpty ? notesCtrl.text.trim() : null,
                   updatedAt: DateTime.now(),
                 );
+
                 await ref.read(eventsRepositoryProvider).updateEvent(updated);
                 if (selType == EventType.other && customCat.isNotEmpty) {
                   await ref.read(settingsRepositoryProvider).addCustomEventType(customCat);
                 }
                 Navigator.pop(ctx);
                 _triggerRefresh();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('कार्यक्रम पूर्ण विवरण सफलतापूर्वक अपडेट हुआ')),
+                  );
+                }
               },
               child: Text(l10n.save),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showEditFunctionDialog(Event event, EventFunction fn) {
+    final fnCtrl = TextEditingController(text: fn.title);
+    final venueCtrl = TextEditingController(text: fn.venue ?? '');
+    final descCtrl = TextEditingController(text: fn.description ?? '');
+    String selDate = fn.functionDate;
+    TimeOfDay? selStartTime = fn.startTime != null && fn.startTime!.contains(':')
+        ? TimeOfDay(
+            hour: int.tryParse(fn.startTime!.split(':')[0]) ?? 0,
+            minute: int.tryParse(fn.startTime!.split(':')[1]) ?? 0,
+          )
+        : null;
+    EventStatus selStatus = fn.status;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDlgState) => AlertDialog(
+          title: const Text('रस्म / उप-कार्यक्रम संपादित करें', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: fnCtrl,
+                  decoration: const InputDecoration(labelText: 'रस्म का नाम * (उदा. हल्दी, मेहंदी)'),
+                ),
+                const SizedBox(height: 12),
+                const Text('दिनांक (Date) *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                const SizedBox(height: 4),
+                InkWell(
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.tryParse(selDate) ?? DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) {
+                      setDlgState(() => selDate = picked.toIso8601String().split('T').first);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade400),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(selDate, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        const Icon(Icons.calendar_month, size: 18),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text('समय (Time)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                const SizedBox(height: 4),
+                InkWell(
+                  onTap: () async {
+                    final picked = await showTimePicker(
+                      context: context,
+                      initialTime: selStartTime ?? TimeOfDay.now(),
+                    );
+                    if (picked != null) {
+                      setDlgState(() => selStartTime = picked);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade400),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          selStartTime != null ? selStartTime!.format(context) : 'समय चुनें (वैकल्पिक)',
+                          style: TextStyle(color: selStartTime != null ? null : Colors.grey),
+                        ),
+                        const Icon(Icons.access_time, size: 18),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(controller: venueCtrl, decoration: const InputDecoration(labelText: 'स्थल (Venue)')),
+                const SizedBox(height: 12),
+                TextField(controller: descCtrl, decoration: const InputDecoration(labelText: 'विवरण / निर्देश (वैकल्पिक)')),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<EventStatus>(
+                  value: selStatus,
+                  items: [
+                    EventStatus.planned,
+                    EventStatus.inProgress,
+                    EventStatus.completed,
+                    EventStatus.cancelled,
+                  ].map((s) => DropdownMenuItem(value: s, child: Text(s.labelHindi))).toList(),
+                  onChanged: (val) => setDlgState(() => selStatus = val ?? EventStatus.planned),
+                  decoration: const InputDecoration(labelText: 'स्थिति'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('रद्द करें')),
+            ElevatedButton(
+              onPressed: () async {
+                final title = fnCtrl.text.trim();
+                if (title.isEmpty) return;
+                final startTimeStr = selStartTime != null
+                    ? '${selStartTime!.hour.toString().padLeft(2, '0')}:${selStartTime!.minute.toString().padLeft(2, '0')}'
+                    : null;
+                final updated = fn.copyWith(
+                  title: title,
+                  functionDate: selDate,
+                  startTime: startTimeStr,
+                  venue: venueCtrl.text.trim().isNotEmpty ? venueCtrl.text.trim() : null,
+                  description: descCtrl.text.trim().isNotEmpty ? descCtrl.text.trim() : null,
+                  status: selStatus,
+                  updatedAt: DateTime.now(),
+                );
+                await ref.read(eventsRepositoryProvider).updateFunction(updated);
+                Navigator.pop(ctx);
+                _triggerRefresh();
+              },
+              child: const Text('सहेजें'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showEditTaskDialog(Event event, EventTask task) {
+    final tCtrl = TextEditingController(text: task.title);
+    final descCtrl = TextEditingController(text: task.description ?? '');
+    final personCtrl = TextEditingController(text: task.assignedPersonName ?? '');
+    String? dueDate = task.dueDate;
+    EventPriority selPriority = task.priority;
+    TaskStatus selStatus = task.status;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDlgState) => AlertDialog(
+          title: const Text('कार्य संपादित करें', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(controller: tCtrl, decoration: const InputDecoration(labelText: 'कार्य शीर्षक *')),
+                const SizedBox(height: 10),
+                TextField(controller: personCtrl, decoration: const InputDecoration(labelText: 'जिम्मेदार व्यक्ति')),
+                const SizedBox(height: 10),
+                const Text('अंतिम तिथि (Due Date)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                const SizedBox(height: 4),
+                InkWell(
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.tryParse(dueDate ?? event.eventDate) ?? DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) {
+                      setDlgState(() => dueDate = picked.toIso8601String().split('T').first);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade400),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(dueDate ?? 'तारीख चुनें', style: TextStyle(fontWeight: FontWeight.w600, color: dueDate != null ? null : Colors.grey)),
+                        const Icon(Icons.calendar_month, size: 18),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<EventPriority>(
+                  value: selPriority,
+                  items: EventPriority.values.map((p) => DropdownMenuItem(value: p, child: Text(p.labelHindi))).toList(),
+                  onChanged: (val) => setDlgState(() => selPriority = val ?? EventPriority.normal),
+                  decoration: const InputDecoration(labelText: 'प्राथमिकता (Priority)'),
+                ),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<TaskStatus>(
+                  value: selStatus,
+                  items: TaskStatus.values.map((s) => DropdownMenuItem(value: s, child: Text(s.labelHindi))).toList(),
+                  onChanged: (val) => setDlgState(() => selStatus = val ?? TaskStatus.pending),
+                  decoration: const InputDecoration(labelText: 'स्थिति (Status)'),
+                ),
+                const SizedBox(height: 10),
+                TextField(controller: descCtrl, maxLines: 2, decoration: const InputDecoration(labelText: 'विवरण / निर्देश')),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('रद्द करें')),
+            ElevatedButton(
+              onPressed: () async {
+                if (tCtrl.text.trim().isEmpty) return;
+                final updated = task.copyWith(
+                  title: tCtrl.text.trim(),
+                  assignedPersonName: personCtrl.text.trim().isNotEmpty ? personCtrl.text.trim() : null,
+                  dueDate: dueDate,
+                  priority: selPriority,
+                  status: selStatus,
+                  description: descCtrl.text.trim().isNotEmpty ? descCtrl.text.trim() : null,
+                  completedAt: selStatus == TaskStatus.completed ? (task.completedAt ?? DateTime.now()) : null,
+                );
+                await ref.read(eventsRepositoryProvider).updateTask(updated);
+                Navigator.pop(ctx);
+                _triggerRefresh();
+              },
+              child: const Text('सहेजें'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showEditGuestDialog(Event event, EventGuest guest) {
+    final nameCtrl = TextEditingController(text: guest.name);
+    final phoneCtrl = TextEditingController(text: guest.phoneNumber ?? '');
+    final familyCtrl = TextEditingController(text: guest.familyOrGroup ?? '');
+    final countCtrl = TextEditingController(text: guest.accompanyingCount.toString());
+    final notesCtrl = TextEditingController(text: guest.notes ?? '');
+    InvitationStatus selInv = guest.invitationStatus;
+    AttendanceStatus selAtt = guest.attendanceStatus;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDlgState) => AlertDialog(
+          title: const Text('अतिथि विवरण संपादित करें', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'नाम *')),
+                const SizedBox(height: 10),
+                TextField(controller: phoneCtrl, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'फ़ोन नंबर')),
+                const SizedBox(height: 10),
+                TextField(controller: familyCtrl, decoration: const InputDecoration(labelText: 'परिवार / समूह')),
+                const SizedBox(height: 10),
+                TextField(controller: countCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'साथ में आने वाले सदस्य संख्या')),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<InvitationStatus>(
+                  value: selInv,
+                  items: InvitationStatus.values.map((s) => DropdownMenuItem(value: s, child: Text(s.labelHindi))).toList(),
+                  onChanged: (val) => setDlgState(() => selInv = val ?? InvitationStatus.notSent),
+                  decoration: const InputDecoration(labelText: 'निमंत्रण स्थिति'),
+                ),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<AttendanceStatus>(
+                  value: selAtt,
+                  items: AttendanceStatus.values.map((s) => DropdownMenuItem(value: s, child: Text(s.labelHindi))).toList(),
+                  onChanged: (val) => setDlgState(() => selAtt = val ?? AttendanceStatus.notConfirmed),
+                  decoration: const InputDecoration(labelText: 'उपस्थिति स्थिति'),
+                ),
+                const SizedBox(height: 10),
+                TextField(controller: notesCtrl, decoration: const InputDecoration(labelText: 'टिप्पणी')),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('रद्द करें')),
+            ElevatedButton(
+              onPressed: () async {
+                if (nameCtrl.text.trim().isEmpty) return;
+                final updated = guest.copyWith(
+                  name: nameCtrl.text.trim(),
+                  phoneNumber: phoneCtrl.text.trim().isNotEmpty ? phoneCtrl.text.trim() : null,
+                  familyOrGroup: familyCtrl.text.trim().isNotEmpty ? familyCtrl.text.trim() : null,
+                  accompanyingCount: int.tryParse(countCtrl.text.trim()) ?? 0,
+                  invitationStatus: selInv,
+                  attendanceStatus: selAtt,
+                  notes: notesCtrl.text.trim().isNotEmpty ? notesCtrl.text.trim() : null,
+                );
+                await ref.read(eventsRepositoryProvider).updateGuest(updated);
+                Navigator.pop(ctx);
+                _triggerRefresh();
+              },
+              child: const Text('सहेजें'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showEditParticipantDialog(Event event, EventParticipant p) {
+    final nameCtrl = TextEditingController(text: p.name);
+    final phoneCtrl = TextEditingController(text: p.phone ?? '');
+    final notesCtrl = TextEditingController(text: p.notes ?? '');
+    ParticipantRole selRole = p.role;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDlgState) => AlertDialog(
+          title: const Text('व्यक्ति व भूमिका संपादित करें', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'नाम *')),
+              const SizedBox(height: 10),
+              DropdownButtonFormField<ParticipantRole>(
+                value: selRole,
+                items: ParticipantRole.values.map((r) => DropdownMenuItem(value: r, child: Text(r.labelHindi))).toList(),
+                onChanged: (val) => setDlgState(() => selRole = val ?? ParticipantRole.other),
+                decoration: const InputDecoration(labelText: 'भूमिका (Role)'),
+              ),
+              const SizedBox(height: 10),
+              TextField(controller: phoneCtrl, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'फ़ोन नंबर')),
+              const SizedBox(height: 10),
+              TextField(controller: notesCtrl, decoration: const InputDecoration(labelText: 'नोट्स')),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('रद्द करें')),
+            ElevatedButton(
+              onPressed: () async {
+                if (nameCtrl.text.trim().isEmpty) return;
+                final updated = p.copyWith(
+                  name: nameCtrl.text.trim(),
+                  role: selRole,
+                  phone: phoneCtrl.text.trim().isNotEmpty ? phoneCtrl.text.trim() : null,
+                  notes: notesCtrl.text.trim().isNotEmpty ? notesCtrl.text.trim() : null,
+                );
+                await ref.read(eventsRepositoryProvider).updateParticipant(updated);
+                Navigator.pop(ctx);
+                _triggerRefresh();
+              },
+              child: const Text('सहेजें'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAddBudgetCategoryDialog(Event event) {
+    final nameCtrl = TextEditingController();
+    final estCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('नई बजट श्रेणी जोड़ें', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'श्रेणी नाम * (उदा. खान-पान, मंडप, उपहार)')),
+            const SizedBox(height: 10),
+            TextField(controller: estCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'अनुमानित बजट राशि (₹)')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('रद्द करें')),
+          ElevatedButton(
+            onPressed: () async {
+              if (nameCtrl.text.trim().isNotEmpty) {
+                final estPaise = (int.tryParse(estCtrl.text.trim()) ?? 0) * 100;
+                await ref.read(eventsRepositoryProvider).addBudgetCategory(
+                      EventBudgetCategory(
+                        id: const Uuid().v4(),
+                        eventId: event.id,
+                        categoryName: nameCtrl.text.trim(),
+                        estimatedAmountPaise: estPaise,
+                        createdAt: DateTime.now(),
+                      ),
+                    );
+                Navigator.pop(ctx);
+                _triggerRefresh();
+              }
+            },
+            child: const Text('जोड़ें'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditBudgetCategoryDialog(Event event, EventBudgetCategory cat) {
+    final nameCtrl = TextEditingController(text: cat.categoryName);
+    final estCtrl = TextEditingController(
+      text: cat.estimatedAmountPaise > 0 ? (cat.estimatedAmountPaise / 100).round().toString() : '',
+    );
+    final actCtrl = TextEditingController(
+      text: cat.actualAmountPaise > 0 ? (cat.actualAmountPaise / 100).round().toString() : '',
+    );
+    final notesCtrl = TextEditingController(text: cat.notes ?? '');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('बजट श्रेणी संपादित करें', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'श्रेणी नाम *')),
+            const SizedBox(height: 10),
+            TextField(controller: estCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'अनुमानित राशि (₹)')),
+            const SizedBox(height: 10),
+            TextField(controller: actCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'वास्तविक खर्च (₹)')),
+            const SizedBox(height: 10),
+            TextField(controller: notesCtrl, decoration: const InputDecoration(labelText: 'नोट्स')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('रद्द करें')),
+          ElevatedButton(
+            onPressed: () async {
+              if (nameCtrl.text.trim().isEmpty) return;
+              final estPaise = (int.tryParse(estCtrl.text.trim()) ?? 0) * 100;
+              final actPaise = (int.tryParse(actCtrl.text.trim()) ?? 0) * 100;
+              final updated = cat.copyWith(
+                categoryName: nameCtrl.text.trim(),
+                estimatedAmountPaise: estPaise,
+                actualAmountPaise: actPaise,
+                notes: notesCtrl.text.trim().isNotEmpty ? notesCtrl.text.trim() : null,
+              );
+              await ref.read(eventsRepositoryProvider).updateBudgetCategory(updated);
+              Navigator.pop(ctx);
+              _triggerRefresh();
+            },
+            child: const Text('सहेजें'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditNoteDialog(Event event, EventNote note) {
+    final titleCtrl = TextEditingController(text: note.title);
+    final bodyCtrl = TextEditingController(text: note.content);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('नोट संपादित करें', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'शीर्षक *')),
+            const SizedBox(height: 10),
+            TextField(controller: bodyCtrl, maxLines: 4, decoration: const InputDecoration(labelText: 'सामग्री व निर्देश *')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('रद्द करें')),
+          ElevatedButton(
+            onPressed: () async {
+              if (titleCtrl.text.trim().isNotEmpty && bodyCtrl.text.trim().isNotEmpty) {
+                final updated = note.copyWith(
+                  title: titleCtrl.text.trim(),
+                  content: bodyCtrl.text.trim(),
+                  updatedAt: DateTime.now(),
+                );
+                await ref.read(eventsRepositoryProvider).updateNote(updated);
+                Navigator.pop(ctx);
+                _triggerRefresh();
+              }
+            },
+            child: const Text('सहेजें'),
+          ),
+        ],
       ),
     );
   }

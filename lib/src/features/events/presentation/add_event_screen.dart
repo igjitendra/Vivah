@@ -607,6 +607,98 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
     );
   }
 
+  void _showEditSubEventDialog(int idx, AppLocalizations l10n) {
+    if (idx < 0 || idx >= _subEvents.length) return;
+    final item = _subEvents[idx];
+    final titleController = TextEditingController(text: item.title);
+    String subDate = item.date;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          final theme = Theme.of(ctx);
+          final textPrimary = theme.colorScheme.onSurface;
+          final primaryAccent = theme.colorScheme.primary;
+
+          return AlertDialog(
+            title: const Text('उप-कार्यक्रम / रस्म संपादित करें', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('रस्म का नाम', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: titleController,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(
+                    hintText: 'उदा. महिला संगीत, भात / मायरा',
+                    filled: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text('रस्म की तारीख', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary)),
+                const SizedBox(height: 6),
+                InkWell(
+                  onTap: () async {
+                    final initialDate = DateTime.tryParse(subDate) ?? DateTime.now();
+                    final picked = await showDatePicker(
+                      context: ctx,
+                      initialDate: initialDate,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) {
+                      setDialogState(() {
+                        subDate = AppDateUtils.toIsoDateString(picked);
+                      });
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Theme.of(ctx).brightness == Brightness.dark ? const Color(0xFF161A24) : const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          AppDateUtils.formatIsoDate(subDate, l10n.locale.languageCode),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary),
+                        ),
+                        Icon(Icons.calendar_month_outlined, size: 18, color: primaryAccent),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.cancel)),
+              ElevatedButton(
+                onPressed: () {
+                  final text = titleController.text.trim();
+                  if (text.isEmpty) return;
+                  setState(() {
+                    item.title = text;
+                    item.date = subDate;
+                  });
+                  Navigator.pop(ctx);
+                },
+                child: const Text('सहेजें', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
@@ -1188,15 +1280,19 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
                                 Icon(Icons.stars_rounded, size: 16, color: primaryAccent),
                                 const SizedBox(width: 8),
                                 Expanded(
-                                  child: Text(
-                                    sub.title,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13.5,
-                                      color: textPrimary,
+                                  child: InkWell(
+                                    onTap: () => _showEditSubEventDialog(idx, l10n),
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Text(
+                                      sub.title,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13.5,
+                                        color: textPrimary,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -1244,6 +1340,14 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
                                 ),
 
                                 const SizedBox(width: 4),
+                                IconButton(
+                                  icon: Icon(Icons.edit_outlined, size: 16, color: primaryAccent),
+                                  visualDensity: VisualDensity.compact,
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                                  tooltip: 'संपादित करें',
+                                  onPressed: () => _showEditSubEventDialog(idx, l10n),
+                                ),
                                 IconButton(
                                   icon: const Icon(Icons.close, size: 16, color: Colors.red),
                                   visualDensity: VisualDensity.compact,

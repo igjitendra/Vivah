@@ -46,7 +46,7 @@ class AppLocalizations {
   String get optionalField => isEnglish ? 'Optional' : (isUrdu ? 'اختیاری' : 'ऐच्छिक');
 
   // App Identity
-  String get appName => isEnglish ? 'Vyavahaar' : (isUrdu ? 'ویوہار' : 'व्यवहार');
+  String get appName => 'Vyavahaar';
   String get appTagline => isEnglish
       ? 'Remembering family relations, forever.'
       : (isUrdu ? 'رشتوں کا حساب، ہمیشہ یاد۔' : 'रिश्तों का हिसाब, हमेशा याद।');

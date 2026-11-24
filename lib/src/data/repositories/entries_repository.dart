@@ -88,13 +88,13 @@ class DriftEntriesRepository implements EntriesRepository {
     yield await getDashboardSummary();
 
     final controller = StreamController<void>.broadcast();
-    final s1 = _db.select(_db.entries).watch().listen((_) {
+    final s1 = (_db.selectOnly(_db.entries)..addColumns([_db.entries.id.count()])).watch().listen((_) {
       if (!controller.isClosed) controller.add(null);
     });
-    final s2 = _db.select(_db.people).watch().listen((_) {
+    final s2 = (_db.selectOnly(_db.people)..addColumns([_db.people.id.count()])).watch().listen((_) {
       if (!controller.isClosed) controller.add(null);
     });
-    final s3 = _db.select(_db.events).watch().listen((_) {
+    final s3 = (_db.selectOnly(_db.events)..addColumns([_db.events.id.count()])).watch().listen((_) {
       if (!controller.isClosed) controller.add(null);
     });
 
@@ -131,13 +131,32 @@ class DriftEntriesRepository implements EntriesRepository {
           endDate: endDate,
         )
         .asyncMap((rows) async {
+          if (rows.isEmpty) return <TransactionEntry>[];
+
+          final personIds = rows.map((r) => r.personId).toSet().toList();
+          final eventIds = rows.map((r) => r.eventId).whereType<String>().toSet().toList();
+          final entryIds = rows.map((r) => r.id).toList();
+
+          final futures = await Future.wait([
+            (_db.select(_db.people)..where((t) => t.id.isIn(personIds))).get(),
+            eventIds.isNotEmpty
+                ? (_db.select(_db.events)..where((t) => t.id.isIn(eventIds))).get()
+                : Future.value(<EventRow>[]),
+            (_db.select(_db.entryItems)..where((t) => t.entryId.isIn(entryIds))).get(),
+          ]);
+
+          final peopleMap = {for (final p in (futures[0] as List<PersonRow>)) p.id: p};
+          final eventsMap = {for (final e in (futures[1] as List<EventRow>)) e.id: e};
+          final itemsMap = <String, List<EntryItemRow>>{};
+          for (final item in (futures[2] as List<EntryItemRow>)) {
+            itemsMap.putIfAbsent(item.entryId, () => []).add(item);
+          }
+
           final results = <TransactionEntry>[];
           for (final row in rows) {
-            final items = await _db.entryItemsDao.getItemsForEntry(row.id);
-            final person = await _db.peopleDao.getPersonById(row.personId);
-            final event = row.eventId != null
-                ? await _db.eventsDao.getEventById(row.eventId!)
-                : null;
+            final items = itemsMap[row.id] ?? const [];
+            final person = peopleMap[row.personId];
+            final event = row.eventId != null ? eventsMap[row.eventId] : null;
 
             results.add(_mapToEntity(row, items, person, event));
           }

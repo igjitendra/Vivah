@@ -832,10 +832,9 @@ class _TransactionCard extends StatelessWidget {
       borderWidth: isSelected ? 2.0 : 1.0,
       elevation: isSelected ? 2 : 0,
       onTap: onTap,
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
             // Direction Indicator Icon
             Container(
               width: 38,
@@ -968,7 +967,6 @@ class _TransactionCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 }

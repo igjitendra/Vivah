@@ -72,63 +72,42 @@ class DriftEventsRepository implements EventsRepository {
     return list;
   }
 
+  Future<List<Event>> _hydrateEventsBatch(List<EventRow> rows) async {
+    if (rows.isEmpty) return const [];
+    return Future.wait(rows.map((r) async {
+      final ext = await _db.eventsDao.getExtendedColumns(r.id);
+      return _mapToEntity(r, extended: ext);
+    }));
+  }
+
   @override
   Stream<List<Event>> watchActiveEvents() {
-    return _db.eventsDao.watchActiveEvents().asyncMap((rows) async {
-      final list = <Event>[];
-      for (final r in rows) {
-        final ext = await _db.eventsDao.getExtendedColumns(r.id);
-        list.add(_mapToEntity(r, extended: ext));
-      }
-      return list;
-    });
+    return _db.eventsDao.watchActiveEvents().asyncMap(_hydrateEventsBatch);
   }
 
   @override
   Stream<List<Event>> watchArchivedEvents() {
-    return _db.eventsDao.watchArchivedEvents().asyncMap((rows) async {
-      final list = <Event>[];
-      for (final r in rows) {
-        final ext = await _db.eventsDao.getExtendedColumns(r.id);
-        list.add(_mapToEntity(r, extended: ext));
-      }
-      return list;
-    });
+    return _db.eventsDao.watchArchivedEvents().asyncMap(_hydrateEventsBatch);
   }
 
   @override
   Future<List<Event>> getUpcomingEvents() async {
     final today = DateTime.now().toIso8601String().substring(0, 10);
     final rows = await _db.eventsDao.getUpcomingEvents(today);
-    final list = <Event>[];
-    for (final r in rows) {
-      final ext = await _db.eventsDao.getExtendedColumns(r.id);
-      list.add(_mapToEntity(r, extended: ext));
-    }
-    return list;
+    return _hydrateEventsBatch(rows);
   }
 
   @override
   Future<List<Event>> getPastEvents() async {
     final today = DateTime.now().toIso8601String().substring(0, 10);
     final rows = await _db.eventsDao.getPastEvents(today);
-    final list = <Event>[];
-    for (final r in rows) {
-      final ext = await _db.eventsDao.getExtendedColumns(r.id);
-      list.add(_mapToEntity(r, extended: ext));
-    }
-    return list;
+    return _hydrateEventsBatch(rows);
   }
 
   @override
   Future<List<Event>> searchEvents(String query) async {
     final rows = await _db.eventsDao.searchEvents(query);
-    final list = <Event>[];
-    for (final r in rows) {
-      final ext = await _db.eventsDao.getExtendedColumns(r.id);
-      list.add(_mapToEntity(r, extended: ext));
-    }
-    return list;
+    return _hydrateEventsBatch(rows);
   }
 
   @override
@@ -136,39 +115,39 @@ class DriftEventsRepository implements EventsRepository {
     final row = await _db.eventsDao.getEventById(id);
     if (row == null) return null;
 
-    final received = await _db.entriesDao.getEventReceivedTotal(id);
-    final given = await _db.entriesDao.getEventGivenTotal(id);
-    final count = await _db.eventsDao.countEntriesForEvent(id);
-    final ext = await _db.eventsDao.getExtendedColumns(id);
-
-    // Fetch all sub-entities
-    final functions = await _db.eventsDao.getFunctionsForEvent(id);
-    final participants = await _db.eventsDao.getParticipantsForEvent(id);
-    final guests = await _db.eventsDao.getGuestsForEvent(id);
-    final tasks = await _db.eventsDao.getTasksForEvent(id);
-    final schedule = await _db.eventsDao.getScheduleForEvent(id);
-    final budgetCategories = await _db.eventsDao.getBudgetCategoriesForEvent(id);
-    final notes = await _db.eventsDao.getNotesForEvent(id);
-    final attachments = await _db.eventsDao.getAttachmentsForEvent(id);
-    final activityLogs = await _db.eventsDao.getActivityLogsForEvent(id);
-    final reminders = await _db.eventsDao.getRemindersForEvent(id);
+    final results = await Future.wait([
+      _db.entriesDao.getEventReceivedTotal(id),
+      _db.entriesDao.getEventGivenTotal(id),
+      _db.eventsDao.countEntriesForEvent(id),
+      _db.eventsDao.getExtendedColumns(id),
+      _db.eventsDao.getFunctionsForEvent(id),
+      _db.eventsDao.getParticipantsForEvent(id),
+      _db.eventsDao.getGuestsForEvent(id),
+      _db.eventsDao.getTasksForEvent(id),
+      _db.eventsDao.getScheduleForEvent(id),
+      _db.eventsDao.getBudgetCategoriesForEvent(id),
+      _db.eventsDao.getNotesForEvent(id),
+      _db.eventsDao.getAttachmentsForEvent(id),
+      _db.eventsDao.getActivityLogsForEvent(id),
+      _db.eventsDao.getRemindersForEvent(id),
+    ]);
 
     return _mapToEntity(
       row,
-      extended: ext,
-      totalReceived: received,
-      totalGiven: given,
-      totalCount: count,
-      functions: functions,
-      participants: participants,
-      guests: guests,
-      tasks: tasks,
-      schedule: schedule,
-      budgetCategories: budgetCategories,
-      notes: notes,
-      attachments: attachments,
-      activityLogs: activityLogs,
-      reminders: reminders,
+      totalReceived: results[0] as int,
+      totalGiven: results[1] as int,
+      totalCount: results[2] as int,
+      extended: results[3] as Map<String, dynamic>?,
+      functions: results[4] as List<EventFunction>?,
+      participants: results[5] as List<EventParticipant>?,
+      guests: results[6] as List<EventGuest>?,
+      tasks: results[7] as List<EventTask>?,
+      schedule: results[8] as List<EventScheduleItem>?,
+      budgetCategories: results[9] as List<EventBudgetCategory>?,
+      notes: results[10] as List<EventNote>?,
+      attachments: results[11] as List<EventAttachment>?,
+      activityLogs: results[12] as List<EventActivityLog>?,
+      reminders: results[13] as List<EventReminder>?,
     );
   }
 

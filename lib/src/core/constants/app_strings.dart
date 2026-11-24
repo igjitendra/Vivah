@@ -2,7 +2,7 @@
 class AppStrings {
   AppStrings._();
 
-  static const String appName = 'व्यवहार';
+  static const String appName = 'Vyavahaar';
   static const String appNameEnglish = 'Vyavahaar';
   static const String tagline = 'रिश्तों का हिसाब, हमेशा याद।';
 

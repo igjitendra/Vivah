@@ -47,68 +47,60 @@ class DriftPeopleRepository implements PeopleRepository {
 
   DriftPeopleRepository(this._db);
 
+  Future<List<Person>> _hydratePeopleBatch(List<PersonRow> rows) async {
+    if (rows.isEmpty) return const [];
+    return Future.wait(rows.map((r) async {
+      final results = await Future.wait([
+        _db.peopleDao.getExtendedColumns(r.id),
+        _db.peopleDao.getPersonSecondaryPhones(r.id),
+        _db.peopleDao.getPersonEmails(r.id),
+      ]);
+      return _mapToEntity(
+        r,
+        extended: results[0] as Map<String, dynamic>?,
+        secondaryPhones: results[1] as List<String>?,
+        emails: results[2] as List<String>?,
+      );
+    }));
+  }
+
   @override
   Future<List<Person>> getAllActivePeople() async {
     final rows = await _db.peopleDao.getAllActivePeople();
-    final list = <Person>[];
-    for (final r in rows) {
-      final ext = await _db.peopleDao.getExtendedColumns(r.id);
-      final phones = await _db.peopleDao.getPersonSecondaryPhones(r.id);
-      final emails = await _db.peopleDao.getPersonEmails(r.id);
-      list.add(_mapToEntity(r, extended: ext, secondaryPhones: phones, emails: emails));
-    }
-    return list;
+    return _hydratePeopleBatch(rows);
   }
 
   @override
   Stream<List<Person>> watchActivePeople() {
-    return _db.peopleDao.watchActivePeople().asyncMap((rows) async {
-      final list = <Person>[];
-      for (final r in rows) {
-        final ext = await _db.peopleDao.getExtendedColumns(r.id);
-        final phones = await _db.peopleDao.getPersonSecondaryPhones(r.id);
-        final emails = await _db.peopleDao.getPersonEmails(r.id);
-        list.add(_mapToEntity(r, extended: ext, secondaryPhones: phones, emails: emails));
-      }
-      return list;
-    });
+    return _db.peopleDao.watchActivePeople().asyncMap(_hydratePeopleBatch);
   }
 
   @override
   Stream<List<Person>> watchArchivedPeople() {
-    return _db.peopleDao.watchArchivedPeople().asyncMap((rows) async {
-      final list = <Person>[];
-      for (final r in rows) {
-        final ext = await _db.peopleDao.getExtendedColumns(r.id);
-        final phones = await _db.peopleDao.getPersonSecondaryPhones(r.id);
-        final emails = await _db.peopleDao.getPersonEmails(r.id);
-        list.add(_mapToEntity(r, extended: ext, secondaryPhones: phones, emails: emails));
-      }
-      return list;
-    });
+    return _db.peopleDao.watchArchivedPeople().asyncMap(_hydratePeopleBatch);
   }
 
   @override
   Future<List<Person>> searchPeople(String query) async {
     final rows = await _db.peopleDao.searchPeople(query);
-    final list = <Person>[];
-    for (final r in rows) {
-      final ext = await _db.peopleDao.getExtendedColumns(r.id);
-      final phones = await _db.peopleDao.getPersonSecondaryPhones(r.id);
-      final emails = await _db.peopleDao.getPersonEmails(r.id);
-      list.add(_mapToEntity(r, extended: ext, secondaryPhones: phones, emails: emails));
-    }
-    return list;
+    return _hydratePeopleBatch(rows);
   }
 
   @override
   Future<Person?> getPersonById(String id) async {
     final row = await _db.peopleDao.getPersonById(id);
     if (row == null) return null;
-    final ext = await _db.peopleDao.getExtendedColumns(row.id);
-    final phones = await _db.peopleDao.getPersonSecondaryPhones(row.id);
-    final emails = await _db.peopleDao.getPersonEmails(row.id);
-    return _mapToEntity(row, extended: ext, secondaryPhones: phones, emails: emails);
+    final results = await Future.wait([
+      _db.peopleDao.getExtendedColumns(row.id),
+      _db.peopleDao.getPersonSecondaryPhones(row.id),
+      _db.peopleDao.getPersonEmails(row.id),
+    ]);
+    return _mapToEntity(
+      row,
+      extended: results[0] as Map<String, dynamic>?,
+      secondaryPhones: results[1] as List<String>?,
+      emails: results[2] as List<String>?,
+    );
   }
 
   @override

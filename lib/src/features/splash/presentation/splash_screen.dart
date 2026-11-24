@@ -50,8 +50,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _checkAppStatusAndNavigate() async {
-    // Graceful presentation delay (minimum 1.8s) so brand animation is appreciated
-    final minDelay = Future.delayed(const Duration(milliseconds: 1800));
+    // Fast, responsive presentation delay (650ms) for smooth entrance
+    final minDelay = Future.delayed(const Duration(milliseconds: 650));
 
     String? onboardingStatus;
     try {

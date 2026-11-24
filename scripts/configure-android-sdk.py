@@ -238,8 +238,8 @@ for mf in manifest_files:
     if os.path.isfile(mf):
         with open(mf, "r", encoding="utf-8") as f:
             mcontent = f.read()
-        # Set label to व्यवहार
-        mcontent = re.sub(r'android:label="[^"]*"', 'android:label="व्यवहार"', mcontent)
+        # Set label to Vyavahaar
+        mcontent = re.sub(r'android:label="[^"]*"', 'android:label="Vyavahaar"', mcontent)
         # Strip android:extractNativeLibs to prevent AGP 8 PackageAndroidArtifact error
         mcontent = re.sub(r'\s+android:extractNativeLibs="[^"]*"', '', mcontent)
         # Inject permissions if not present

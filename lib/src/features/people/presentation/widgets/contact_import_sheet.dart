@@ -46,6 +46,20 @@ class _ContactImportSheetState extends ConsumerState<ContactImportSheet> {
   }
 
   Future<void> _handlePickSingle() async {
+    final hasPerm = await ContactsService.requestContactsPermission();
+    if (!hasPerm) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.contactPermissionRationale),
+            backgroundColor: AppColors.terracotta,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _statusText = 'फ़ोन संपर्क खोला जा रहा है...';
@@ -71,6 +85,20 @@ class _ContactImportSheetState extends ConsumerState<ContactImportSheet> {
   }
 
   Future<void> _handleFetchAllPhoneContacts() async {
+    final hasPerm = await ContactsService.requestContactsPermission();
+    if (!hasPerm) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.contactPermissionRationale),
+            backgroundColor: AppColors.terracotta,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _statusText = 'फ़ोन संपर्क पढ़े जा रहे हैं...';
@@ -84,6 +112,15 @@ class _ContactImportSheetState extends ConsumerState<ContactImportSheet> {
       _fetchedDrafts = drafts;
       _selectedDraftIds.addAll(drafts.map((d) => d.id));
     });
+
+    if (drafts.isEmpty && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.noContactsSelected),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   Future<void> _handleImportVCard() async {

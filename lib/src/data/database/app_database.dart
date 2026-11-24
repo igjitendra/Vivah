@@ -66,7 +66,7 @@ class AppDatabase extends _$AppDatabase {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
         await m.createAll();
-        await SchemaMigrations.createAllIndexes(this);
+        await SchemaMigrations.ensureAllTablesAndColumns(this, m);
       },
       onUpgrade: (Migrator m, int from, int to) async {
         await SchemaMigrations.migrate(m, this, from, to);
@@ -76,6 +76,8 @@ class AppDatabase extends _$AppDatabase {
         await customStatement('PRAGMA foreign_keys = ON;');
         await customStatement('PRAGMA journal_mode = WAL;');
         await customStatement('PRAGMA busy_timeout = 5000;');
+        // Self-heal and ensure all tables & columns exist even if DB was created in an earlier partial state
+        await SchemaMigrations.ensureAllTablesAndColumns(this, createMigrator());
       },
     );
   }

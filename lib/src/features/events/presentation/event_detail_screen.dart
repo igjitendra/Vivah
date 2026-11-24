@@ -277,7 +277,6 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
     Color primaryAccent,
   ) {
     final l10n = context.l10n;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final totalReceived = linkedEntries
         .where((e) => e.direction.value == 'received' && e.status.value == 'recorded')
         .fold(0, (sum, e) => sum + (e.amountPaise ?? 0));
@@ -1639,20 +1638,19 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
         : null;
 
     final l10n = context.l10n;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDlgState) => AlertDialog(
-          title: Row(
+          title: const Row(
             children: [
-              const Icon(Icons.edit_note, color: AppColors.terracotta, size: 24),
-              const SizedBox(width: 8),
+              Icon(Icons.edit_note, color: AppColors.terracotta, size: 24),
+              SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'कार्यक्रम पूर्ण विवरण संपादित करें',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ),
             ],

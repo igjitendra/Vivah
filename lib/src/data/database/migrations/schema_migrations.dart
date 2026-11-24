@@ -48,6 +48,22 @@ class SchemaMigrations {
     await db.customStatement('PRAGMA foreign_key_check;');
   }
 
+  /// Ensures all tables, extended columns, and performance indexes exist across all versions.
+  /// Fully idempotent and safe to call on fresh install, after migration, or on beforeOpen.
+  static Future<void> ensureAllTablesAndColumns(GeneratedDatabase db, [Migrator? m]) async {
+    final migrator = m ?? Migrator(db);
+    await _migrateToV2(migrator, db);
+    await _migrateToV3(migrator, db);
+    await _migrateToV4(migrator, db);
+    await _migrateToV5(migrator, db);
+    await _migrateToV6(migrator, db);
+    await _migrateToV7(migrator, db);
+    await createAllIndexes(db);
+    try {
+      await db.customStatement('PRAGMA foreign_key_check;');
+    } catch (_) {}
+  }
+
   static Future<void> _migrateToV2(Migrator m, GeneratedDatabase db) async {
     try {
       await db.customStatement(

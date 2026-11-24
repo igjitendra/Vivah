@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -21,8 +22,23 @@ class PdfService {
   }) async {
     final pdf = pw.Document();
 
-    final font = await PdfGoogleFonts.notoSansDevanagariRegular();
-    final boldFont = await PdfGoogleFonts.notoSansDevanagariBold();
+    // Load fonts locally from assets for 100% offline functionality
+    pw.Font font;
+    pw.Font boldFont;
+    try {
+      final fontData = await rootBundle.load('assets/fonts/NotoSansDevanagari-Regular.ttf');
+      font = pw.Font.ttf(fontData);
+      final boldFontData = await rootBundle.load('assets/fonts/NotoSansDevanagari-Bold.ttf');
+      boldFont = pw.Font.ttf(boldFontData);
+    } catch (_) {
+      try {
+        font = await PdfGoogleFonts.notoSansDevanagariRegular();
+        boldFont = await PdfGoogleFonts.notoSansDevanagariBold();
+      } catch (_) {
+        font = pw.Font.helvetica();
+        boldFont = pw.Font.helveticaBold();
+      }
+    }
 
     final totalReceived = entries
         .where((e) => e.direction.value == 'received' && e.status.value == 'recorded' && e.archivedAt == null)

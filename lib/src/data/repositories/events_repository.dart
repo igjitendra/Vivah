@@ -37,6 +37,7 @@ abstract class EventsRepository {
   Future<void> deleteGuest(String id);
 
   Future<void> addParticipant(EventParticipant participant);
+  Future<void> updateParticipant(EventParticipant participant);
   Future<void> removeParticipant(String id);
 
   Future<void> addBudgetCategory(EventBudgetCategory cat);
@@ -44,6 +45,7 @@ abstract class EventsRepository {
   Future<void> deleteBudgetCategory(String id);
 
   Future<void> addNote(EventNote note);
+  Future<void> updateNote(EventNote note);
   Future<void> deleteNote(String id);
 
   Future<void> addReminder(EventReminder reminder);
@@ -444,6 +446,11 @@ class DriftEventsRepository implements EventsRepository {
   }
 
   @override
+  Future<void> updateParticipant(EventParticipant participant) async {
+    await _db.eventsDao.insertParticipant(participant);
+  }
+
+  @override
   Future<void> removeParticipant(String id) async {
     await _db.eventsDao.deleteParticipant(id);
   }
@@ -465,6 +472,11 @@ class DriftEventsRepository implements EventsRepository {
 
   @override
   Future<void> addNote(EventNote note) async {
+    await _db.eventsDao.insertNote(note);
+  }
+
+  @override
+  Future<void> updateNote(EventNote note) async {
     await _db.eventsDao.insertNote(note);
   }
 

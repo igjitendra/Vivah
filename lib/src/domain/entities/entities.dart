@@ -546,6 +546,34 @@ class EventFunction {
     required this.createdAt,
     required this.updatedAt,
   });
+
+  EventFunction copyWith({
+    String? id,
+    String? eventId,
+    String? title,
+    String? functionDate,
+    String? startTime,
+    String? endTime,
+    String? venue,
+    String? description,
+    EventStatus? status,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return EventFunction(
+      id: id ?? this.id,
+      eventId: eventId ?? this.eventId,
+      title: title ?? this.title,
+      functionDate: functionDate ?? this.functionDate,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      venue: venue ?? this.venue,
+      description: description ?? this.description,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }
 
 /// People associated with an event in specific roles
@@ -571,6 +599,30 @@ class EventParticipant {
     this.notes,
     required this.createdAt,
   });
+
+  EventParticipant copyWith({
+    String? id,
+    String? eventId,
+    String? personId,
+    String? familyId,
+    String? name,
+    ParticipantRole? role,
+    String? phone,
+    String? notes,
+    DateTime? createdAt,
+  }) {
+    return EventParticipant(
+      id: id ?? this.id,
+      eventId: eventId ?? this.eventId,
+      personId: personId ?? this.personId,
+      familyId: familyId ?? this.familyId,
+      name: name ?? this.name,
+      role: role ?? this.role,
+      phone: phone ?? this.phone,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }
 
 /// Guest and RSVP management
@@ -602,6 +654,36 @@ class EventGuest {
     this.invitationDate,
     required this.createdAt,
   });
+
+  EventGuest copyWith({
+    String? id,
+    String? eventId,
+    String? personId,
+    String? name,
+    String? familyOrGroup,
+    String? phoneNumber,
+    InvitationStatus? invitationStatus,
+    AttendanceStatus? attendanceStatus,
+    int? accompanyingCount,
+    String? notes,
+    String? invitationDate,
+    DateTime? createdAt,
+  }) {
+    return EventGuest(
+      id: id ?? this.id,
+      eventId: eventId ?? this.eventId,
+      personId: personId ?? this.personId,
+      name: name ?? this.name,
+      familyOrGroup: familyOrGroup ?? this.familyOrGroup,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      invitationStatus: invitationStatus ?? this.invitationStatus,
+      attendanceStatus: attendanceStatus ?? this.attendanceStatus,
+      accompanyingCount: accompanyingCount ?? this.accompanyingCount,
+      notes: notes ?? this.notes,
+      invitationDate: invitationDate ?? this.invitationDate,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }
 
 /// Task & checklist items for planning
@@ -629,6 +711,32 @@ class EventTask {
     this.completedAt,
     required this.createdAt,
   });
+
+  EventTask copyWith({
+    String? id,
+    String? eventId,
+    String? title,
+    String? description,
+    String? assignedPersonName,
+    String? dueDate,
+    EventPriority? priority,
+    TaskStatus? status,
+    DateTime? completedAt,
+    DateTime? createdAt,
+  }) {
+    return EventTask(
+      id: id ?? this.id,
+      eventId: eventId ?? this.eventId,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      assignedPersonName: assignedPersonName ?? this.assignedPersonName,
+      dueDate: dueDate ?? this.dueDate,
+      priority: priority ?? this.priority,
+      status: status ?? this.status,
+      completedAt: completedAt ?? this.completedAt,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }
 
 /// Scheduled activities chronologically ordered
@@ -684,6 +792,26 @@ class EventBudgetCategory {
 
   int get differencePaise => estimatedAmountPaise - actualAmountPaise;
   bool get isOverBudget => actualAmountPaise > estimatedAmountPaise;
+
+  EventBudgetCategory copyWith({
+    String? id,
+    String? eventId,
+    String? categoryName,
+    int? estimatedAmountPaise,
+    int? actualAmountPaise,
+    String? notes,
+    DateTime? createdAt,
+  }) {
+    return EventBudgetCategory(
+      id: id ?? this.id,
+      eventId: eventId ?? this.eventId,
+      categoryName: categoryName ?? this.categoryName,
+      estimatedAmountPaise: estimatedAmountPaise ?? this.estimatedAmountPaise,
+      actualAmountPaise: actualAmountPaise ?? this.actualAmountPaise,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }
 
 /// General event notes and instructions
@@ -703,6 +831,24 @@ class EventNote {
     required this.createdAt,
     required this.updatedAt,
   });
+
+  EventNote copyWith({
+    String? id,
+    String? eventId,
+    String? title,
+    String? content,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return EventNote(
+      id: id ?? this.id,
+      eventId: eventId ?? this.eventId,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }
 
 /// Attached documents and images

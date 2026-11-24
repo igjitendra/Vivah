@@ -165,7 +165,7 @@ class _ProofImageSectionState extends ConsumerState<ProofImageSection> {
     if (confirmed != true) return;
 
     // Delete file and DB record
-    final attachmentsDao = ref.read(appDatabaseProvider).attachmentsDao;
+    final attachmentsDao = ref.read(databaseProvider).attachmentsDao;
     await attachmentsDao.deleteProofForEntry(widget.entryId);
     try {
       await File(localPath).delete();

@@ -61,6 +61,19 @@ class BackupService {
     final reminders = await _db.select(_db.reminders).get();
     final settings = await _db.select(_db.appSettings).get();
 
+    Future<List<Map<String, dynamic>>> safeTableSelect(String table) async {
+      try {
+        final rows = await _db.customSelect('SELECT * FROM $table;').get();
+        return rows.map((r) => r.data).toList();
+      } catch (_) {
+        return [];
+      }
+    }
+
+    final eventFunctions = await safeTableSelect('event_functions');
+    final personPhones = await safeTableSelect('person_phones');
+    final attachments = await safeTableSelect('attachments');
+
     final payloadMap = {
       'families': families.map((f) => f.toJson()).toList(),
       'people': people.map((p) => p.toJson()).toList(),
@@ -69,6 +82,9 @@ class BackupService {
       'entry_items': entryItems.map((i) => i.toJson()).toList(),
       'reminders': reminders.map((r) => r.toJson()).toList(),
       'app_settings': settings.map((s) => s.toJson()).toList(),
+      'event_functions': eventFunctions,
+      'person_phones': personPhones,
+      'attachments': attachments,
     };
 
     final payloadJson = jsonEncode(payloadMap);
@@ -203,6 +219,9 @@ class BackupService {
     // Atomic database restore inside a SQLite transaction
     await _db.transaction(() async {
       // Clear current data safely
+      try { await _db.customStatement('DELETE FROM event_functions;'); } catch (_) {}
+      try { await _db.customStatement('DELETE FROM person_phones;'); } catch (_) {}
+      try { await _db.customStatement('DELETE FROM attachments;'); } catch (_) {}
       await _db.customStatement('DELETE FROM entry_items;');
       await _db.customStatement('DELETE FROM entries;');
       await _db.customStatement('DELETE FROM events;');
@@ -333,6 +352,68 @@ class BackupService {
           value: m['value'] as String,
           updatedAt: Value(m['updated_at'] as String? ?? DateTime.now().toIso8601String()),
         ));
+      }
+
+      // Repopulate event functions / ceremonies
+      final fnList = (payloadMap['event_functions'] as List<dynamic>?) ?? [];
+      for (final item in fnList) {
+        final m = item as Map<String, dynamic>;
+        try {
+          await _db.customInsert(
+            'INSERT OR REPLACE INTO event_functions (id, event_id, title, function_date, start_time, end_time, venue, description, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            variables: [
+              Variable.withString(m['id'] as String),
+              Variable.withString(m['event_id'] as String),
+              Variable.withString(m['title'] as String),
+              Variable.withString(m['function_date'] as String),
+              Variable.withString(m['start_time'] as String? ?? ''),
+              Variable.withString(m['end_time'] as String? ?? ''),
+              Variable.withString(m['venue'] as String? ?? ''),
+              Variable.withString(m['description'] as String? ?? ''),
+              Variable.withString(m['status'] as String? ?? 'planned'),
+              Variable.withString(m['created_at'] as String? ?? DateTime.now().toIso8601String()),
+              Variable.withString(m['updated_at'] as String? ?? DateTime.now().toIso8601String()),
+            ],
+          );
+        } catch (_) {}
+      }
+
+      // Repopulate secondary phone numbers
+      final phoneList = (payloadMap['person_phones'] as List<dynamic>?) ?? [];
+      for (final item in phoneList) {
+        final m = item as Map<String, dynamic>;
+        try {
+          await _db.customInsert(
+            'INSERT OR REPLACE INTO person_phones (id, person_id, phone_number, label, is_primary, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+            variables: [
+              Variable.withString(m['id'] as String),
+              Variable.withString(m['person_id'] as String),
+              Variable.withString(m['phone_number'] as String),
+              Variable.withString(m['label'] as String? ?? ''),
+              Variable.withInt((m['is_primary'] as int?) ?? 0),
+              Variable.withString(m['created_at'] as String? ?? DateTime.now().toIso8601String()),
+            ],
+          );
+        } catch (_) {}
+      }
+
+      // Repopulate proof attachments
+      final attList = (payloadMap['attachments'] as List<dynamic>?) ?? [];
+      for (final item in attList) {
+        final m = item as Map<String, dynamic>;
+        try {
+          await _db.customInsert(
+            'INSERT OR REPLACE INTO attachments (id, entry_id, local_path, note, remote_path, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+            variables: [
+              Variable.withString(m['id'] as String),
+              Variable.withString(m['entry_id'] as String),
+              Variable.withString(m['local_path'] as String),
+              Variable.withString(m['note'] as String? ?? ''),
+              Variable.withString(m['remote_path'] as String? ?? ''),
+              Variable.withString(m['created_at'] as String? ?? DateTime.now().toIso8601String()),
+            ],
+          );
+        } catch (_) {}
       }
 
       // Verify foreign key integrity

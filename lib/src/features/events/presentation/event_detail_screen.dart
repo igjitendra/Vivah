@@ -971,9 +971,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                             children: [
                               if (task.dueDate != null)
                                 Text('अंतिम तिथि: ${task.dueDate}', style: TextStyle(fontSize: 11, color: isDone ? Colors.grey : Colors.orange.shade800)),
-                              if (task.assignedTo != null && task.assignedTo!.isNotEmpty) ...[
+                              if (task.assignedPersonName != null && task.assignedPersonName!.isNotEmpty) ...[
                                 const SizedBox(width: 8),
-                                Text('• जिम्मा: ${task.assignedTo}', style: TextStyle(fontSize: 11, color: textSecondary)),
+                                Text('• जिम्मा: ${task.assignedPersonName}', style: TextStyle(fontSize: 11, color: textSecondary)),
                               ],
                             ],
                           ),

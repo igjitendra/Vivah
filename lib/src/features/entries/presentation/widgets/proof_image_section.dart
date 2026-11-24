@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../data/database/database_module.dart';
 import '../../../../app/app_providers.dart';
 
 /// Proof image section widget for EntryDetailScreen.
@@ -62,7 +63,7 @@ class _ProofImageSectionState extends ConsumerState<ProofImageSection> {
       await File(sourcePath).copy(destPath);
 
       // Save to database
-      final attachmentsDao = ref.read(appDatabaseProvider).attachmentsDao;
+      final attachmentsDao = ref.read(databaseProvider).attachmentsDao;
       await attachmentsDao.setProof(
         id: 'att_${DateTime.now().millisecondsSinceEpoch}',
         entryId: widget.entryId,
@@ -183,7 +184,7 @@ class _ProofImageSectionState extends ConsumerState<ProofImageSection> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final proofAsync = ref.watch(entryProofProvider(widget.entryId));
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBg =

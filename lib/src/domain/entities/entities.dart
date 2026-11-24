@@ -405,6 +405,14 @@ class Event {
 
   bool get isArchived => archivedAt != null;
 
+  /// Returns custom category if specified by user, else default Hindi label
+  String get displayTypeName {
+    if (category != null && category!.trim().isNotEmpty) {
+      return category!.trim();
+    }
+    return eventType.labelHindi;
+  }
+
   // Backward compatibility aliases
   int? get totalMilaPaise => totalReceivedPaise;
   int? get totalDiyaPaise => totalGivenPaise;
@@ -839,6 +847,14 @@ class TransactionEntry {
   bool get isPlanned => status == TransactionStatus.planned;
   bool get isCancelled => status == TransactionStatus.cancelled;
   bool get isArchived => archivedAt != null;
+
+  /// Returns custom category if specified by user, else default Hindi label
+  String get displayTypeName {
+    if (category != null && category!.trim().isNotEmpty) {
+      return category!.trim();
+    }
+    return eventType.labelHindi;
+  }
 
   // Backward compatibility aliases
   int get cashAmountPaise => amountPaise ?? 0;

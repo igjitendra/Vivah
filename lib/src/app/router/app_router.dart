@@ -17,6 +17,8 @@ import '../../features/entries/presentation/add_entry_screen.dart';
 import '../../features/entries/presentation/entry_detail_screen.dart';
 import '../../features/reports/presentation/reports_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/family_profile/presentation/family_profile_screen.dart';
+import '../../features/family_profile/presentation/edit_family_profile_screen.dart';
 import '../../features/reminders/presentation/reminders_screen.dart';
 import '../../features/splash/presentation/splash_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
@@ -278,6 +280,16 @@ final GoRouter appRouter = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       path: '/reports',
       builder: (context, state) => const ReportsScreen(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/family-profile',
+      builder: (context, state) => const FamilyProfileScreen(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/family-profile/edit',
+      builder: (context, state) => const EditFamilyProfileScreen(),
     ),
     GoRoute(
       parentNavigatorKey: _rootNavigatorKey,

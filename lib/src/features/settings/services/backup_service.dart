@@ -59,6 +59,7 @@ class BackupService {
     final entries = await _db.select(_db.entries).get();
     final entryItems = await _db.select(_db.entryItems).get();
     final reminders = await _db.select(_db.reminders).get();
+    final settings = await _db.select(_db.appSettings).get();
 
     final payloadMap = {
       'families': families.map((f) => f.toJson()).toList(),
@@ -67,6 +68,7 @@ class BackupService {
       'entries': entries.map((e) => e.toJson()).toList(),
       'entry_items': entryItems.map((i) => i.toJson()).toList(),
       'reminders': reminders.map((r) => r.toJson()).toList(),
+      'app_settings': settings.map((s) => s.toJson()).toList(),
     };
 
     final payloadJson = jsonEncode(payloadMap);
@@ -319,6 +321,16 @@ class BackupService {
           notes: Value(m['notes'] as String?),
           isCompleted: Value(m['is_completed'] as bool? ?? m['isCompleted'] as bool? ?? false),
           createdAt: Value(m['created_at'] as String? ?? DateTime.now().toIso8601String()),
+          updatedAt: Value(m['updated_at'] as String? ?? DateTime.now().toIso8601String()),
+        ));
+      }
+
+      final settingsList = (payloadMap['app_settings'] as List<dynamic>?) ?? [];
+      for (final item in settingsList) {
+        final m = item as Map<String, dynamic>;
+        await _db.into(_db.appSettings).insertOnConflictUpdate(AppSettingsCompanion.insert(
+          key: m['key'] as String,
+          value: m['value'] as String,
           updatedAt: Value(m['updated_at'] as String? ?? DateTime.now().toIso8601String()),
         ));
       }

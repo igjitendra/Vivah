@@ -7,6 +7,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/theme_notifier.dart';
+import '../../../domain/entities/family_profile.dart';
 import '../../../shared/widgets/app_logo.dart';
 import '../../../shared/widgets/express_squish.dart';
 import '../../../app/app_providers.dart';
@@ -42,6 +43,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final db = ref.watch(databaseProvider);
     final themeState = ref.watch(themeProvider);
     final backupService = BackupService(db);
+    final familyProfileAsync = ref.watch(familyProfileProvider);
+    final familyProfile = familyProfileAsync.value ?? const FamilyProfile();
 
     final scaffoldBg = theme.scaffoldBackgroundColor;
     final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
@@ -76,7 +79,55 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 AppSpacing.floatingTabBottomPadding + 28,
               ),
               children: [
-                // 1. Hero Ledger Profile Banner (Streak _ProfileHero Style)
+                // 1. Primary Family Profile Hero Card (हमारी पारिवारिक प्रोफ़ाइल)
+                _FamilyProfileHeroCard(
+                  profile: familyProfile,
+                  cardBg: cardBg,
+                  cardBorder: cardBorder,
+                  textPrimary: textPrimary,
+                  textSecondary: textSecondary,
+                  l10n: l10n,
+                  onTap: () {
+                    if (familyProfile.isEmpty) {
+                      context.push('/family-profile/edit');
+                    } else {
+                      context.push('/family-profile');
+                    }
+                  },
+                ),
+                const SizedBox(height: 12),
+
+                // 2. Section: Family Profile (पारिवारिक प्रोफ़ाइल विवरण)
+                _SectionLabel(l10n.familySection),
+                _StreakCard(
+                  cardBg: cardBg,
+                  cardBorder: cardBorder,
+                  children: [
+                    _StreakRow(
+                      icon: Icons.family_restroom,
+                      tint: const Color(0xFFEA580C),
+                      title: l10n.myFamily,
+                      value: familyProfile.familyName.isNotEmpty
+                          ? familyProfile.familyName
+                          : l10n.setupFamilyProfile,
+                      onTap: () => context.push(
+                        familyProfile.isEmpty ? '/family-profile/edit' : '/family-profile',
+                      ),
+                    ),
+                    if (familyProfile.isNotEmpty) ...[
+                      _StreakDivider(cardBorder: cardBorder),
+                      _StreakRow(
+                        icon: Icons.group_outlined,
+                        tint: const Color(0xFF10B981),
+                        title: l10n.familyMembers,
+                        value: '${familyProfile.members.length}',
+                        onTap: () => context.push('/family-profile'),
+                      ),
+                    ],
+                  ],
+                ),
+
+                // 3. Hero Ledger Profile Banner (Streak _ProfileHero Style)
                 _StreakHeroCard(
                   cardBg: cardBg,
                   cardBorder: cardBorder,
@@ -87,7 +138,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   badgeText: l10n.offlineGuaranteed,
                 ),
 
-                // 2. Section: Appearance & Themes (दिखावट व थीम)
+                // 4. Section: Appearance & Themes (दिखावट व थीम)
                 _SectionLabel(l10n.appearanceSection),
                 _StreakCard(
                   cardBg: cardBg,
@@ -818,3 +869,143 @@ class _ThemeOptionTile extends StatelessWidget {
     );
   }
 }
+
+/// Dynamic Family Profile Hero Card at top of Settings Screen
+class _FamilyProfileHeroCard extends StatelessWidget {
+  final FamilyProfile profile;
+  final Color cardBg;
+  final Color cardBorder;
+  final Color textPrimary;
+  final Color textSecondary;
+  final AppLocalizations l10n;
+  final VoidCallback onTap;
+
+  const _FamilyProfileHeroCard({
+    required this.profile,
+    required this.cardBg,
+    required this.cardBorder,
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.l10n,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasPhoto = profile.photoPath.isNotEmpty && File(profile.photoPath).existsSync();
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: cardBorder, width: 1.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: AppColors.terracotta.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.terracotta.withValues(alpha: 0.3),
+                  width: 1.5,
+                ),
+                image: hasPhoto
+                    ? DecorationImage(
+                        image: FileImage(File(profile.photoPath)),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+              child: !hasPhoto
+                  ? const Icon(
+                      Icons.family_restroom,
+                      size: 28,
+                      color: AppColors.terracotta,
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          profile.isNotEmpty && profile.familyName.isNotEmpty
+                              ? profile.familyName
+                              : l10n.setupFamilyProfile,
+                          style: TextStyle(
+                            fontSize: 16.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.2,
+                            color: textPrimary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (profile.isNotEmpty && profile.members.isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.milaGreen.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '${profile.members.length}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.milaGreen,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    profile.isNotEmpty
+                        ? (profile.headOfFamily.isNotEmpty
+                            ? '${l10n.mukhiyaBadge}: ${profile.headOfFamily}'
+                            : (profile.nativePlace.isNotEmpty
+                                ? profile.nativePlace
+                                : l10n.myFamily))
+                        : l10n.setupFamilyProfileSubtitle,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                      color: textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 6),
+            Icon(Icons.chevron_right, size: 22, color: textSecondary.withValues(alpha: 0.6)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

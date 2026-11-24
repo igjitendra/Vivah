@@ -5,7 +5,7 @@ import 'package:drift/drift.dart';
 class SchemaMigrations {
   SchemaMigrations._();
 
-  static const int currentSchemaVersion = 6;
+  static const int currentSchemaVersion = 7;
 
   /// Executes all required migrations sequentially from `from` to `to`.
   static Future<void> migrate(
@@ -37,6 +37,11 @@ class SchemaMigrations {
     // Migration v5 -> v6: Advanced People & Phone Contacts Import Schema
     if (from < 6) {
       await _migrateToV6(m, db);
+    }
+
+    // Migration v6 -> v7: Attachments table for entry proof images
+    if (from < 7) {
+      await _migrateToV7(m, db);
     }
 
     // Ensure foreign key integrity verification after migration
@@ -435,6 +440,25 @@ class SchemaMigrations {
           'CREATE INDEX IF NOT EXISTS idx_person_phones_num ON person_phones(phone_number);');
       await db.customStatement(
           'CREATE INDEX IF NOT EXISTS idx_person_emails_person ON person_emails(person_id);');
+    } catch (_) {}
+  }
+
+  /// Migration v6 -> v7: Attachments table for entry proof images
+  static Future<void> _migrateToV7(Migrator m, GeneratedDatabase db) async {
+    await db.customStatement('''
+      CREATE TABLE IF NOT EXISTS attachments (
+        id TEXT PRIMARY KEY NOT NULL,
+        entry_id TEXT NOT NULL,
+        local_path TEXT NOT NULL,
+        note TEXT,
+        remote_path TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (entry_id) REFERENCES entries(id) ON DELETE CASCADE
+      );
+    ''');
+    try {
+      await db.customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_attachments_entry ON attachments(entry_id);');
     } catch (_) {}
   }
 }

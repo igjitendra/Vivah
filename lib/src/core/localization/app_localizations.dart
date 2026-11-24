@@ -130,6 +130,16 @@ class AppLocalizations {
   String get unit => isEnglish ? 'Unit' : (isUrdu ? 'اکائی' : 'इकाई');
   String get customCeremony => isEnglish ? 'Custom Ceremony' : (isUrdu ? 'دیگر تقریب' : 'कस्टम कार्यक्रम');
   String get customCeremonyHint => isEnglish ? 'e.g. Birthday, Naming Ceremony, Upanayana' : (isUrdu ? 'مثال: سالگرہ، نام رکھنے کی تقریب' : 'उदा. जन्मदिन, नामकरण, जनेऊ');
+  String get selectEventType => isEnglish ? 'Select Event Type' : (isUrdu ? 'تقریب کی قسم منتخب کریں' : 'कार्यक्रम का प्रकार चुनें');
+  String get customEventTypes => isEnglish ? 'Custom Types' : (isUrdu ? 'اپنی بنائی گئی اقسام' : 'कस्टम प्रकार');
+  String get standardEventTypes => isEnglish ? 'Standard Ceremonies' : (isUrdu ? 'روایتی تقاریب' : 'पारंपरिक कार्यक्रम');
+  String get addNewEventType => isEnglish ? 'Create New Event Type' : (isUrdu ? 'نیا قسم بنائیں' : 'नया प्रकार बनाएं');
+  String get customEventTypeHint => isEnglish ? 'e.g. Kua Pujan, Jalwa, Shop Opening' : (isUrdu ? 'مثال: کنواں پوجن، دکان افتتاح' : 'जैसे: कुआं पूजन, जलवा पूजन, दुकान उद्घाटन, सत्यनारायण कथा');
+  String get enterCustomEventType => isEnglish ? 'Enter event type name' : (isUrdu ? 'تقریب کی قسم کا نام درج کریں' : 'कार्यक्रम के प्रकार का नाम लिखें');
+  String get saveAndSelect => isEnglish ? 'Save & Select' : (isUrdu ? 'محفوظ کریں اور منتخب کریں' : 'सहेजें व चुनें');
+  String get deleteCustomTypeConfirm => isEnglish ? 'Remove this custom type?' : (isUrdu ? 'کیا یہ قسم ہٹائیں؟' : 'क्या यह कस्टम प्रकार हटाना चाहते हैं?');
+  String get customTypeDeleted => isEnglish ? 'Custom type removed' : (isUrdu ? 'قسم ہٹا دی گئی' : 'कस्टम प्रकार हटा दिया गया');
+  String get searchEventTypeHint => isEnglish ? 'Search ceremony or event type...' : (isUrdu ? 'تقریب تلاش کریں...' : 'कार्यक्रम का प्रकार खोजें...');
   String get suggestedRelationshipsTitle => isEnglish ? 'Common Relationships' : (isUrdu ? 'عام رشتے' : 'सामान्य संबंध');
   String get suggestedCeremoniesTitle => isEnglish ? 'Popular Ceremonies' : (isUrdu ? 'مشہور تقاریب' : 'लोकप्रिय कार्यक्रम');
 
@@ -239,7 +249,10 @@ class AppLocalizations {
   String get familyEvent => isEnglish ? 'Family Occasion' : (isUrdu ? 'خاندانی تقریب' : 'पारिवारिक प्रसंग');
 
   // Event Types mapping
-  String eventTypeLabel(EventType type) {
+  String eventTypeLabel(EventType type, {String? customCategory}) {
+    if (customCategory != null && customCategory.trim().isNotEmpty) {
+      return customCategory.trim();
+    }
     if (isEnglish) {
       return switch (type) {
         EventType.shaadi || EventType.wedding => 'Wedding',
@@ -253,12 +266,19 @@ class AppLocalizations {
         EventType.birthday => 'Birthday',
         EventType.anniversary => 'Anniversary',
         EventType.grihaPravesh => 'Housewarming (Griha Pravesh)',
+        EventType.namkaran => 'Naming Ceremony',
+        EventType.janeu => 'Sacred Thread',
+        EventType.godhBharai => 'Baby Shower',
+        EventType.chhathi => 'Chhathi',
+        EventType.katha => 'Katha / Satsang',
+        EventType.retirement => 'Retirement',
+        EventType.inauguration => 'Inauguration / Opening',
         EventType.religiousCeremony => 'Religious Ceremony',
         EventType.festival => 'Festival',
         EventType.familyGathering => 'Family Gathering',
-        EventType.funeral => 'Funeral / Shraddh',
+        EventType.funeral => 'Memorial / Shraddh',
         EventType.communityEvent => 'Community Event',
-        EventType.other => 'Other',
+        EventType.custom || EventType.other => 'Other / Custom',
       };
     } else if (isUrdu) {
       return switch (type) {
@@ -273,15 +293,47 @@ class AppLocalizations {
         EventType.birthday => 'سالگرہ پيدائش',
         EventType.anniversary => 'سالگرہ',
         EventType.grihaPravesh => 'تقریبِ رہائش',
+        EventType.namkaran => 'نام رکھنے کی تقریب',
+        EventType.janeu => 'رسم دھاگہ',
+        EventType.godhBharai => 'گود بھرائی',
+        EventType.chhathi => 'چھٹی',
+        EventType.katha => 'محفل / دعا',
+        EventType.retirement => 'ریٹائرمنٹ',
+        EventType.inauguration => 'افتتاح',
         EventType.religiousCeremony => 'مذہبی تقریب',
         EventType.festival => 'تہوار',
         EventType.familyGathering => 'خاندانی اجتماع',
         EventType.funeral => 'تعزیت / فاتحہ',
         EventType.communityEvent => 'سماجی تقریب',
-        EventType.other => 'دیگر',
+        EventType.custom || EventType.other => 'دیگر',
       };
     } else {
-      return type.labelHindi;
+      return switch (type) {
+        EventType.shaadi || EventType.wedding => 'विवाह / शादी',
+        EventType.tilak => 'तिलक समारोह',
+        EventType.mundan => 'मुंडन संस्कार',
+        EventType.baraat => 'बरात',
+        EventType.sagai || EventType.engagement => 'सगाई / फलदान',
+        EventType.haldi => 'हल्दी समारोह',
+        EventType.mehndi => 'मेहंदी समारोह',
+        EventType.reception => 'प्रीतिभोज / रिसेप्शन',
+        EventType.birthday => 'जन्मदिन',
+        EventType.anniversary => 'वर्षगांठ / सालगिरह',
+        EventType.grihaPravesh => 'गृह प्रवेश',
+        EventType.namkaran => 'नामकरण संस्कार',
+        EventType.janeu => 'जनेऊ / उपनयन',
+        EventType.godhBharai => 'गोद भराई',
+        EventType.chhathi => 'छठी महोत्सव',
+        EventType.katha => 'कथा / सत्संग / जगराता',
+        EventType.retirement => 'रिटायरमेंट / विदाई',
+        EventType.inauguration => 'प्रतिष्ठान / दुकान उद्घाटन',
+        EventType.religiousCeremony => 'धार्मिक अनुष्ठान',
+        EventType.festival => 'त्योहार / पर्व',
+        EventType.familyGathering => 'पारिवारिक मिलन',
+        EventType.funeral => 'श्राद्ध / शोक सभा',
+        EventType.communityEvent => 'सामाजिक सम्मेलन',
+        EventType.custom || EventType.other => 'अन्य / कस्टम प्रकार',
+      };
     }
   }
 
@@ -715,6 +767,59 @@ class AppLocalizations {
           : 'व्यवहार दर्ज हुआ। अगले रिश्तेदार की एंट्री के लिए तैयार।');
   String get copy => isEnglish ? 'Copy' : (isUrdu ? 'کاپی کریں' : 'कॉपी करें');
   String get copiedToClipboard => isEnglish ? 'Copied to clipboard' : (isUrdu ? 'کلپ بورڈ پر کاپی کیا گیا' : 'क्लिपबोर्ड पर कॉपी किया गया');
+
+  // Family Profile Localizations
+  String get familyProfile => isEnglish ? 'Family Profile' : (isUrdu ? 'خاندانی پروفائل' : 'पारिवारिक प्रोफ़ाइल');
+  String get myFamily => isEnglish ? 'My Family' : (isUrdu ? 'ہمارا خاندان' : 'हमारा परिवार');
+  String get editFamilyProfile => isEnglish ? 'Edit Family Profile' : (isUrdu ? 'خاندانی پروفائل میں ترمیم کریں' : 'पारिवारिक प्रोफ़ाइल संपादित करें');
+  String get setupFamilyProfile => isEnglish ? 'Setup Family Profile' : (isUrdu ? 'خاندانی پروفائل مرتب کریں' : 'पारिवारिक प्रोफ़ाइल बनाएं');
+  String get setupFamilyProfileSubtitle => isEnglish ? 'Add your family details and member list' : (isUrdu ? 'خاندانی تفصیلات اور اراکین کی فہرست شامل کریں' : 'अपनी पारिवारिक जानकारी व सदस्यों की सूची जोड़ें');
+  String get familyName => isEnglish ? 'Family Name' : (isUrdu ? 'خاندان کا نام' : 'परिवार का नाम');
+  String get familyNameHint => isEnglish ? 'e.g. Sharma Family' : (isUrdu ? 'مثال: شرما خاندان' : 'जैसे: शर्मा परिवार');
+  String get headOfFamily => isEnglish ? 'Head of Family (Mukhiya)' : (isUrdu ? 'خاندان کا سربراہ' : 'परिवार के मुखिया');
+  String get headOfFamilyHint => isEnglish ? 'e.g. Shri Ramesh Sharma' : (isUrdu ? 'مثال: شری رمیش شرما' : 'जैसे: श्री रमेश चंद्र शर्मा');
+  String get nativePlace => isEnglish ? 'Native Village / City' : (isUrdu ? 'آبائی گاؤں / شہر' : 'पैतृक गाँव / स्थान');
+  String get nativePlaceHint => isEnglish ? 'e.g. Sikar, Rajasthan' : (isUrdu ? 'مثال: سیکر، راجستھان' : 'जैसे: सीकर, राजस्थान');
+  String get currentCity => isEnglish ? 'Current City' : (isUrdu ? 'موجودہ شہر' : 'वर्तमान शहर');
+  String get currentCityHint => isEnglish ? 'e.g. Jaipur' : (isUrdu ? 'مثال: جے پور' : 'जैसे: जयपुर');
+  String get fullAddress => isEnglish ? 'Full Address' : (isUrdu ? 'مکمل پتہ' : 'पूरा पता');
+  String get gotra => isEnglish ? 'Gotra / Lineage' : (isUrdu ? 'گوتر / نسب' : 'गोत्र / कुल');
+  String get gotraHint => isEnglish ? 'e.g. Kaushik' : (isUrdu ? 'مثال: کوشک' : 'जैसे: कौशिक');
+  String get kuldevi => isEnglish ? 'Family Deity (Kuldevi/Devta)' : (isUrdu ? 'خاندانی دیوی / دیوتا' : 'कुलदेवी / कुलदेवता');
+  String get kuldeviHint => isEnglish ? 'e.g. Maa Shakambhari' : (isUrdu ? 'مثال: ماں شاکمبھری' : 'जैसे: मां शाकम्भरी');
+  String get alternatePhone => isEnglish ? 'Alternate Phone' : (isUrdu ? 'متبادل فون نمبر' : 'अन्य फ़ोन नंबर');
+  String get familyEmail => isEnglish ? 'Family Email' : (isUrdu ? 'خاندانی ای میل' : 'पारिवारिक ईमेल');
+  String get familyBio => isEnglish ? 'Family Note / Bio' : (isUrdu ? 'خاندانی تعارف / تفصیل' : 'पारिवारिक परिचय / विवरण');
+  String get familyBioHint => isEnglish ? 'A brief note about family roots and traditions' : (isUrdu ? 'خاندانی روایات اور تاریخ کے بارے میں مختصر تفصیل' : 'पारिवारिक परंपराओं व इतिहास के बारे में संक्षिप्त विवरण');
+  String get familyMembers => isEnglish ? 'Family Members' : (isUrdu ? 'خاندان کے اراکین' : 'परिवार के सदस्य');
+  String get addFamilyMember => isEnglish ? 'Add Family Member' : (isUrdu ? 'نیا رکن شامل کریں' : 'नया सदस्य जोड़ें');
+  String get editFamilyMember => isEnglish ? 'Edit Member' : (isUrdu ? 'رکن میں ترمیم کریں' : 'सदस्य संपादित करें');
+  String get deleteFamilyMember => isEnglish ? 'Delete Member' : (isUrdu ? 'رکن حذف کریں' : 'सदस्य हटाएं');
+  String get deleteFamilyMemberConfirm => isEnglish ? 'Are you sure you want to remove this member from family profile?' : (isUrdu ? 'کیا آپ واقعی اس رکن کو خاندانی پروفائل سے ہٹانا چاہتے ہیں؟' : 'क्या आप इस सदस्य को पारिवारिक प्रोफ़ाइल से हटाना चाहते हैं?');
+  String get memberName => isEnglish ? 'Member Name' : (isUrdu ? 'رکن کا نام' : 'सदस्य का नाम');
+  String get memberNameHint => isEnglish ? 'Enter member full name' : (isUrdu ? 'رکن کا مکمل نام درج کریں' : 'सदस्य का पूरा नाम दर्ज करें');
+  String get memberAge => isEnglish ? 'Age / DOB' : (isUrdu ? 'عمر / تاریخ پیدائش' : 'उम्र / जन्म तिथि');
+  String get bloodGroup => isEnglish ? 'Blood Group' : (isUrdu ? 'بلڈ گروپ' : 'रक्त समूह');
+  String get memberNotes => isEnglish ? 'Member Notes' : (isUrdu ? 'رکن کی تفصیل / نوٹ' : 'सदस्य विवरण / टिप्पणी');
+  String get familyProfileSaved => isEnglish ? 'Family profile saved successfully' : (isUrdu ? 'خاندانی پروفائل کامیابی سے محفوظ ہو گئی' : 'पारिवारिक प्रोफ़ाइल सफलतापूर्वक सहेजी गई');
+  String get memberAdded => isEnglish ? 'Family member added' : (isUrdu ? 'خاندانی رکن شامل کر دیا گیا' : 'परिवार का सदस्य जोड़ा गया');
+  String get memberUpdated => isEnglish ? 'Member updated' : (isUrdu ? 'رکن کی معلومات اپ ڈیٹ ہو گئی' : 'सदस्य की जानकारी अपडेट की गई');
+  String get memberDeleted => isEnglish ? 'Member removed' : (isUrdu ? 'رکن حذف کر دیا گیا' : 'सदस्य हटा दिया गया');
+  String get noMembersYet => isEnglish ? 'No family members added yet' : (isUrdu ? 'ابھی تک خاندان کا کوئی رکن شامل نہیں کیا گیا' : 'अभी तक परिवार का कोई सदस्य नहीं जोड़ा गया है');
+  String get addFirstMember => isEnglish ? 'Add First Member' : (isUrdu ? 'پہلا رکن شامل کریں' : 'पहला सदस्य जोड़ें');
+  String get familyPhoto => isEnglish ? 'Family Photo' : (isUrdu ? 'خاندان کی تصویر' : 'परिवार की तस्वीर');
+  String get changePhoto => isEnglish ? 'Change Photo' : (isUrdu ? 'تصویر تبدیل کریں' : 'फ़ोटो बदलें');
+  String get callMember => isEnglish ? 'Call' : (isUrdu ? 'کال کریں' : 'कॉल करें');
+  String get whatsappMember => isEnglish ? 'WhatsApp' : (isUrdu ? 'واٹس ایپ' : 'व्हाट्सएप');
+  String get mukhiyaBadge => isEnglish ? 'Head / Mukhiya' : (isUrdu ? 'سربراہ' : 'मुखिया');
+  String get familySection => isEnglish ? 'Family Profile' : (isUrdu ? 'خاندانی پروفائل' : 'पारिवारिक प्रोफ़ाइल');
+  String get editProfile => isEnglish ? 'Edit Profile' : (isUrdu ? 'پروفائل میں ترمیم کریں' : 'प्रोफ़ाइल संपादित करें');
+  String get gender => isEnglish ? 'Gender' : (isUrdu ? 'جنس' : 'लिंग');
+  String get male => isEnglish ? 'Male' : (isUrdu ? 'مرد' : 'पुरुष');
+  String get female => isEnglish ? 'Female' : (isUrdu ? 'خاتون' : 'महिला');
+  String get other => isEnglish ? 'Other' : (isUrdu ? 'دیگر' : 'अन्य');
+  String get selectRelation => isEnglish ? 'Select Relationship' : (isUrdu ? 'رشتہ منتخب کریں' : 'रिश्ता चुनें');
+  String get enterValidFamilyName => isEnglish ? 'Please enter family name' : (isUrdu ? 'براہ کرم خاندان کا نام درج کریں' : 'कृपया परिवार का नाम दर्ज करें');
 
   String personCount(int count) {
     if (isEnglish) {

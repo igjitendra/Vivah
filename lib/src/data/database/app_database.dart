@@ -12,6 +12,7 @@ import 'tables/entries_table.dart';
 import 'tables/entry_items_table.dart';
 import 'tables/reminders_table.dart';
 import 'tables/app_settings_table.dart';
+import 'tables/attachments_table.dart';
 
 import 'daos/families_dao.dart';
 import 'daos/people_dao.dart';
@@ -20,6 +21,7 @@ import 'daos/entries_dao.dart';
 import 'daos/entry_items_dao.dart';
 import 'daos/reminders_dao.dart';
 import 'daos/settings_dao.dart';
+import 'daos/attachments_dao.dart';
 
 import 'migrations/schema_migrations.dart';
 
@@ -37,6 +39,7 @@ part 'app_database.g.dart';
     EntryItems,
     Reminders,
     AppSettings,
+    Attachments,
   ],
   daos: [
     FamiliesDao,
@@ -46,6 +49,7 @@ part 'app_database.g.dart';
     EntryItemsDao,
     RemindersDao,
     SettingsDao,
+    AttachmentsDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {

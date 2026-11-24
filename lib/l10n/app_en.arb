@@ -393,5 +393,219 @@
   "newRelativeFullForm": "+ Add New Relative",
   "rapidEntrySuccess": "Entry saved. Ready for next relative entry.",
   "copy": "Copy",
-  "copiedToClipboard": "Copied to clipboard"
+  "copiedToClipboard": "Copied to clipboard",
+  "familyProfile": "Family Profile",
+  "@familyProfile": {
+    "description": "Family Profile label or text"
+  },
+  "myFamily": "My Family",
+  "@myFamily": {
+    "description": "My Family label or text"
+  },
+  "editFamilyProfile": "Edit Family Profile",
+  "@editFamilyProfile": {
+    "description": "Edit Family Profile label or text"
+  },
+  "setupFamilyProfile": "Setup Family Profile",
+  "@setupFamilyProfile": {
+    "description": "Setup Family Profile label or text"
+  },
+  "setupFamilyProfileSubtitle": "Add your family details and member list",
+  "@setupFamilyProfileSubtitle": {
+    "description": "Add your family details and member list label or text"
+  },
+  "familyName": "Family Name",
+  "@familyName": {
+    "description": "Family Name label or text"
+  },
+  "familyNameHint": "e.g. Sharma Family",
+  "@familyNameHint": {
+    "description": "e.g. Sharma Family label or text"
+  },
+  "headOfFamily": "Head of Family (Mukhiya)",
+  "@headOfFamily": {
+    "description": "Head of Family (Mukhiya) label or text"
+  },
+  "headOfFamilyHint": "e.g. Shri Ramesh Sharma",
+  "@headOfFamilyHint": {
+    "description": "e.g. Shri Ramesh Sharma label or text"
+  },
+  "nativePlace": "Native Village / City",
+  "@nativePlace": {
+    "description": "Native Village / City label or text"
+  },
+  "nativePlaceHint": "e.g. Sikar, Rajasthan",
+  "@nativePlaceHint": {
+    "description": "e.g. Sikar, Rajasthan label or text"
+  },
+  "currentCity": "Current City",
+  "@currentCity": {
+    "description": "Current City label or text"
+  },
+  "currentCityHint": "e.g. Jaipur",
+  "@currentCityHint": {
+    "description": "e.g. Jaipur label or text"
+  },
+  "fullAddress": "Full Address",
+  "@fullAddress": {
+    "description": "Full Address label or text"
+  },
+  "gotra": "Gotra / Lineage",
+  "@gotra": {
+    "description": "Gotra / Lineage label or text"
+  },
+  "gotraHint": "e.g. Kaushik",
+  "@gotraHint": {
+    "description": "e.g. Kaushik label or text"
+  },
+  "kuldevi": "Family Deity (Kuldevi/Devta)",
+  "@kuldevi": {
+    "description": "Family Deity (Kuldevi/Devta) label or text"
+  },
+  "kuldeviHint": "e.g. Maa Shakambhari",
+  "@kuldeviHint": {
+    "description": "e.g. Maa Shakambhari label or text"
+  },
+  "alternatePhone": "Alternate Phone",
+  "@alternatePhone": {
+    "description": "Alternate Phone label or text"
+  },
+  "familyEmail": "Family Email",
+  "@familyEmail": {
+    "description": "Family Email label or text"
+  },
+  "familyBio": "Family Note / Bio",
+  "@familyBio": {
+    "description": "Family Note / Bio label or text"
+  },
+  "familyBioHint": "A brief note about family roots and traditions",
+  "@familyBioHint": {
+    "description": "A brief note about family roots and traditions label or text"
+  },
+  "familyMembers": "Family Members",
+  "@familyMembers": {
+    "description": "Family Members label or text"
+  },
+  "addFamilyMember": "Add Family Member",
+  "@addFamilyMember": {
+    "description": "Add Family Member label or text"
+  },
+  "editFamilyMember": "Edit Member",
+  "@editFamilyMember": {
+    "description": "Edit Member label or text"
+  },
+  "deleteFamilyMember": "Delete Member",
+  "@deleteFamilyMember": {
+    "description": "Delete Member label or text"
+  },
+  "deleteFamilyMemberConfirm": "Are you sure you want to remove this member from family profile?",
+  "@deleteFamilyMemberConfirm": {
+    "description": "Are you sure you want to remove this member from family profile? label or text"
+  },
+  "memberName": "Member Name",
+  "@memberName": {
+    "description": "Member Name label or text"
+  },
+  "memberNameHint": "Enter member full name",
+  "@memberNameHint": {
+    "description": "Enter member full name label or text"
+  },
+  "memberAge": "Age / DOB",
+  "@memberAge": {
+    "description": "Age / DOB label or text"
+  },
+  "bloodGroup": "Blood Group",
+  "@bloodGroup": {
+    "description": "Blood Group label or text"
+  },
+  "memberNotes": "Member Notes",
+  "@memberNotes": {
+    "description": "Member Notes label or text"
+  },
+  "familyProfileSaved": "Family profile saved successfully",
+  "@familyProfileSaved": {
+    "description": "Family profile saved successfully label or text"
+  },
+  "memberAdded": "Family member added",
+  "@memberAdded": {
+    "description": "Family member added label or text"
+  },
+  "memberUpdated": "Member updated",
+  "@memberUpdated": {
+    "description": "Member updated label or text"
+  },
+  "memberDeleted": "Member removed",
+  "@memberDeleted": {
+    "description": "Member removed label or text"
+  },
+  "noMembersYet": "No family members added yet",
+  "@noMembersYet": {
+    "description": "No family members added yet label or text"
+  },
+  "addFirstMember": "Add First Member",
+  "@addFirstMember": {
+    "description": "Add First Member label or text"
+  },
+  "familyPhoto": "Family Photo",
+  "@familyPhoto": {
+    "description": "Family Photo label or text"
+  },
+  "changePhoto": "Change Photo",
+  "@changePhoto": {
+    "description": "Change Photo label or text"
+  },
+  "callMember": "Call",
+  "@callMember": {
+    "description": "Call label or text"
+  },
+  "whatsappMember": "WhatsApp",
+  "@whatsappMember": {
+    "description": "WhatsApp label or text"
+  },
+  "mukhiyaBadge": "Head / Mukhiya",
+  "@mukhiyaBadge": {
+    "description": "Head / Mukhiya label or text"
+  },
+  "familySection": "Family Profile",
+  "@familySection": {
+    "description": "Family Profile label or text"
+  },
+  "editProfile": "Edit Profile",
+  "@editProfile": {
+    "description": "Edit Profile label or text"
+  },
+  "gender": "Gender",
+  "@gender": {
+    "description": "Gender label or text"
+  },
+  "male": "Male",
+  "@male": {
+    "description": "Male label or text"
+  },
+  "female": "Female",
+  "@female": {
+    "description": "Female label or text"
+  },
+  "other": "Other",
+  "@other": {
+    "description": "Other label or text"
+  },
+  "selectRelation": "Select Relationship",
+  "@selectRelation": {
+    "description": "Select Relationship label or text"
+  },
+  "enterValidFamilyName": "Please enter family name",
+  "@enterValidFamilyName": {
+    "description": "Please enter family name label or text"
+  },
+  "selectEventType": "Select Event Type",
+  "customEventTypes": "Custom Types",
+  "standardEventTypes": "Standard Ceremonies",
+  "addNewEventType": "Create New Event Type",
+  "customEventTypeHint": "e.g. Kua Pujan, Jalwa, Shop Opening",
+  "enterCustomEventType": "Enter event type name",
+  "saveAndSelect": "Save & Select",
+  "deleteCustomTypeConfirm": "Remove this custom type?",
+  "customTypeDeleted": "Custom type removed",
+  "searchEventTypeHint": "Search ceremony or event type..."
 }

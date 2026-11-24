@@ -65,23 +65,31 @@ enum TransactionStatus {
 
 /// Types of cultural events
 enum EventType {
-  shaadi('शादी'),
+  shaadi('विवाह / शादी'),
   tilak('तिलक'),
-  mundan('मुंडन'),
+  mundan('मुंडन संस्कार'),
   baraat('बरात'),
-  sagai('सगाई'),
-  anniversary('वर्षगांठ'),
-  grihaPravesh('गृह प्रवेश'),
-  engagement('सगाई'),
+  sagai('सगाई / फलदान'),
   haldi('हल्दी'),
   mehndi('मेहंदी'),
   reception('प्रीतिभोज / रिसेप्शन'),
+  grihaPravesh('गृह प्रवेश'),
   birthday('जन्मदिन'),
+  anniversary('वर्षगांठ'),
+  namkaran('नामकरण'),
+  janeu('जनेऊ / उपनयन'),
+  godhBharai('गोद भराई'),
+  chhathi('छठी'),
+  katha('कथा / सत्संग'),
+  retirement('रिटायरमेंट'),
+  inauguration('उद्घाटन'),
   religiousCeremony('धार्मिक अनुष्ठान'),
   festival('त्योहार / पर्व'),
   familyGathering('पारिवारिक मिलन'),
   funeral('श्राद्ध / शोक सभा'),
   communityEvent('सामाजिक सम्मेलन'),
+  engagement('सगाई'),
+  custom('कस्टम प्रकार'),
   other('अन्य');
 
   final String labelHindi;
@@ -92,9 +100,18 @@ enum EventType {
   static const EventType wedding = EventType.shaadi;
 
   static EventType fromString(String val) {
+    final clean = val.trim();
+    final lower = clean.toLowerCase();
     for (final e in EventType.values) {
-      if (e.labelHindi == val || e.name.toLowerCase() == val.toLowerCase()) return e;
+      if (e.labelHindi == clean || e.name.toLowerCase() == lower) return e;
     }
+    if (lower == 'wedding' || clean == 'विवाह' || clean == 'शादी') return EventType.shaadi;
+    if (lower == 'engagement' || clean == 'फलदान' || clean == 'रोका') return EventType.sagai;
+    if (lower == 'tonsure' || clean == 'मुंडन') return EventType.mundan;
+    if (clean == 'तिलक') return EventType.tilak;
+    if (clean == 'गृह प्रवेश' || lower == 'housewarming') return EventType.grihaPravesh;
+    if (clean == 'जन्मदिन' || lower == 'birthday') return EventType.birthday;
+    if (clean == 'वर्षगांठ' || lower == 'anniversary' || clean == 'सालगिरह') return EventType.anniversary;
     return EventType.other;
   }
 }

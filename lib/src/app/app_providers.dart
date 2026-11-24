@@ -6,6 +6,7 @@ import '../data/repositories/people_repository.dart';
 import '../data/repositories/events_repository.dart';
 import '../data/repositories/families_repository.dart';
 import '../data/repositories/settings_repository.dart';
+import '../features/family_profile/data/family_profile_repository.dart';
 import '../domain/entities/entities.dart';
 import '../domain/enums/transaction_enums.dart';
 
@@ -36,6 +37,12 @@ final familiesRepositoryProvider = Provider<FamiliesRepository>((ref) {
 final settingsRepositoryProvider = Provider<SettingsRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
   return DriftSettingsRepository(db);
+});
+
+/// Reactive live stream of user-created custom event types
+final customEventTypesProvider = StreamProvider<List<String>>((ref) {
+  final repo = ref.watch(settingsRepositoryProvider);
+  return repo.watchCustomEventTypes();
 });
 
 /// Dashboard summary reactive stream provider (100% live updates on every entry/event/person change)
@@ -100,3 +107,16 @@ final liveDateProvider = StreamProvider<DateTime>((ref) async* {
     yield DateTime.now();
   }
 });
+
+/// Family profile repository provider
+final familyProfileRepositoryProvider = Provider<FamilyProfileRepository>((ref) {
+  final settingsRepo = ref.watch(settingsRepositoryProvider);
+  return DriftFamilyProfileRepository(settingsRepo);
+});
+
+/// Family profile reactive stream provider
+final familyProfileProvider = StreamProvider<FamilyProfile>((ref) {
+  final repo = ref.watch(familyProfileRepositoryProvider);
+  return repo.watchFamilyProfile();
+});
+

@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_spacing.dart';
-import '../../../../core/localization/app_localizations.dart';
-import '../../../../domain/entities/family_profile.dart';
-import '../../../../app/app_providers.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
+import '../../../domain/entities/family_profile.dart';
+import '../../../app/app_providers.dart';
 import 'widgets/add_edit_member_dialog.dart';
 
 /// Screen displaying the complete Profile of the user's own family (हमारा परिवार)

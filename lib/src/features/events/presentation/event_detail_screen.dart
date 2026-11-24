@@ -252,7 +252,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      l10n.isEnglish ? event.eventType.name : event.eventType.labelHindi,
+                      l10n.eventTypeLabel(event.eventType, customCategory: event.category),
                       style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryAccent),
                     ),
                   ),
@@ -266,7 +266,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                   Icon(Icons.calendar_today, size: 15, color: textSecondary),
                   const SizedBox(width: 6),
                   Text(
-                    '${event.eventDate}${event.endDate != null ? " से " + event.endDate! : ""}',
+                    '${event.eventDate}${event.endDate != null ? " से ${event.endDate!}" : ""}',
                     style: TextStyle(fontSize: 13, color: textSecondary, fontWeight: FontWeight.w500),
                   ),
                   if (event.startTime != null) ...[
@@ -515,7 +515,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                         children: [
                           Text(fn.title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5, color: textPrimary)),
                           const SizedBox(height: 3),
-                          Text('${fn.functionDate}${fn.startTime != null ? " • " + fn.startTime! : ""}', style: TextStyle(fontSize: 12, color: textSecondary)),
+                          Text('${fn.functionDate}${fn.startTime != null ? " • ${fn.startTime!}" : ""}', style: TextStyle(fontSize: 12, color: textSecondary)),
                           if (fn.venue != null) Text('स्थल: ${fn.venue}', style: TextStyle(fontSize: 11.5, color: primaryAccent)),
                         ],
                       ),
@@ -955,7 +955,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                           children: [
                             Text(e.personName ?? 'अज्ञात', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary)),
                             Text(
-                              '${AppDateUtils.formatIsoDate(e.transactionDate, l10n.locale.languageCode)}${e.notes != null ? " • " + e.notes! : ""}',
+                              '${AppDateUtils.formatIsoDate(e.transactionDate, l10n.locale.languageCode)}${e.notes != null ? " • ${e.notes!}" : ""}',
                               style: TextStyle(fontSize: 11, color: textSecondary),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1331,19 +1331,63 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
     final titleCtrl = TextEditingController(text: event.title);
     final venueCtrl = TextEditingController(text: event.venue ?? '');
     final notesCtrl = TextEditingController(text: event.notes ?? '');
+    final customCtrl = TextEditingController(text: event.category ?? '');
     EventType selType = event.eventType;
     EventStatus selStatus = event.status;
+    final l10n = context.l10n;
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDlgState) => AlertDialog(
-          title: const Text('कार्यक्रम विवरण संपादित करें'),
+          title: Text(l10n.editEvent),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'कार्यक्रम नाम *')),
+                TextField(controller: titleCtrl, decoration: InputDecoration(labelText: '${l10n.eventName} *')),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<EventType>(
+                  value: selType,
+                  items: [
+                    EventType.shaadi,
+                    EventType.sagai,
+                    EventType.tilak,
+                    EventType.baraat,
+                    EventType.haldi,
+                    EventType.mehndi,
+                    EventType.reception,
+                    EventType.grihaPravesh,
+                    EventType.namkaran,
+                    EventType.mundan,
+                    EventType.janeu,
+                    EventType.godhBharai,
+                    EventType.chhathi,
+                    EventType.birthday,
+                    EventType.anniversary,
+                    EventType.katha,
+                    EventType.religiousCeremony,
+                    EventType.festival,
+                    EventType.familyGathering,
+                    EventType.retirement,
+                    EventType.inauguration,
+                    EventType.funeral,
+                    EventType.communityEvent,
+                    EventType.other,
+                  ].map((t) => DropdownMenuItem(value: t, child: Text(l10n.eventTypeLabel(t)))).toList(),
+                  onChanged: (val) => setDlgState(() => selType = val ?? EventType.shaadi),
+                  decoration: InputDecoration(labelText: l10n.eventType),
+                ),
+                if (selType == EventType.other) ...[
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: customCtrl,
+                    decoration: InputDecoration(
+                      labelText: l10n.customCeremony,
+                      hintText: l10n.customCeremonyHint,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 10),
                 DropdownButtonFormField<EventStatus>(
                   value: selStatus,
@@ -1352,29 +1396,34 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                   decoration: const InputDecoration(labelText: 'स्थिति (Status)'),
                 ),
                 const SizedBox(height: 10),
-                TextField(controller: venueCtrl, decoration: const InputDecoration(labelText: 'स्थल (Venue)')),
+                TextField(controller: venueCtrl, decoration: InputDecoration(labelText: l10n.venue)),
                 const SizedBox(height: 10),
-                TextField(controller: notesCtrl, decoration: const InputDecoration(labelText: 'टिप्पणी (Notes)')),
+                TextField(controller: notesCtrl, decoration: InputDecoration(labelText: l10n.notes)),
               ],
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('रद्द करें')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.cancel)),
             ElevatedButton(
               onPressed: () async {
+                final customCat = customCtrl.text.trim();
                 final updated = event.copyWith(
                   title: titleCtrl.text.trim(),
                   eventType: selType,
+                  category: selType == EventType.other && customCat.isNotEmpty ? customCat : null,
                   status: selStatus,
                   venue: venueCtrl.text.trim().isNotEmpty ? venueCtrl.text.trim() : null,
                   notes: notesCtrl.text.trim().isNotEmpty ? notesCtrl.text.trim() : null,
                   updatedAt: DateTime.now(),
                 );
                 await ref.read(eventsRepositoryProvider).updateEvent(updated);
+                if (selType == EventType.other && customCat.isNotEmpty) {
+                  await ref.read(settingsRepositoryProvider).addCustomEventType(customCat);
+                }
                 Navigator.pop(ctx);
                 _triggerRefresh();
               },
-              child: const Text('सुरक्षित करें'),
+              child: Text(l10n.save),
             ),
           ],
         ),

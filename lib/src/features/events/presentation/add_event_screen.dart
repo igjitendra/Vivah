@@ -21,7 +21,6 @@ class _SubEventItem {
     required this.id,
     required this.title,
     required this.date,
-    this.time,
   });
 }
 
@@ -44,6 +43,7 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
   final _customCeremonyController = TextEditingController();
 
   EventType _selectedType = EventType.shaadi;
+  String? _selectedCustomTypeName;
   late String _eventDate;
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
@@ -56,10 +56,9 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
   List<String> get _quickSubEventSuggestions {
     switch (_selectedType) {
       case EventType.shaadi:
-      case EventType.wedding:
         return const ['तिलक', 'हल्दी', 'मेहंदी', 'संगीत', 'बारात', 'रिसेप्शन'];
       case EventType.engagement:
-      case EventType.sagayi:
+      case EventType.sagai:
         return const ['रोका', 'अंगूठी रस्म', 'प्रीतिभोज'];
       case EventType.mundan:
         return const ['हवन / पूजा', 'मुंडन संस्कार', 'भोज'];
@@ -68,6 +67,363 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
       default:
         return const ['मुख्य समारोह', 'प्रीतिभोज / दावत', 'पूजा'];
     }
+  }
+
+  List<EventType> _getDistinctStandardEventTypes() {
+    return const [
+      EventType.shaadi,
+      EventType.sagai,
+      EventType.tilak,
+      EventType.baraat,
+      EventType.haldi,
+      EventType.mehndi,
+      EventType.reception,
+      EventType.grihaPravesh,
+      EventType.namkaran,
+      EventType.mundan,
+      EventType.janeu,
+      EventType.godhBharai,
+      EventType.chhathi,
+      EventType.birthday,
+      EventType.anniversary,
+      EventType.katha,
+      EventType.religiousCeremony,
+      EventType.festival,
+      EventType.familyGathering,
+      EventType.retirement,
+      EventType.inauguration,
+      EventType.funeral,
+      EventType.communityEvent,
+      EventType.other,
+    ];
+  }
+
+  IconData _getEventTypeIcon(EventType type) {
+    return switch (type) {
+      EventType.shaadi || EventType.wedding => Icons.favorite_border,
+      EventType.sagai || EventType.engagement => Icons.diamond_outlined,
+      EventType.tilak => Icons.auto_awesome_outlined,
+      EventType.baraat => Icons.music_note_outlined,
+      EventType.haldi || EventType.mehndi => Icons.spa_outlined,
+      EventType.reception => Icons.restaurant_outlined,
+      EventType.grihaPravesh => Icons.home_outlined,
+      EventType.namkaran => Icons.child_care_outlined,
+      EventType.mundan => Icons.content_cut_outlined,
+      EventType.janeu => Icons.self_improvement_outlined,
+      EventType.godhBharai => Icons.pregnant_woman_outlined,
+      EventType.chhathi => Icons.celebration_outlined,
+      EventType.birthday => Icons.cake_outlined,
+      EventType.anniversary => Icons.alarm_on_outlined,
+      EventType.katha || EventType.religiousCeremony => Icons.wb_sunny_outlined,
+      EventType.festival => Icons.festival_outlined,
+      EventType.familyGathering => Icons.groups_outlined,
+      EventType.retirement => Icons.badge_outlined,
+      EventType.inauguration => Icons.storefront_outlined,
+      EventType.funeral => Icons.nights_stay_outlined,
+      EventType.communityEvent => Icons.people_outline,
+      _ => Icons.event_outlined,
+    };
+  }
+
+  void _showCreateCustomTypeDialog(BuildContext context, AppLocalizations l10n) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.addNewEventType, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.customEventTypeHint, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            const SizedBox(height: 8),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                hintText: l10n.enterCustomEventType,
+                filled: true,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final text = controller.text.trim();
+              if (text.isEmpty) return;
+              await ref.read(settingsRepositoryProvider).addCustomEventType(text);
+              if (mounted) {
+                setState(() {
+                  _selectedType = EventType.other;
+                  _selectedCustomTypeName = text;
+                  _customCeremonyController.text = text;
+                });
+                _checkConflicts();
+                Navigator.pop(ctx);
+              }
+            },
+            child: Text(l10n.saveAndSelect, style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEventTypePickerSheet(BuildContext context, AppLocalizations l10n, List<String> customTypes) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        String searchQuery = '';
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final theme = Theme.of(context);
+            final isDark = theme.brightness == Brightness.dark;
+            final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
+            final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
+            final searchBg = isDark ? const Color(0xFF161A24) : const Color(0xFFF1F5F9);
+            final textPrimary = theme.colorScheme.onSurface;
+            final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+            final primaryAccent = theme.colorScheme.primary;
+
+            final filteredCustom = customTypes.where((c) =>
+                searchQuery.isEmpty || c.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+
+            final filteredStandard = _getDistinctStandardEventTypes().where((t) {
+              if (searchQuery.isEmpty) return true;
+              final label = l10n.eventTypeLabel(t).toLowerCase();
+              return label.contains(searchQuery.toLowerCase());
+            }).toList();
+
+            return DraggableScrollableSheet(
+              initialChildSize: 0.8,
+              minChildSize: 0.5,
+              maxChildSize: 0.95,
+              builder: (_, scrollController) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: cardBg,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 10),
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: cardBorder,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              l10n.selectEventType,
+                              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: textPrimary),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close, size: 20),
+                              onPressed: () => Navigator.pop(ctx),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        child: TextField(
+                          onChanged: (val) => setSheetState(() => searchQuery = val.trim()),
+                          decoration: InputDecoration(
+                            hintText: l10n.searchEventTypeHint,
+                            prefixIcon: const Icon(Icons.search, size: 20),
+                            filled: true,
+                            fillColor: searchBg,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            _showCreateCustomTypeDialog(context, l10n);
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: primaryAccent.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: primaryAccent.withValues(alpha: 0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.add_circle_outline, color: primaryAccent, size: 22),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '+ ${l10n.addNewEventType}',
+                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: primaryAccent),
+                                      ),
+                                      Text(
+                                        l10n.customEventTypeHint,
+                                        style: TextStyle(fontSize: 11, color: textSecondary),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(Icons.chevron_right, color: primaryAccent, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView(
+                          controller: scrollController,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          children: [
+                            if (filteredCustom.isNotEmpty) ...[
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                child: Text(
+                                  l10n.customEventTypes,
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryAccent, letterSpacing: 0.5),
+                                ),
+                              ),
+                              ...filteredCustom.map((cType) {
+                                final isSelected = _selectedCustomTypeName == cType;
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 6),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? primaryAccent.withValues(alpha: 0.12) : searchBg,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: isSelected ? primaryAccent : cardBorder,
+                                      width: isSelected ? 1.5 : 1,
+                                    ),
+                                  ),
+                                  child: ListTile(
+                                    dense: true,
+                                    leading: Icon(Icons.stars_outlined, size: 18, color: isSelected ? primaryAccent : textSecondary),
+                                    title: Text(
+                                      cType,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                        color: isSelected ? primaryAccent : textPrimary,
+                                      ),
+                                    ),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (isSelected)
+                                          Icon(Icons.check, size: 18, color: primaryAccent),
+                                        IconButton(
+                                          icon: Icon(Icons.delete_outline, size: 18, color: textSecondary),
+                                          onPressed: () async {
+                                            await ref.read(settingsRepositoryProvider).removeCustomEventType(cType);
+                                            if (_selectedCustomTypeName == cType) {
+                                              setState(() {
+                                                _selectedCustomTypeName = null;
+                                                _selectedType = EventType.shaadi;
+                                              });
+                                            }
+                                            setSheetState(() {});
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                    onTap: () {
+                                      setState(() {
+                                        _selectedType = EventType.other;
+                                        _selectedCustomTypeName = cType;
+                                        _customCeremonyController.text = cType;
+                                      });
+                                      _checkConflicts();
+                                      Navigator.pop(ctx);
+                                    },
+                                  ),
+                                );
+                              }),
+                              const Divider(height: 24),
+                            ],
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Text(
+                                l10n.standardEventTypes,
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textSecondary, letterSpacing: 0.5),
+                              ),
+                            ),
+                            ...filteredStandard.map((type) {
+                              final label = l10n.eventTypeLabel(type);
+                              final isSelected = _selectedCustomTypeName == null && _selectedType == type;
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 4),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? primaryAccent.withValues(alpha: 0.12) : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: isSelected ? primaryAccent : Colors.transparent,
+                                    width: isSelected ? 1.5 : 1,
+                                  ),
+                                ),
+                                child: ListTile(
+                                  dense: true,
+                                  leading: Icon(
+                                    _getEventTypeIcon(type),
+                                    size: 18,
+                                    color: isSelected ? primaryAccent : textSecondary,
+                                  ),
+                                  title: Text(
+                                    label,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                      color: isSelected ? primaryAccent : textPrimary,
+                                    ),
+                                  ),
+                                  trailing: isSelected ? Icon(Icons.check, size: 18, color: primaryAccent) : null,
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedType = type;
+                                      _selectedCustomTypeName = null;
+                                      _customCeremonyController.clear();
+                                    });
+                                    _checkConflicts();
+                                    Navigator.pop(ctx);
+                                  },
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -91,6 +447,7 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
       id: 'temp_check',
       title: _titleController.text.trim(),
       eventType: _selectedType,
+      category: _selectedCustomTypeName,
       eventDate: _eventDate,
       startTime: _startTime != null
           ? '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')}'
@@ -260,13 +617,17 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
       final now = DateTime.now();
       final eventId = const Uuid().v4();
 
+      final customName = _selectedCustomTypeName?.trim().isNotEmpty == true
+          ? _selectedCustomTypeName!.trim()
+          : (_selectedType == EventType.other && _customCeremonyController.text.trim().isNotEmpty
+              ? _customCeremonyController.text.trim()
+              : null);
+
       final event = Event(
         id: eventId,
         title: _titleController.text.trim(),
         eventType: _selectedType,
-        category: _selectedType == EventType.other && _customCeremonyController.text.trim().isNotEmpty
-            ? _customCeremonyController.text.trim()
-            : null,
+        category: customName,
         eventDate: _eventDate,
         startTime: !_isAllDay && _startTime != null
             ? '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')}'
@@ -310,9 +671,14 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
 
       await repo.createEvent(event);
 
+      if (customName != null && customName.isNotEmpty) {
+        await ref.read(settingsRepositoryProvider).addCustomEventType(customName);
+      }
+
       // Reactive invalidation for instant numbers update
       ref.invalidate(dashboardSummaryProvider);
       ref.invalidate(activeEventsListProvider);
+      ref.invalidate(customEventTypesProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -343,6 +709,7 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
     final textPrimary = theme.colorScheme.onSurface;
     final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
     final primaryAccent = theme.colorScheme.primary;
+    final customTypes = ref.watch(customEventTypesProvider).value ?? [];
 
     return Scaffold(
       backgroundColor: scaffoldBg,
@@ -416,33 +783,181 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
                       ),
                       const SizedBox(height: 14),
 
-                      Text(l10n.eventType, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: textPrimary)),
-                      const SizedBox(height: 6),
-                      DropdownButtonFormField<EventType>(
-                        value: _selectedType,
-                        dropdownColor: cardBg,
-                        items: EventType.values.map((t) {
-                          final label = l10n.isEnglish ? t.name : t.labelHindi;
-                          return DropdownMenuItem(
-                            value: t,
-                            child: Text(label, style: TextStyle(color: textPrimary, fontSize: 13.5)),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          setState(() => _selectedType = val ?? EventType.shaadi);
-                          _checkConflicts();
-                        },
-                        decoration: _inputDecoration(l10n.eventType, inputBg, textSecondary),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(l10n.eventType, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: textPrimary)),
+                          InkWell(
+                            onTap: () => _showCreateCustomTypeDialog(context, l10n),
+                            borderRadius: BorderRadius.circular(6),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              child: Text(
+                                '+ ${l10n.addNewEventType}',
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryAccent),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Main Event Type Selection Card
+                      InkWell(
+                        onTap: () => _showEventTypePickerSheet(context, l10n, customTypes),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: inputBg,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _selectedCustomTypeName != null ? primaryAccent.withValues(alpha: 0.5) : cardBorder,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                _selectedCustomTypeName != null ? Icons.stars_outlined : _getEventTypeIcon(_selectedType),
+                                size: 20,
+                                color: primaryAccent,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  _selectedCustomTypeName ?? l10n.eventTypeLabel(_selectedType),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: textPrimary,
+                                  ),
+                                ),
+                              ),
+                              if (_selectedCustomTypeName != null)
+                                Container(
+                                  margin: const EdgeInsets.only(right: 8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: primaryAccent.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    l10n.customEventTypes,
+                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryAccent),
+                                  ),
+                                ),
+                              Icon(Icons.keyboard_arrow_down, size: 20, color: textSecondary),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Quick Chips Horizontal Scroll
+                      SizedBox(
+                        height: 34,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: ActionChip(
+                                avatar: Icon(Icons.add, size: 14, color: primaryAccent),
+                                label: Text(
+                                  l10n.addNewEventType,
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryAccent),
+                                ),
+                                backgroundColor: primaryAccent.withValues(alpha: 0.08),
+                                side: BorderSide(color: primaryAccent.withValues(alpha: 0.3)),
+                                onPressed: () => _showCreateCustomTypeDialog(context, l10n),
+                              ),
+                            ),
+                            ...customTypes.map((cType) {
+                              final isSelected = _selectedCustomTypeName == cType;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 6),
+                                child: ChoiceChip(
+                                  avatar: Icon(Icons.stars_outlined, size: 14, color: isSelected ? Colors.white : primaryAccent),
+                                  label: Text(
+                                    cType,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                      color: isSelected ? Colors.white : textPrimary,
+                                    ),
+                                  ),
+                                  selected: isSelected,
+                                  selectedColor: primaryAccent,
+                                  backgroundColor: inputBg,
+                                  onSelected: (selected) {
+                                    if (selected) {
+                                      setState(() {
+                                        _selectedType = EventType.other;
+                                        _selectedCustomTypeName = cType;
+                                        _customCeremonyController.text = cType;
+                                      });
+                                      _checkConflicts();
+                                    }
+                                  },
+                                ),
+                              );
+                            }),
+                            ...[
+                              EventType.shaadi,
+                              EventType.sagai,
+                              EventType.tilak,
+                              EventType.grihaPravesh,
+                              EventType.mundan,
+                              EventType.namkaran,
+                              EventType.birthday,
+                              EventType.anniversary,
+                              EventType.katha,
+                              EventType.religiousCeremony,
+                            ].map((type) {
+                              final isSelected = _selectedCustomTypeName == null && _selectedType == type;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 6),
+                                child: ChoiceChip(
+                                  label: Text(
+                                    l10n.eventTypeLabel(type),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                      color: isSelected ? Colors.white : textPrimary,
+                                    ),
+                                  ),
+                                  selected: isSelected,
+                                  selectedColor: primaryAccent,
+                                  backgroundColor: inputBg,
+                                  onSelected: (selected) {
+                                    if (selected) {
+                                      setState(() {
+                                        _selectedType = type;
+                                        _selectedCustomTypeName = null;
+                                        _customCeremonyController.clear();
+                                      });
+                                      _checkConflicts();
+                                    }
+                                  },
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
                       ),
 
                       if (_selectedType == EventType.other) ...[
-                        const SizedBox(height: 14),
-                        Text(l10n.customCeremony, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: textPrimary)),
+                        const SizedBox(height: 12),
+                        Text(l10n.enterCustomEventType, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: textPrimary)),
                         const SizedBox(height: 6),
                         TextFormField(
                           controller: _customCeremonyController,
+                          textCapitalization: TextCapitalization.words,
                           style: TextStyle(color: textPrimary, fontSize: 14),
-                          decoration: _inputDecoration(l10n.customCeremonyHint, inputBg, textSecondary),
+                          decoration: _inputDecoration(l10n.customEventTypeHint, inputBg, textSecondary),
+                          onChanged: (val) {
+                            setState(() => _selectedCustomTypeName = val.trim().isNotEmpty ? val.trim() : null);
+                          },
                         ),
                       ],
                     ],

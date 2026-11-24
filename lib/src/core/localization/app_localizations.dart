@@ -424,6 +424,7 @@ class AppLocalizations {
   String get done => isEnglish ? 'Done' : (isUrdu ? 'مکمل' : 'पूर्ण');
 
   // Common Actions & Dialogs
+  String get add => isEnglish ? 'Add' : (isUrdu ? 'شامل کریں' : 'जोड़ें');
   String get save => isEnglish ? 'Save' : (isUrdu ? 'محفوظ کریں' : 'सहेजें');
   String get cancel => isEnglish ? 'Cancel' : (isUrdu ? 'منسوخ کریں' : 'रद्द करें');
   String get confirm => isEnglish ? 'Confirm' : (isUrdu ? 'تصدیق کریں' : 'पुष्टि करें');
@@ -774,8 +775,6 @@ class AppLocalizations {
   String get editFamilyProfile => isEnglish ? 'Edit Family Profile' : (isUrdu ? 'خاندانی پروفائل میں ترمیم کریں' : 'पारिवारिक प्रोफ़ाइल संपादित करें');
   String get setupFamilyProfile => isEnglish ? 'Setup Family Profile' : (isUrdu ? 'خاندانی پروفائل مرتب کریں' : 'पारिवारिक प्रोफ़ाइल बनाएं');
   String get setupFamilyProfileSubtitle => isEnglish ? 'Add your family details and member list' : (isUrdu ? 'خاندانی تفصیلات اور اراکین کی فہرست شامل کریں' : 'अपनी पारिवारिक जानकारी व सदस्यों की सूची जोड़ें');
-  String get familyName => isEnglish ? 'Family Name' : (isUrdu ? 'خاندان کا نام' : 'परिवार का नाम');
-  String get familyNameHint => isEnglish ? 'e.g. Sharma Family' : (isUrdu ? 'مثال: شرما خاندان' : 'जैसे: शर्मा परिवार');
   String get headOfFamily => isEnglish ? 'Head of Family (Mukhiya)' : (isUrdu ? 'خاندان کا سربراہ' : 'परिवार के मुखिया');
   String get headOfFamilyHint => isEnglish ? 'e.g. Shri Ramesh Sharma' : (isUrdu ? 'مثال: شری رمیش شرما' : 'जैसे: श्री रमेश चंद्र शर्मा');
   String get nativePlace => isEnglish ? 'Native Village / City' : (isUrdu ? 'آبائی گاؤں / شہر' : 'पैतृक गाँव / स्थान');

@@ -286,7 +286,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
               var filtered = allEvents.where((e) {
                 // Search filter
                 if (_searchQuery.isNotEmpty) {
-                  final typeLabel = l10n.isEnglish ? e.eventType.name : e.eventType.labelHindi;
+                  final typeLabel = l10n.eventTypeLabel(e.eventType, customCategory: e.category);
                   final matchQuery = e.title.toLowerCase().contains(_searchQuery) ||
                       (e.venue ?? '').toLowerCase().contains(_searchQuery) ||
                       (e.villageCity ?? '').toLowerCase().contains(_searchQuery) ||
@@ -561,7 +561,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
     required bool isDark,
     required AppLocalizations l10n,
   }) {
-    final eventTypeName = l10n.isEnglish ? ev.eventType.name : ev.eventType.labelHindi;
+    final eventTypeName = l10n.eventTypeLabel(ev.eventType, customCategory: ev.category);
     final isSelected = wide && _selectedEventId == ev.id;
 
     // Format date range

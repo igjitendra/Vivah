@@ -4,11 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_spacing.dart';
-import '../../../../core/localization/app_localizations.dart';
-import '../../../../domain/entities/family_profile.dart';
-import '../../../../app/app_providers.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
+import '../../../domain/entities/family_profile.dart';
+import '../../../app/app_providers.dart';
 
 /// Screen to create or edit the user's primary family profile
 class EditFamilyProfileScreen extends ConsumerStatefulWidget {

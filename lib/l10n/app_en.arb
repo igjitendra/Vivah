@@ -96,6 +96,10 @@
   "@cancel": {
     "description": "Cancellation button"
   },
+  "add": "Add",
+  "@add": {
+    "description": "Add button"
+  },
   "save": "Save",
   "@save": {
     "description": "Save button"

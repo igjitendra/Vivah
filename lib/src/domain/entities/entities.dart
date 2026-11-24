@@ -849,14 +849,6 @@ class TransactionEntry {
   bool get isCancelled => status == TransactionStatus.cancelled;
   bool get isArchived => archivedAt != null;
 
-  /// Returns custom category if specified by user, else default Hindi label
-  String get displayTypeName {
-    if (category != null && category!.trim().isNotEmpty) {
-      return category!.trim();
-    }
-    return eventType.labelHindi;
-  }
-
   // Backward compatibility aliases
   int get cashAmountPaise => amountPaise ?? 0;
   String? get expectedDate => isPlanned ? transactionDate : null;

@@ -835,6 +835,19 @@ class AppLocalizations {
       return '$count व्यक्ति';
     }
   }
+
+  // Proof Image Section
+  String get proofImageTitle => isEnglish ? 'Payment Proof' : (isUrdu ? 'ادائیگی کا ثبوت' : 'भुगतान प्रमाण');
+  String get addProofImage => isEnglish ? 'Add Proof Photo' : (isUrdu ? 'ثبوت فوٹو شامل کریں' : 'प्रमाण फ़ोटो जोड़ें');
+  String get proofImageCaption => isEnglish ? 'Add Caption' : (isUrdu ? 'عنوان لکھیں' : 'कैप्शन लिखें');
+  String get proofImageCaptionHint => isEnglish ? 'e.g. Cheque no. 1234' : (isUrdu ? 'مثال: چیک نمبر 1234' : 'जैसे: चेक नं. 1234');
+  String get replaceProof => isEnglish ? 'Replace' : (isUrdu ? 'تبدیل کریں' : 'बदलें');
+  String get deleteProof => isEnglish ? 'Delete Proof' : (isUrdu ? 'ثبوت حذف کریں' : 'प्रमाण हटाएं');
+  String get deleteProofConfirm => isEnglish ? 'Delete this proof photo? This cannot be undone.' : (isUrdu ? 'یہ ثبوت فوٹو حذف کریں؟ یہ واپس نہیں ہو سکتا۔' : 'यह प्रमाण फ़ोटो हटाएं? यह पूर्ववत नहीं हो सकता।');
+  String get chooseFromGallery => isEnglish ? 'Choose from Gallery' : (isUrdu ? 'گیلری سے منتخب کریں' : 'गैलरी से चुनें');
+  String get takePhoto => isEnglish ? 'Take Photo' : (isUrdu ? 'فوٹو لیں' : 'फ़ोटो लें');
+  String get proofImageError => isEnglish ? 'Could not attach photo. Please try again.' : (isUrdu ? 'فوٹو شامل نہ ہو سکی۔ دوبارہ کوشش کریں۔' : 'फ़ोटो जोड़ नहीं सकी। कृपया पुनः प्रयास करें।');
+  String get skip => isEnglish ? 'Skip' : (isUrdu ? 'چھوڑیں' : 'छोड़ें');
 }
 
 class _AppLocalizationsDelegate

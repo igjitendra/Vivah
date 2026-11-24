@@ -10,6 +10,7 @@ import '../../../domain/entities/entities.dart';
 import '../../../domain/enums/transaction_enums.dart';
 import '../../../app/app_providers.dart';
 import '../../../shared/widgets/direction_badge.dart';
+import 'widgets/proof_image_section.dart';
 
 /// Transaction Detail & Actions Screen
 /// Fully theme-adaptive with status actions and soft archiving.
@@ -487,6 +488,10 @@ class _EntryDetailScreenState extends ConsumerState<EntryDetailScreen> {
                   ),
                 ),
               ],
+
+              // Proof Image Section
+              const SizedBox(height: AppSpacing.md),
+              ProofImageSection(entryId: widget.entryId),
 
               // Actions for Planned Transactions
               if (entry.isPlanned) ...[

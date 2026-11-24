@@ -308,5 +308,17 @@
   "saveAndSelect": "محفوظ کریں اور منتخب کریں",
   "deleteCustomTypeConfirm": "کیا یہ قسم ہٹائیں؟",
   "customTypeDeleted": "قسم ہٹا دی گئی",
-  "searchEventTypeHint": "تقریب تلاش کریں..."
+  "searchEventTypeHint": "تقریب تلاش کریں...",
+
+  "proofImageTitle": "ادائیگی کا ثبوت",
+  "addProofImage": "ثبوت فوٹو شامل کریں",
+  "proofImageCaption": "عنوان لکھیں",
+  "proofImageCaptionHint": "مثال: چیک نمبر 1234",
+  "replaceProof": "تبدیل کریں",
+  "deleteProof": "ثبوت حذف کریں",
+  "deleteProofConfirm": "یہ ثبوت فوٹو حذف کریں؟ یہ واپس نہیں ہو سکتا۔",
+  "chooseFromGallery": "گیلری سے منتخب کریں",
+  "takePhoto": "فوٹو لیں",
+  "proofImageError": "فوٹو شامل نہ ہو سکی۔ دوبارہ کوشش کریں۔",
+  "skip": "چھوڑیں"
 }

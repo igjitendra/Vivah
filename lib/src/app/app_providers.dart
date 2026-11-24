@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Family;
 import '../data/database/app_database.dart';
 import '../data/database/database_module.dart';
+import '../data/database/tables/attachments_table.dart';
 import '../data/repositories/entries_repository.dart';
 import '../data/repositories/people_repository.dart';
 import '../data/repositories/events_repository.dart';
@@ -118,5 +119,12 @@ final familyProfileRepositoryProvider = Provider<FamilyProfileRepository>((ref) 
 final familyProfileProvider = StreamProvider<FamilyProfile>((ref) {
   final repo = ref.watch(familyProfileRepositoryProvider);
   return repo.watchFamilyProfile();
+});
+
+/// Provider for entry proof image (watches a single entry's proof attachment)
+final entryProofProvider =
+    StreamProvider.family<AttachmentRow?, String>((ref, entryId) {
+  final db = ref.watch(appDatabaseProvider);
+  return db.attachmentsDao.watchProofForEntry(entryId);
 });
 

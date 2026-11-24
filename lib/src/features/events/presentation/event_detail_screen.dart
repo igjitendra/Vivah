@@ -1396,7 +1396,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                   decoration: const InputDecoration(labelText: 'स्थिति (Status)'),
                 ),
                 const SizedBox(height: 10),
-                TextField(controller: venueCtrl, decoration: InputDecoration(labelText: l10n.venue)),
+                TextField(controller: venueCtrl, decoration: InputDecoration(labelText: l10n.eventLocation)),
                 const SizedBox(height: 10),
                 TextField(controller: notesCtrl, decoration: InputDecoration(labelText: l10n.notes)),
               ],

@@ -82,7 +82,6 @@ class FamilyProfileScreen extends ConsumerWidget {
     final l10n = context.l10n;
 
     final profileAsync = ref.watch(familyProfileProvider);
-    final profile = profileAsync.value ?? const FamilyProfile();
 
     final bg = theme.scaffoldBackgroundColor;
     final cardBg = isDark ? theme.colorScheme.surface : Colors.white;

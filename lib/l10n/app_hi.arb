@@ -308,5 +308,17 @@
   "saveAndSelect": "सहेजें व चुनें",
   "deleteCustomTypeConfirm": "क्या यह कस्टम प्रकार हटाना चाहते हैं?",
   "customTypeDeleted": "कस्टम प्रकार हटा दिया गया",
-  "searchEventTypeHint": "कार्यक्रम का प्रकार खोजें..."
+  "searchEventTypeHint": "कार्यक्रम का प्रकार खोजें...",
+
+  "proofImageTitle": "भुगतान प्रमाण",
+  "addProofImage": "प्रमाण फ़ोटो जोड़ें",
+  "proofImageCaption": "कैप्शन लिखें",
+  "proofImageCaptionHint": "जैसे: चेक नं. 1234",
+  "replaceProof": "बदलें",
+  "deleteProof": "प्रमाण हटाएं",
+  "deleteProofConfirm": "यह प्रमाण फ़ोटो हटाएं? यह पूर्ववत नहीं हो सकता।",
+  "chooseFromGallery": "गैलरी से चुनें",
+  "takePhoto": "फ़ोटो लें",
+  "proofImageError": "फ़ोटो जोड़ नहीं सकी। कृपया पुनः प्रयास करें।",
+  "skip": "छोड़ें"
 }

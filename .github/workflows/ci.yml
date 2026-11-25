@@ -2,9 +2,9 @@ name: Vyavahaar Cross-Platform CI
 
 on:
   push:
-    branches: [ main, migration/flutter-only ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, migration/flutter-only ]
+    branches: [ main ]
 
 jobs:
   flutter-verify:

@@ -137,17 +137,17 @@ class DriftEventsRepository implements EventsRepository {
       totalReceived: results[0] as int,
       totalGiven: results[1] as int,
       totalCount: results[2] as int,
-      extended: results[3] as Map<String, dynamic>?,
-      functions: results[4] as List<EventFunction>?,
-      participants: results[5] as List<EventParticipant>?,
-      guests: results[6] as List<EventGuest>?,
-      tasks: results[7] as List<EventTask>?,
-      schedule: results[8] as List<EventScheduleItem>?,
-      budgetCategories: results[9] as List<EventBudgetCategory>?,
-      notes: results[10] as List<EventNote>?,
-      attachments: results[11] as List<EventAttachment>?,
-      activityLogs: results[12] as List<EventActivityLog>?,
-      reminders: results[13] as List<EventReminder>?,
+      extended: (results[3] as Map<String, dynamic>?) ?? const {},
+      functions: (results[4] as List<EventFunction>?) ?? const [],
+      participants: (results[5] as List<EventParticipant>?) ?? const [],
+      guests: (results[6] as List<EventGuest>?) ?? const [],
+      tasks: (results[7] as List<EventTask>?) ?? const [],
+      schedule: (results[8] as List<EventScheduleItem>?) ?? const [],
+      budgetCategories: (results[9] as List<EventBudgetCategory>?) ?? const [],
+      notes: (results[10] as List<EventNote>?) ?? const [],
+      attachments: (results[11] as List<EventAttachment>?) ?? const [],
+      activityLogs: (results[12] as List<EventActivityLog>?) ?? const [],
+      reminders: (results[13] as List<EventReminder>?) ?? const [],
     );
   }
 
@@ -535,34 +535,35 @@ class DriftEventsRepository implements EventsRepository {
 
   Event _mapToEntity(
     EventRow r, {
-    Map<String, dynamic> extended = const {},
+    Map<String, dynamic>? extended,
     int? totalReceived,
     int? totalGiven,
     int? totalCount,
-    List<EventFunction> functions = const [],
-    List<EventParticipant> participants = const [],
-    List<EventGuest> guests = const [],
-    List<EventTask> tasks = const [],
-    List<EventScheduleItem> schedule = const [],
-    List<EventBudgetCategory> budgetCategories = const [],
-    List<EventNote> notes = const [],
-    List<EventAttachment> attachments = const [],
-    List<EventActivityLog> activityLogs = const [],
-    List<EventReminder> reminders = const [],
+    List<EventFunction>? functions,
+    List<EventParticipant>? participants,
+    List<EventGuest>? guests,
+    List<EventTask>? tasks,
+    List<EventScheduleItem>? schedule,
+    List<EventBudgetCategory>? budgetCategories,
+    List<EventNote>? notes,
+    List<EventAttachment>? attachments,
+    List<EventActivityLog>? activityLogs,
+    List<EventReminder>? reminders,
   }) {
-    final category = extended['category']?.toString();
-    final endDate = extended['end_date']?.toString();
-    final startTime = extended['start_time']?.toString();
-    final endTime = extended['end_time']?.toString();
-    final isAllDay = extended['is_all_day'] == 1;
-    final address = extended['address']?.toString();
-    final villageCity = extended['village_city']?.toString();
-    final landmark = extended['landmark']?.toString();
-    final mapLink = extended['map_link']?.toString();
-    final description = extended['description']?.toString();
-    final statusStr = extended['status']?.toString();
-    final priorityStr = extended['priority']?.toString();
-    final budgetEstimated = (extended['budget_estimated_paise'] as num?)?.toInt();
+    final ext = extended ?? const {};
+    final category = ext['category']?.toString();
+    final endDate = ext['end_date']?.toString();
+    final startTime = ext['start_time']?.toString();
+    final endTime = ext['end_time']?.toString();
+    final isAllDay = ext['is_all_day'] == 1;
+    final address = ext['address']?.toString();
+    final villageCity = ext['village_city']?.toString();
+    final landmark = ext['landmark']?.toString();
+    final mapLink = ext['map_link']?.toString();
+    final description = ext['description']?.toString();
+    final statusStr = ext['status']?.toString();
+    final priorityStr = ext['priority']?.toString();
+    final budgetEstimated = (ext['budget_estimated_paise'] as num?)?.toInt();
 
     return Event(
       id: r.id,
@@ -590,16 +591,16 @@ class DriftEventsRepository implements EventsRepository {
       totalReceivedPaise: totalReceived,
       totalGivenPaise: totalGiven,
       totalEntriesCount: totalCount,
-      functions: functions,
-      participants: participants,
-      guests: guests,
-      tasks: tasks,
-      schedule: schedule,
-      budgetCategories: budgetCategories,
-      notesList: notes,
-      attachments: attachments,
-      activityLogs: activityLogs,
-      reminders: reminders,
+      functions: functions ?? const [],
+      participants: participants ?? const [],
+      guests: guests ?? const [],
+      tasks: tasks ?? const [],
+      schedule: schedule ?? const [],
+      budgetCategories: budgetCategories ?? const [],
+      notesList: notes ?? const [],
+      attachments: attachments ?? const [],
+      activityLogs: activityLogs ?? const [],
+      reminders: reminders ?? const [],
     );
   }
 }

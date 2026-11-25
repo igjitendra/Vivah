@@ -58,8 +58,8 @@ class DriftPeopleRepository implements PeopleRepository {
       return _mapToEntity(
         r,
         extended: results[0] as Map<String, dynamic>?,
-        secondaryPhones: results[1] as List<String>?,
-        emails: results[2] as List<String>?,
+        secondaryPhones: (results[1] as List<String>?) ?? const [],
+        emails: (results[2] as List<String>?) ?? const [],
       );
     }));
   }
@@ -98,8 +98,8 @@ class DriftPeopleRepository implements PeopleRepository {
     return _mapToEntity(
       row,
       extended: results[0] as Map<String, dynamic>?,
-      secondaryPhones: results[1] as List<String>?,
-      emails: results[2] as List<String>?,
+      secondaryPhones: (results[1] as List<String>?) ?? const [],
+      emails: (results[2] as List<String>?) ?? const [],
     );
   }
 
@@ -330,8 +330,8 @@ class DriftPeopleRepository implements PeopleRepository {
   Person _mapToEntity(
     PersonRow r, {
     Map<String, dynamic>? extended,
-    List<String> secondaryPhones = const [],
-    List<String> emails = const [],
+    List<String>? secondaryPhones,
+    List<String>? emails,
   }) {
     final tagsStr = extended?['tags'] as String?;
     final tagsList = tagsStr != null && tagsStr.isNotEmpty
@@ -350,9 +350,9 @@ class DriftPeopleRepository implements PeopleRepository {
       dateOfBirth: extended?['date_of_birth'] as String?,
       photoPath: extended?['photo_path'] as String?,
       phoneNumber: r.phoneNumber != null && r.phoneNumber!.isNotEmpty ? r.phoneNumber : null,
-      secondaryPhones: secondaryPhones,
+      secondaryPhones: secondaryPhones ?? const [],
       whatsappNumber: extended?['whatsapp_number'] as String?,
-      emails: emails,
+      emails: emails ?? const [],
       address: r.address != null && r.address!.isNotEmpty ? r.address : null,
       village: extended?['village'] as String? ?? (r.address != null && r.address!.isNotEmpty ? r.address : null),
       city: extended?['city'] as String?,

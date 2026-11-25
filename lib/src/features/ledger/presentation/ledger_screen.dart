@@ -265,7 +265,6 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
     final eventsAsync = ref.watch(activeEventsListProvider);
 
     final scaffoldBg = theme.scaffoldBackgroundColor;
-    final headerBg = isDark ? theme.colorScheme.surface : theme.colorScheme.secondary;
     final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
     final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
     final textPrimary = theme.colorScheme.onSurface;
@@ -353,7 +352,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                       isSelected: _selectedDirection == null,
                       onTap: () => setState(() => _selectedDirection = null),
                       icon: Icons.filter_list,
-                      activeColor: isDark ? const Color(0xFF38BDF8) : headerBg,
+                      activeColor: isDark ? const Color(0xFF38BDF8) : primaryAccent,
                       cardBg: cardBg,
                       cardBorder: cardBorder,
                       textPrimary: textPrimary,
@@ -625,15 +624,17 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
       appBar: AppBar(
         title: Text(
           l10n.ledgerTitle,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: textPrimary,
             fontWeight: FontWeight.w800,
             fontSize: 20,
-            letterSpacing: 0.3,
+            letterSpacing: -0.2,
           ),
         ),
-        backgroundColor: headerBg,
+        backgroundColor: cardBg,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        shape: const Border(),
       ),
       floatingActionButton: wide
           ? null

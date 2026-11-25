@@ -32,7 +32,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     final l10n = context.l10n;
 
     final scaffoldBg = theme.scaffoldBackgroundColor;
-    final headerBg = isDark ? theme.colorScheme.surface : theme.colorScheme.secondary;
     final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
     final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
     final textPrimary = theme.colorScheme.onSurface;
@@ -42,10 +41,19 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     return Scaffold(
       backgroundColor: scaffoldBg,
       appBar: AppBar(
-        title: Text(l10n.insightsTitle, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
-        backgroundColor: headerBg,
+        title: Text(
+          l10n.insightsTitle,
+          style: TextStyle(
+            color: textPrimary,
+            fontWeight: FontWeight.w800,
+            fontSize: 20,
+            letterSpacing: -0.2,
+          ),
+        ),
+        backgroundColor: cardBg,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        scrolledUnderElevation: 0,
+        iconTheme: IconThemeData(color: textPrimary),
       ),
       body: _isGenerating
           ? Center(child: CircularProgressIndicator(color: primaryAccent))
@@ -390,7 +398,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     _buildReportTile(
                       title: l10n.csvExport,
                       icon: Icons.table_chart_outlined,
-                      iconColor: isDark ? const Color(0xFF38BDF8) : headerBg,
+                      iconColor: isDark ? const Color(0xFF38BDF8) : primaryAccent,
                       cardBg: cardBg,
                       cardBorder: cardBorder,
                       textPrimary: textPrimary,

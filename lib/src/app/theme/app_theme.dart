@@ -42,17 +42,26 @@ class AppTheme {
       fontFamily: primaryFamily,
       fontFamilyFallback: fontFallbacks,
       appBarTheme: AppBarTheme(
-        backgroundColor: palette.isDark ? palette.surface : palette.secondary,
-        foregroundColor: Colors.white,
+        backgroundColor: palette.surface,
+        foregroundColor: palette.textPrimary,
         elevation: 0,
+        scrolledUnderElevation: 0,
         centerTitle: false,
+        iconTheme: IconThemeData(color: palette.textPrimary, size: 22),
+        actionsIconTheme: IconThemeData(color: palette.textPrimary, size: 22),
+        shape: Border(
+          bottom: BorderSide(
+            color: palette.cardBorder.withValues(alpha: 0.6),
+            width: 1,
+          ),
+        ),
         titleTextStyle: TextStyle(
           fontFamily: primaryFamily,
           fontFamilyFallback: fontFallbacks,
-          fontSize: 22,
+          fontSize: 20,
           fontWeight: FontWeight.w800,
-          color: Colors.white,
-          letterSpacing: 0.5,
+          color: palette.textPrimary,
+          letterSpacing: -0.2,
         ),
       ),
       cardTheme: CardThemeData(

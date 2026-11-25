@@ -5,7 +5,39 @@
 
 ---
 
-## [1.4.14] — 2026-11-23
+## [1.4.15] — 2026-11-25
+
+### Added
+- **Pro-Level Relative & People Management Architecture**:
+  - **Live Financial Ledger Snapshot on Relative Cards**:
+    - Aggregates person-wise transactions from ledger streams in real-time.
+    - Displays total received (`मिला: ₹...`, Emerald Green) and total given (`दिया: ₹...`, Diya Red) with transaction count badge directly on each relative card.
+  - **Pro Smart Multi-Sorting**:
+    - Sort relatives by: Alphabetical Name (`A-Z`), Most Transactions (`सर्वाधिक लेन-देन`), Highest Received (`सर्वाधिक मिला`), Highest Given (`सर्वाधिक दिया`), and Recently Added (`हाल ही में जोड़े गए`).
+  - **Pro Dynamic Filters**:
+    - Smart filter chips: All (`सारे`), Active Ledger (`सक्रिय लेन-देन` with past exchanges), Zero Transactions (`बिना लेन-देन`), Phone Contacts (`फ़ोन से आयातित`), and Manual Entries (`मैन्युअल प्रविष्टि`).
+  - **One-Tap Direct Transaction Actions**:
+    - Integrated direct `+ व्यवहार जोड़ें` shortcut popup (`+ मिला दर्ज करें` / `+ दिया दर्ज करें`) on every card in the relative directory.
+    - Added dual tactile primary action buttons (`+ मिला दर्ज करें` and `+ दिया दर्ज करें`) inside `PersonDetailScreen` ledger passbook section.
+    - Pre-selects relative and direction instantly without navigation overhead.
+
+### Changed
+- **Modern Minimalist Header Redesign (Streak / Apple Level Polish)**:
+  - **Global `AppBarTheme` Overhaul**:
+    - Migrated app bar backgrounds across the application from dark navy (`theme.colorScheme.secondary`) to clean surface/white (`palette.surface`).
+    - Title text styled with high-contrast `palette.textPrimary`, bold font weight (800), and crisp tracking (-0.2).
+    - Applied subtle 1px hairline bottom divider (`palette.cardBorder.withValues(alpha: 0.6)`) and zero elevation for modern flush layout.
+  - **Home Dashboard Header Modernization**:
+    - Replaced heavy dark navy container and 20px rounded corners with clean flush surface header.
+    - Added subtle brand-tinted logo container (`primaryAccent.withValues(alpha: 0.10)`) with `AppSymbol`.
+    - Transformed live date indicator into a minimalist calendar capsule pill with calendar icon and high legibility.
+    - Modernized tactile circular settings button matching search and filter controls.
+  - **Unified Master Screen Headers**:
+    - Connected `LedgerScreen`, `EventsListScreen`, and `PeopleListScreen` AppBars seamlessly with their respective search and filter containers, creating unified header blocks.
+  - **Detail and Form Screens**:
+    - Updated `AddEntryScreen`, `EntryDetailScreen`, `AddEventScreen`, `EventDetailScreen`, `AddPersonScreen`, `PersonDetailScreen`, `ReportsScreen`, `RemindersScreen`, and `LanguageSelectorScreen` with consistent light clean headers and dark crisp icons.
+  - **Analyzer Parity**:
+    - Eliminated all unused local variables and resolved `AppColors.gold` references. Verified with `flutter analyze` (0 issues).
 
 ### Added
 - **Record Transaction Architecture Redesign (`AddEntryScreen`)**:

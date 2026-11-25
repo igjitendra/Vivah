@@ -184,3 +184,19 @@ All core transaction, relation, and ceremony creation workflows utilize `Express
 - **`EmptyDetailPane`**:
   - Rendered in right pane when no item is selected.
   - Centered circular brand watermark (`AppSymbol`), Devanagari headline, explanatory subtitle, and tactile keyboard shortcuts pill (`Ctrl+N` नया जोड़ें • `Ctrl+F` खोजें • `F1` शॉर्टकट).
+
+### 6.6 Modern Minimalist Clean Header Architecture (Streak & Apple Aligned)
+- **Source**: `lib/src/app/theme/app_theme.dart`, `lib/src/features/dashboard/presentation/dashboard_screen.dart`, `lib/src/features/ledger/presentation/ledger_screen.dart`, etc.
+- **Global Theme Definition**:
+  - `AppBarTheme`: Background set to `palette.surface` (matching clean white/surface canvas), foreground to `palette.textPrimary`, elevation 0, `scrolledUnderElevation: 0`.
+  - Crisp hairline border: `shape: Border(bottom: BorderSide(color: palette.cardBorder.withValues(alpha: 0.6), width: 1))`.
+  - Typography: `palette.textPrimary`, `fontSize: 20`, `fontWeight: FontWeight.w800`, `letterSpacing: -0.2` (or -0.3).
+- **Home Dashboard Header**:
+  - Replaced chunky dark navy container and 20px rounded corners with clean, flush top bar matching screen surface.
+  - Logo in a subtle tinted container (`primaryAccent.withValues(alpha: 0.10)`), crisp high-contrast title.
+  - Clean calendar pill badge with `searchBg` background and subtle border.
+  - Circular tactile settings button with subtle border.
+- **Unified Master Screen AppBars (Ledger, Events, People)**:
+  - Header Title + Search Bar + Filter Chips unified into a single seamless header block using `cardBg` with hairline bottom separator.
+- **Detail & Modal AppBars**:
+  - Consistent light surface background, dark high-contrast icons, zero visual clashes.

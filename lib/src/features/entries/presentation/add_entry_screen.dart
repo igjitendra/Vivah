@@ -830,7 +830,6 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
 
     final isReceived = _direction == TransactionDirection.received;
     final primaryAccent = isReceived ? AppColors.milaGreen : AppColors.diyaRed;
-    final headerBg = isDark ? theme.colorScheme.surface : primaryAccent;
     final scaffoldBg = theme.scaffoldBackgroundColor;
     final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
     final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
@@ -846,11 +845,17 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
       appBar: AppBar(
         title: Text(
           isReceived ? l10n.recordReceivedTitle : l10n.recordGivenTitle,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(
+            color: textPrimary,
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+            letterSpacing: -0.2,
+          ),
         ),
-        backgroundColor: headerBg,
+        backgroundColor: cardBg,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        scrolledUnderElevation: 0,
+        iconTheme: IconThemeData(color: textPrimary),
         actions: [
           // If Given, allow quick toggle for Planned vs Recorded
           if (!isReceived)
@@ -867,11 +872,11 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: _status == TransactionStatus.recorded
-                        ? AppColors.diyaRed.withValues(alpha: 0.35)
-                        : AppColors.gold.withValues(alpha: 0.35),
+                        ? AppColors.diyaRed.withValues(alpha: 0.12)
+                        : AppColors.gold.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: _status == TransactionStatus.recorded ? Colors.white : AppColors.gold,
+                      color: _status == TransactionStatus.recorded ? AppColors.diyaRed.withValues(alpha: 0.4) : AppColors.gold,
                       width: 1,
                     ),
                   ),
@@ -881,12 +886,16 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                       Icon(
                         _status == TransactionStatus.recorded ? Icons.check_circle_outline : Icons.schedule,
                         size: 14,
-                        color: Colors.white,
+                        color: _status == TransactionStatus.recorded ? AppColors.diyaRed : AppColors.gold,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         _status == TransactionStatus.recorded ? l10n.statusRecorded : l10n.statusPlanned,
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: _status == TransactionStatus.recorded ? AppColors.diyaRed : AppColors.gold,
+                        ),
                       ),
                     ],
                   ),

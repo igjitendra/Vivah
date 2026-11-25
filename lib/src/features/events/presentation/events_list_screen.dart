@@ -63,7 +63,6 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
         : ref.watch(activeEventsListProvider);
 
     final scaffoldBg = theme.scaffoldBackgroundColor;
-    final headerBg = isDark ? theme.colorScheme.surface : theme.colorScheme.secondary;
     final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
     final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
     final searchBg = isDark ? const Color(0xFF161A24) : const Color(0xFFF1F5F9);
@@ -414,10 +413,17 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
       appBar: AppBar(
         title: Text(
           l10n.eventsTitle,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+          style: TextStyle(
+            color: textPrimary,
+            fontWeight: FontWeight.w800,
+            fontSize: 20,
+            letterSpacing: -0.2,
+          ),
         ),
-        backgroundColor: headerBg,
+        backgroundColor: cardBg,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        shape: const Border(),
       ),
       floatingActionButton: wide
           ? null

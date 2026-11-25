@@ -424,7 +424,6 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> {
     final entriesStream = ref.watch(entriesListProvider(null));
 
     final scaffoldBg = theme.scaffoldBackgroundColor;
-    final headerBg = isDark ? theme.colorScheme.surface : theme.colorScheme.secondary;
     final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
     final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
     final textPrimary = theme.colorScheme.onSurface;
@@ -436,18 +435,25 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> {
       appBar: AppBar(
         title: Text(
           l10n.personDetails,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+          style: TextStyle(
+            color: textPrimary,
+            fontWeight: FontWeight.w800,
+            fontSize: 20,
+            letterSpacing: -0.2,
+          ),
         ),
-        backgroundColor: headerBg,
+        backgroundColor: cardBg,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        iconTheme: IconThemeData(color: textPrimary),
         leading: widget.showBackButton
             ? IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                icon: Icon(Icons.arrow_back, color: textPrimary),
                 onPressed: () => Navigator.pop(context),
               )
             : (widget.onClose != null
                 ? IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    icon: Icon(Icons.close, color: textPrimary),
                     onPressed: widget.onClose,
                   )
                 : null),
@@ -459,7 +465,7 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> {
               final person = snapshot.data;
               if (person == null) return const SizedBox.shrink();
               return PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, color: Colors.white),
+                icon: Icon(Icons.more_vert, color: textPrimary),
                 onSelected: (val) {
                   if (val == 'edit') _showEditPersonDialog(context, person, l10n);
                   if (val == 'share') ContactsService.sharePersonCard(person);
@@ -788,6 +794,75 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> {
                                     const SizedBox(height: 4),
                                     Text(CurrencyUtils.formatPaise(totalDiya), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red)),
                                   ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        // Pro Dual Fast-Entry Buttons: + मिला and + दिया
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ExpressSquish(
+                                scale: 0.96,
+                                onTap: () => context.push('/entry/new?direction=received&personId=${person.id}'),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.milaGreen,
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.milaGreen.withValues(alpha: 0.3),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.arrow_downward, color: Colors.white, size: 14),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        '+ मिला दर्ज करें',
+                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12.5),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: ExpressSquish(
+                                scale: 0.96,
+                                onTap: () => context.push('/entry/new?direction=given&personId=${person.id}'),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.diyaRed,
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.diyaRed.withValues(alpha: 0.3),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.arrow_upward, color: Colors.white, size: 14),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        '+ दिया दर्ज करें',
+                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12.5),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),

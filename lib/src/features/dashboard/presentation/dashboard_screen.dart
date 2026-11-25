@@ -56,7 +56,6 @@ class DashboardScreen extends ConsumerWidget {
     final double topPadding = MediaQuery.of(context).padding.top;
 
     final scaffoldBg = theme.scaffoldBackgroundColor;
-    final headerBg = isDark ? theme.colorScheme.surface : theme.colorScheme.secondary;
     final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
     final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
     final textPrimary = theme.colorScheme.onSurface;
@@ -70,27 +69,22 @@ class DashboardScreen extends ConsumerWidget {
       backgroundColor: scaffoldBg,
       body: Column(
         children: [
-          // 1. Sleek & Confident Header (Zero Slogans / Filler)
+          // 1. Sleek & Modern Minimalist Header (Streak / Apple inspired)
           Container(
             padding: EdgeInsets.only(
-              top: topPadding + 10,
-              bottom: AppSpacing.md,
-              left: AppSpacing.lg,
-              right: AppSpacing.lg,
+              top: topPadding + 8,
+              bottom: 12,
+              left: AppSpacing.md,
+              right: AppSpacing.md,
             ),
             decoration: BoxDecoration(
-              color: headerBg,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark ? Colors.black38 : const Color(0x1F0F172A),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+              color: cardBg,
+              border: Border(
+                bottom: BorderSide(
+                  color: cardBorder.withValues(alpha: 0.6),
+                  width: 1,
                 ),
-              ],
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -98,13 +92,17 @@ class DashboardScreen extends ConsumerWidget {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(5),
+                      padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.16),
+                        color: primaryAccent.withValues(alpha: 0.10),
                         borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: primaryAccent.withValues(alpha: 0.20),
+                          width: 0.8,
+                        ),
                       ),
                       child: const AppSymbol(
-                        size: 22,
+                        size: 20,
                         pageColor: AppColors.warmCream,
                         checkmarkColor: AppColors.terracotta,
                       ),
@@ -112,43 +110,40 @@ class DashboardScreen extends ConsumerWidget {
                     const SizedBox(width: 10),
                     Text(
                       l10n.appName,
-                      style: const TextStyle(
-                        fontSize: 22,
+                      style: TextStyle(
+                        fontSize: 20,
                         fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                        letterSpacing: 0.3,
+                        color: textPrimary,
+                        letterSpacing: -0.3,
                       ),
                     ),
                   ],
                 ),
                 Row(
                   children: [
-                    // Live Date Capsule Badge
+                    // Clean Minimalist Date Capsule Badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.16),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                        color: isDark ? const Color(0xFF161A24) : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: cardBorder),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Container(
-                            width: 7,
-                            height: 7,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF4ADE80), // Live pulse green dot
-                              shape: BoxShape.circle,
-                            ),
+                          Icon(
+                            Icons.calendar_today_outlined,
+                            size: 13,
+                            color: textSecondary,
                           ),
                           const SizedBox(width: 6),
                           Text(
                             AppDateUtils.getLiveTodayHeaderString(l10n.locale.languageCode),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                              color: textSecondary,
                             ),
                           ),
                         ],
@@ -156,15 +151,20 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                     const SizedBox(width: 8),
                     ExpressSquish(
-                      scale: 0.90,
+                      scale: 0.92,
                       onTap: onOpenSettings,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.14),
+                          color: isDark ? const Color(0xFF161A24) : const Color(0xFFF1F5F9),
                           shape: BoxShape.circle,
+                          border: Border.all(color: cardBorder),
                         ),
-                        padding: const EdgeInsets.all(8),
-                        child: const Icon(Icons.settings_outlined, color: Colors.white, size: 20),
+                        padding: const EdgeInsets.all(7.5),
+                        child: Icon(
+                          Icons.settings_outlined,
+                          color: textPrimary,
+                          size: 19,
+                        ),
                       ),
                     ),
                   ],

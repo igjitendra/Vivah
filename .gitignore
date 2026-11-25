@@ -6,6 +6,9 @@
 build/
 *.g.dart
 *.freezed.dart
+.kotlin/
+l10n_untranslated.json
+lib/l10n/generated/
 
 # Visual Studio Code
 .vscode/

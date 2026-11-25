@@ -22,7 +22,6 @@ class RemindersScreen extends ConsumerWidget {
     final l10n = context.l10n;
 
     final scaffoldBg = theme.scaffoldBackgroundColor;
-    final headerBg = isDark ? theme.colorScheme.surface : theme.colorScheme.secondary;
     final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
     final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
     final textPrimary = theme.colorScheme.onSurface;
@@ -34,11 +33,17 @@ class RemindersScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(
           l10n.remindersTitle,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+          style: TextStyle(
+            color: textPrimary,
+            fontWeight: FontWeight.w800,
+            fontSize: 20,
+            letterSpacing: -0.2,
+          ),
         ),
-        backgroundColor: headerBg,
+        backgroundColor: cardBg,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        scrolledUnderElevation: 0,
+        iconTheme: IconThemeData(color: textPrimary),
       ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 16),

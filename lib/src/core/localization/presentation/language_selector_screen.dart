@@ -43,7 +43,6 @@ class _LanguageSelectorScreenState extends ConsumerState<LanguageSelectorScreen>
     final l10n = context.l10n;
 
     final scaffoldBg = theme.scaffoldBackgroundColor;
-    final headerBg = isDark ? theme.colorScheme.surface : theme.colorScheme.secondary;
     final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
     final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
     final searchBg = isDark ? const Color(0xFF161A24) : const Color(0xFFF1F5F9);
@@ -65,15 +64,17 @@ class _LanguageSelectorScreenState extends ConsumerState<LanguageSelectorScreen>
       appBar: AppBar(
         title: Text(
           l10n.selectLanguageTitle,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+          style: TextStyle(
+            color: textPrimary,
+            fontWeight: FontWeight.w800,
             fontSize: 20,
+            letterSpacing: -0.2,
           ),
         ),
-        backgroundColor: headerBg,
+        backgroundColor: cardBg,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        scrolledUnderElevation: 0,
+        iconTheme: IconThemeData(color: textPrimary),
       ),
       body: Column(
         children: [

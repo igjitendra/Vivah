@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Family;
+import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
+import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../domain/entities/entities.dart';
+import '../../../domain/enums/transaction_enums.dart';
 import '../../../shared/widgets/empty_detail_pane.dart';
 import '../../../shared/widgets/express_squish.dart';
 import '../../../app/app_providers.dart';
@@ -12,8 +16,8 @@ import 'person_detail_screen.dart';
 import 'widgets/contact_import_sheet.dart';
 import '../services/contacts_service.dart';
 
-enum PeopleSort { nameAsc, recentlyAdded, recentlyUpdated }
-enum PeopleFilter { all, phoneImported, manual }
+enum PeopleSort { nameAsc, mostTransactions, highestReceived, highestGiven, recentlyAdded }
+enum PeopleFilter { all, activeOnly, zeroBalance, phoneImported, manual }
 
 /// Advanced Screen displaying the directory of relatives and families/clans
 /// Supports Contact Book Import, vCard/CSV Export, Multi-Select Bulk Actions, and Direct Intent Triggers.
@@ -37,8 +41,9 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
   String _searchQuery = '';
   String? _selectedPersonId;
 
-  // Filtering
+  // Filtering & Sorting
   PeopleFilter _activeFilter = PeopleFilter.all;
+  PeopleSort _activeSort = PeopleSort.nameAsc;
 
   // Multi-Select Bulk Mode
   bool _isMultiSelectMode = false;
@@ -305,9 +310,25 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
     final l10n = context.l10n;
     final peopleAsync = ref.watch(activePeopleListProvider);
     final familiesAsync = ref.watch(activeFamiliesListProvider);
+    final entriesAsync = ref.watch(entriesListProvider(null));
+
+    // Aggregate person-wise transactions for Pro Level Relative Directory
+    final Map<String, ({int totalMila, int totalDiya, int count})> personStats = {};
+    if (entriesAsync.hasValue) {
+      for (final entry in entriesAsync.value!) {
+        if (entry.archivedAt != null || entry.status != TransactionStatus.recorded) continue;
+        final existing = personStats[entry.personId] ?? (totalMila: 0, totalDiya: 0, count: 0);
+        final isReceived = entry.direction == TransactionDirection.received;
+        final amount = entry.amountPaise ?? 0;
+        personStats[entry.personId] = (
+          totalMila: existing.totalMila + (isReceived ? amount : 0),
+          totalDiya: existing.totalDiya + (!isReceived ? amount : 0),
+          count: existing.count + 1,
+        );
+      }
+    }
 
     final scaffoldBg = theme.scaffoldBackgroundColor;
-    final headerBg = isDark ? theme.colorScheme.surface : theme.colorScheme.secondary;
     final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
     final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
     final searchBg = isDark ? const Color(0xFF161A24) : const Color(0xFFF1F5F9);
@@ -427,37 +448,114 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
             ),
             child: Column(
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: searchBg,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: cardBorder),
-                  ),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
-                    style: TextStyle(fontSize: 14, color: textPrimary),
-                    decoration: InputDecoration(
-                      hintText: l10n.searchPeopleHint,
-                      hintStyle: TextStyle(fontSize: 13, color: textSecondary),
-                      prefixIcon: Icon(Icons.search, color: textSecondary, size: 20),
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: Icon(Icons.clear, color: textSecondary, size: 18),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() => _searchQuery = '');
-                              },
-                            )
-                          : null,
-                      filled: false,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-                      border: InputBorder.none,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: searchBg,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: cardBorder),
+                        ),
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
+                          style: TextStyle(fontSize: 14, color: textPrimary),
+                          decoration: InputDecoration(
+                            hintText: l10n.searchPeopleHint,
+                            hintStyle: TextStyle(fontSize: 13, color: textSecondary),
+                            prefixIcon: Icon(Icons.search, color: textSecondary, size: 20),
+                            suffixIcon: _searchQuery.isNotEmpty
+                                ? IconButton(
+                                    icon: Icon(Icons.clear, color: textSecondary, size: 18),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      setState(() => _searchQuery = '');
+                                    },
+                                  )
+                                : null,
+                            filled: false,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+                            border: InputBorder.none,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    // Pro Smart Sort Button
+                    Container(
+                      decoration: BoxDecoration(
+                        color: _activeSort != PeopleSort.nameAsc ? primaryAccent.withValues(alpha: 0.15) : searchBg,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: _activeSort != PeopleSort.nameAsc ? primaryAccent : cardBorder),
+                      ),
+                      child: PopupMenuButton<PeopleSort>(
+                        tooltip: 'सॉर्ट करें',
+                        icon: Icon(
+                          Icons.sort_rounded,
+                          color: _activeSort != PeopleSort.nameAsc ? primaryAccent : textSecondary,
+                          size: 20,
+                        ),
+                        initialValue: _activeSort,
+                        onSelected: (sort) => setState(() => _activeSort = sort),
+                        itemBuilder: (ctx) => [
+                          PopupMenuItem(
+                            value: PeopleSort.nameAsc,
+                            child: Row(
+                              children: [
+                                Icon(Icons.sort_by_alpha, size: 18, color: _activeSort == PeopleSort.nameAsc ? primaryAccent : textSecondary),
+                                const SizedBox(width: 8),
+                                const Text('नाम (A-Z)'),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: PeopleSort.mostTransactions,
+                            child: Row(
+                              children: [
+                                Icon(Icons.trending_up, size: 18, color: _activeSort == PeopleSort.mostTransactions ? primaryAccent : textSecondary),
+                                const SizedBox(width: 8),
+                                const Text('सर्वाधिक लेन-देन'),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: PeopleSort.highestReceived,
+                            child: Row(
+                              children: [
+                                Icon(Icons.arrow_downward, size: 18, color: _activeSort == PeopleSort.highestReceived ? AppColors.milaGreen : textSecondary),
+                                const SizedBox(width: 8),
+                                const Text('सर्वाधिक मिला'),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: PeopleSort.highestGiven,
+                            child: Row(
+                              children: [
+                                Icon(Icons.arrow_upward, size: 18, color: _activeSort == PeopleSort.highestGiven ? AppColors.diyaRed : textSecondary),
+                                const SizedBox(width: 8),
+                                const Text('सर्वाधिक दिया'),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: PeopleSort.recentlyAdded,
+                            child: Row(
+                              children: [
+                                Icon(Icons.access_time, size: 18, color: _activeSort == PeopleSort.recentlyAdded ? primaryAccent : textSecondary),
+                                const SizedBox(width: 8),
+                                const Text('हाल ही में जोड़े गए'),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 8),
-                // Filter Chips (All, Phone Imported, Manual)
+                // Pro Filter Chips
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
@@ -467,6 +565,22 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
                         label: l10n.all,
                         isSelected: _activeFilter == PeopleFilter.all,
                         onTap: () => setState(() => _activeFilter = PeopleFilter.all),
+                        primaryAccent: primaryAccent,
+                        cardBorder: cardBorder,
+                        textSecondary: textSecondary,
+                      ),
+                      _buildFilterChip(
+                        label: 'सक्रिय लेन-देन',
+                        isSelected: _activeFilter == PeopleFilter.activeOnly,
+                        onTap: () => setState(() => _activeFilter = PeopleFilter.activeOnly),
+                        primaryAccent: primaryAccent,
+                        cardBorder: cardBorder,
+                        textSecondary: textSecondary,
+                      ),
+                      _buildFilterChip(
+                        label: 'बिना लेन-देन',
+                        isSelected: _activeFilter == PeopleFilter.zeroBalance,
+                        onTap: () => setState(() => _activeFilter = PeopleFilter.zeroBalance),
                         primaryAccent: primaryAccent,
                         cardBorder: cardBorder,
                         textSecondary: textSecondary,
@@ -536,12 +650,14 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
           child: _currentTab == 0
               ? _buildPeopleTab(
                   peopleAsync: peopleAsync,
+                  personStats: personStats,
                   cardBg: cardBg,
                   cardBorder: cardBorder,
                   primaryAccent: primaryAccent,
                   textPrimary: textPrimary,
                   textSecondary: textSecondary,
                   wide: wide,
+                  isDark: isDark,
                   l10n: l10n,
                 )
               : _buildFamiliesTab(
@@ -562,15 +678,23 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
       appBar: AppBar(
         title: Text(
           l10n.peopleTitle,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+          style: TextStyle(
+            color: textPrimary,
+            fontWeight: FontWeight.w800,
+            fontSize: 20,
+            letterSpacing: -0.2,
+          ),
         ),
-        backgroundColor: headerBg,
+        backgroundColor: cardBg,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        shape: const Border(),
+        iconTheme: IconThemeData(color: textPrimary),
         actions: [
           if (_currentTab == 0 && !_isMultiSelectMode)
             IconButton(
               tooltip: 'मल्टी-सेलेक्ट मोड',
-              icon: const Icon(Icons.checklist, color: Colors.white),
+              icon: Icon(Icons.checklist, color: textPrimary),
               onPressed: () => setState(() => _isMultiSelectMode = true),
             ),
         ],
@@ -678,12 +802,14 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
 
   Widget _buildPeopleTab({
     required AsyncValue<List<Person>> peopleAsync,
+    required Map<String, ({int totalMila, int totalDiya, int count})> personStats,
     required Color cardBg,
     required Color cardBorder,
     required Color primaryAccent,
     required Color textPrimary,
     required Color textSecondary,
     required bool wide,
+    required bool isDark,
     required AppLocalizations l10n,
   }) {
     return peopleAsync.when(
@@ -702,15 +828,50 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
             if (!match) return false;
           }
 
-          // Source filter
+          // Source & Ledger Activity filter
+          final stats = personStats[p.id];
+          final hasTransactions = stats != null && stats.count > 0;
+          if (_activeFilter == PeopleFilter.activeOnly && !hasTransactions) return false;
+          if (_activeFilter == PeopleFilter.zeroBalance && hasTransactions) return false;
           if (_activeFilter == PeopleFilter.phoneImported && !p.isPhoneImported) return false;
           if (_activeFilter == PeopleFilter.manual && p.isPhoneImported) return false;
 
           return true;
         }).toList();
 
-        // Sort
-        filtered.sort((a, b) => a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase()));
+        // Pro Smart Multi-Sorting
+        switch (_activeSort) {
+          case PeopleSort.nameAsc:
+            filtered.sort((a, b) => a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase()));
+            break;
+          case PeopleSort.mostTransactions:
+            filtered.sort((a, b) {
+              final countA = personStats[a.id]?.count ?? 0;
+              final countB = personStats[b.id]?.count ?? 0;
+              if (countB != countA) return countB.compareTo(countA);
+              return a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase());
+            });
+            break;
+          case PeopleSort.highestReceived:
+            filtered.sort((a, b) {
+              final milaA = personStats[a.id]?.totalMila ?? 0;
+              final milaB = personStats[b.id]?.totalMila ?? 0;
+              if (milaB != milaA) return milaB.compareTo(milaA);
+              return a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase());
+            });
+            break;
+          case PeopleSort.highestGiven:
+            filtered.sort((a, b) {
+              final diyaA = personStats[a.id]?.totalDiya ?? 0;
+              final diyaB = personStats[b.id]?.totalDiya ?? 0;
+              if (diyaB != diyaA) return diyaB.compareTo(diyaA);
+              return a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase());
+            });
+            break;
+          case PeopleSort.recentlyAdded:
+            filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+            break;
+        }
 
         if (filtered.isEmpty) {
           return Center(
@@ -756,6 +917,7 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
             final p = filtered[index];
             final isSelected = wide && _selectedPersonId == p.id;
             final isMultiChecked = _selectedPersonIds.contains(p.id);
+            final stats = personStats[p.id];
 
             return Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -788,117 +950,232 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
                     widget.onOpenPersonDetail?.call(p.id);
                   }
                 },
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (_isMultiSelectMode) ...[
-                      Checkbox(
-                        value: isMultiChecked,
-                        activeColor: primaryAccent,
-                        onChanged: (v) {
-                          setState(() {
-                            if (v == true) {
-                              _selectedPersonIds.add(p.id);
-                            } else {
-                              _selectedPersonIds.remove(p.id);
-                              if (_selectedPersonIds.isEmpty) _isMultiSelectMode = false;
-                            }
-                          });
-                        },
-                      ),
-                      const SizedBox(width: 4),
-                    ],
+                    Row(
+                      children: [
+                        if (_isMultiSelectMode) ...[
+                          Checkbox(
+                            value: isMultiChecked,
+                            activeColor: primaryAccent,
+                            onChanged: (v) {
+                              setState(() {
+                                if (v == true) {
+                                  _selectedPersonIds.add(p.id);
+                                } else {
+                                  _selectedPersonIds.remove(p.id);
+                                  if (_selectedPersonIds.isEmpty) _isMultiSelectMode = false;
+                                }
+                              });
+                            },
+                          ),
+                          const SizedBox(width: 4),
+                        ],
 
-                    // Avatar with Initials
-                    CircleAvatar(
-                      radius: 22,
-                      backgroundColor: primaryAccent.withValues(alpha: 0.15),
-                      child: Text(
-                        p.initials,
-                        style: TextStyle(color: primaryAccent, fontWeight: FontWeight.bold, fontSize: 14),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
+                        // Avatar with Initials
+                        CircleAvatar(
+                          radius: 22,
+                          backgroundColor: primaryAccent.withValues(alpha: 0.15),
+                          child: Text(
+                            p.initials,
+                            style: TextStyle(color: primaryAccent, fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
 
-                    // Details
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                        // Details
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                child: Text(
-                                  p.displayName,
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: textPrimary),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      p.displayName,
+                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: textPrimary),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (p.isPhoneImported) ...[
+                                    const SizedBox(width: 4),
+                                    Tooltip(
+                                      message: 'फ़ोन संपर्क से आयातित',
+                                      child: Icon(Icons.contacts, size: 14, color: primaryAccent),
+                                    ),
+                                  ],
+                                ],
                               ),
-                              if (p.isPhoneImported) ...[
-                                const SizedBox(width: 4),
-                                Tooltip(
-                                  message: 'फ़ोन संपर्क से आयातित',
-                                  child: Icon(Icons.contacts, size: 14, color: primaryAccent),
-                                ),
-                              ],
+                              const SizedBox(height: 3),
+                              Row(
+                                children: [
+                                  if (p.relationshipLabel != null) ...[
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: primaryAccent.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        p.relationshipLabel!,
+                                        style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: primaryAccent),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                  ],
+                                  if (p.village != null && p.village!.isNotEmpty) ...[
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.amber.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        p.village!,
+                                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFFB45309)),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                  ],
+                                  if (p.phoneNumber != null)
+                                    Expanded(
+                                      child: Text(
+                                        p.phoneNumber!,
+                                        style: TextStyle(color: textSecondary, fontSize: 12),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    )
+                                  else if (p.address != null)
+                                    Expanded(
+                                      child: Text(
+                                        p.address!,
+                                        style: TextStyle(color: textSecondary, fontSize: 12),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                ],
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 3),
-                          Row(
-                            children: [
-                              if (p.relationshipLabel != null) ...[
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: primaryAccent.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    p.relationshipLabel!,
-                                    style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: primaryAccent),
-                                  ),
+                        ),
+
+                        // Direct Intent Quick Action Buttons (Call, WhatsApp, Add Transaction)
+                        if (!_isMultiSelectMode) ...[
+                          if (p.phoneNumber != null && p.phoneNumber!.isNotEmpty) ...[
+                            IconButton(
+                              icon: const Icon(Icons.phone_outlined, size: 19, color: Colors.green),
+                              tooltip: l10n.callAction,
+                              constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+                              padding: EdgeInsets.zero,
+                              onPressed: () => ContactsService.callPhone(p.phoneNumber!),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.chat_bubble_outline, size: 19, color: Colors.teal),
+                              tooltip: l10n.whatsappAction,
+                              constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+                              padding: EdgeInsets.zero,
+                              onPressed: () => ContactsService.openWhatsApp(p.phoneNumber!),
+                            ),
+                          ],
+                          PopupMenuButton<String>(
+                            tooltip: 'व्यवहार जोड़ें',
+                            constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+                            padding: EdgeInsets.zero,
+                            icon: Container(
+                              padding: const EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: primaryAccent.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(Icons.add, size: 16, color: primaryAccent),
+                            ),
+                            onSelected: (val) {
+                              if (val == 'received') {
+                                context.push('/entry/new?direction=received&personId=${p.id}');
+                              } else if (val == 'given') {
+                                context.push('/entry/new?direction=given&personId=${p.id}');
+                              }
+                            },
+                            itemBuilder: (ctx) => [
+                              const PopupMenuItem(
+                                value: 'received',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.arrow_downward, size: 16, color: AppColors.milaGreen),
+                                    SizedBox(width: 8),
+                                    Text('+ मिला दर्ज करें', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.milaGreen, fontSize: 13)),
+                                  ],
                                 ),
-                                const SizedBox(width: 6),
-                              ],
-                              if (p.phoneNumber != null)
-                                Expanded(
-                                  child: Text(
-                                    p.phoneNumber!,
-                                    style: TextStyle(color: textSecondary, fontSize: 12),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                )
-                              else if (p.address != null)
-                                Expanded(
-                                  child: Text(
-                                    p.address!,
-                                    style: TextStyle(color: textSecondary, fontSize: 12),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'given',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.arrow_upward, size: 16, color: AppColors.diyaRed),
+                                    SizedBox(width: 8),
+                                    Text('+ दिया दर्ज करें', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.diyaRed, fontSize: 13)),
+                                  ],
                                 ),
+                              ),
                             ],
                           ),
                         ],
-                      ),
+                      ],
                     ),
 
-                    // Direct Intent Quick Action Buttons (Call, WhatsApp, Share)
-                    if (!_isMultiSelectMode && p.phoneNumber != null && p.phoneNumber!.isNotEmpty) ...[
-                      const SizedBox(width: 6),
-                      IconButton(
-                        icon: const Icon(Icons.phone_outlined, size: 20, color: Colors.green),
-                        tooltip: l10n.callAction,
-                        onPressed: () => ContactsService.callPhone(p.phoneNumber!),
+                    // Pro Financial Ledger Snapshot Row
+                    if (stats != null && stats.count > 0) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF131720) : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: cardBorder.withValues(alpha: 0.7)),
+                        ),
+                        child: Row(
+                          children: [
+                            if (stats.totalMila > 0) ...[
+                              const Icon(Icons.arrow_downward, size: 12, color: AppColors.milaGreen),
+                              const SizedBox(width: 3),
+                              Text(
+                                'मिला: ${CurrencyUtils.formatPaise(stats.totalMila)}',
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.milaGreen),
+                              ),
+                              const SizedBox(width: 8),
+                            ],
+                            if (stats.totalDiya > 0) ...[
+                              const Icon(Icons.arrow_upward, size: 12, color: AppColors.diyaRed),
+                              const SizedBox(width: 3),
+                              Text(
+                                'दिया: ${CurrencyUtils.formatPaise(stats.totalDiya)}',
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.diyaRed),
+                              ),
+                            ],
+                            if (stats.totalMila == 0 && stats.totalDiya == 0)
+                              Text(
+                                'उपहार / वस्तु (${stats.count})',
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: textSecondary),
+                              ),
+                            const Spacer(),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: primaryAccent.withValues(alpha: 0.10),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                '${stats.count} व्यवहार',
+                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: primaryAccent),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.chat_bubble_outline, size: 20, color: Colors.teal),
-                        tooltip: l10n.whatsappAction,
-                        onPressed: () => ContactsService.openWhatsApp(p.phoneNumber!),
-                      ),
-                    ] else if (!_isMultiSelectMode) ...[
-                      Icon(Icons.chevron_right, color: textSecondary, size: 18),
                     ],
                   ],
                 ),

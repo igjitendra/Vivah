@@ -64,7 +64,6 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
     final l10n = context.l10n;
 
     final scaffoldBg = theme.scaffoldBackgroundColor;
-    final headerBg = isDark ? theme.colorScheme.surface : theme.colorScheme.secondary;
     final cardBg = isDark ? theme.colorScheme.surface : Colors.white;
     final cardBorder = isDark ? const Color(0xFF262E3D) : const Color(0xFFE2E8F0);
     final textPrimary = theme.colorScheme.onSurface;
@@ -87,7 +86,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
         if (event == null) {
           return Scaffold(
             backgroundColor: scaffoldBg,
-            appBar: AppBar(backgroundColor: headerBg),
+            appBar: AppBar(backgroundColor: cardBg),
             body: Center(child: Text(l10n.eventNotFound)),
           );
         }
@@ -101,11 +100,13 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
         return Scaffold(
           backgroundColor: scaffoldBg,
           appBar: AppBar(
-            backgroundColor: headerBg,
-            elevation: 0.5,
+            backgroundColor: cardBg,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            iconTheme: IconThemeData(color: textPrimary),
             leading: widget.showBackButton
                 ? IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    icon: Icon(Icons.arrow_back, color: textPrimary),
                     onPressed: () {
                       if (widget.onClose != null) {
                         widget.onClose!();
@@ -121,11 +122,11 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
               children: [
                 Text(
                   event.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16.5,
-                    letterSpacing: 0.1,
+                  style: TextStyle(
+                    color: textPrimary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 17,
+                    letterSpacing: -0.2,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -137,18 +138,18 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: primaryAccent.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         l10n.eventTypeLabel(event.eventType, customCategory: event.category),
-                        style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w600),
+                        style: TextStyle(fontSize: 10, color: primaryAccent, fontWeight: FontWeight.w600),
                       ),
                     ),
                     const SizedBox(width: 6),
                     Text(
                       '• ${event.eventDate}',
-                      style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.85), fontWeight: FontWeight.w400),
+                      style: TextStyle(fontSize: 11, color: textSecondary, fontWeight: FontWeight.w400),
                     ),
                   ],
                 ),
@@ -160,18 +161,18 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                 icon: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.18),
+                    color: isDark ? const Color(0xFF161A24) : const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1),
+                    border: Border.all(color: cardBorder, width: 1),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.edit_outlined, color: Colors.white, size: 14),
-                      SizedBox(width: 4),
+                      Icon(Icons.edit_outlined, color: textPrimary, size: 14),
+                      const SizedBox(width: 4),
                       Text(
                         'एडिट',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11.5),
+                        style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold, fontSize: 11.5),
                       ),
                     ],
                   ),

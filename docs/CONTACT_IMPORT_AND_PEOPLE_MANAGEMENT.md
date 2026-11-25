@@ -110,6 +110,12 @@ One-tap direct intent triggers integrated via `url_launcher`:
 - **vCard Export**: Generates `.vcf` file and shares via `share_plus`
 - **CSV Export**: Generates `.csv` spreadsheet with all fields and shares via `share_plus`
 
+### 5.1 Pro-Level Relative Ledger Snapshot & Direct Actions
+- **Live Ledger Snapshot Badge**: Every person card in `PeopleListScreen` calculates and displays their total received (`मिला: ₹...`, Emerald Green) and given (`दिया: ₹...`, Diya Red) with total transactions badge.
+- **Smart Multi-Sorting**: Relatives can be sorted by Name (`A-Z`), Most Transactions (`सर्वाधिक लेन-देन`), Highest Received (`सर्वाधिक मिला`), Highest Given (`सर्वाधिक दिया`), and Recently Added (`हाल ही में जोड़े गए`).
+- **Activity & Source Filters**: Filter chips include All (`सारे`), Active Ledger (`सक्रिय लेन-देन`), Zero Transactions (`बिना लेन-देन`), Phone Contacts (`फ़ोन से आयातित`), and Manual Entries (`मैन्युअल प्रविष्टि`).
+- **One-Tap Quick Entry**: Each relative card provides a direct `+ व्यवहार जोड़ें` menu with pre-selected relative parameters for instant Mila/Diya logging. Profile page provides dual prominent tactile action buttons (`+ मिला दर्ज करें` and `+ दिया दर्ज करें`).
+
 ---
 
 ## 6. Financial Ledger Invariants & Safe Deletion

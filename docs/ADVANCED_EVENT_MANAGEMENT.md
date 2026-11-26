@@ -61,22 +61,23 @@ The system introduces SQLite Schema v5 (plus Schema v9 2-Type Event Scope suppor
 
 ### B. Event Detail Screen (`EventDetailScreen`)
 Structured into 8 dedicated Material 3 tabs:
-1. **अवलोकन (Overview)**: High-level KPI cards, conflict warnings, key participants, and next upcoming function countdown.
+1. **अवलोकन (Overview)**: Event Scope badge (Own Family vs Host Relative with tappable profile jump & attending members note), live Budget/Remaining progress bar, 4 tappable KPI cards jumping directly to Checklist, Guests/Invitations, Mila, and Diya tabs, quick `+ शगुन मिला / दिया` actions, and upcoming sub-ceremonies.
 2. **रस्में (Functions & Schedule)**: Chronological timeline of all functions and scheduled itinerary items.
 3. **लोग (People & Families)**: Linked hosts, bride/groom, organizers, and families with phone shortcuts.
-4. **मेहमान (Guests & Invitations)**: RSVP head-count summary, accompanying guest tallies, filter by attendance, and one-tap WhatsApp invitation sharing.
-5. **कार्य (Tasks & Checklist)**: Visual progress bar (`✓ X/Y कार्य (Z%)`), quick status toggle checkboxes, and priority tags.
+4. **मेहमान (Guests & Invitations)**: Full Invitation & RSVP Command Center — live summary (`कुल परिवार`, `निमंत्रण गया`, `निमंत्रण बाकी`, `कुल सदस्य`), **Bulk Import from People Directory** (`रिश्तेदारों से जोड़ें`), status filter pills (`सभी`, `निमंत्रण गया`, `बाकी है`, `आएंगे`, `नहीं आएंगे`), search, 1-tap Invitation Sent/Pending toggle, quick RSVP selector, personalized guest invite copy, and sent-vs-pending status report copy.
+5. **कार्य (Tasks & Checklist)**: Visual progress bar (`X/Y कार्य (Z%)`), quick status toggle checkboxes, and priority tags.
 6. **बजट (Budget & Ledger)**:
-   - Budget utilization progress bar (`₹Actual / ₹Estimated (Util%)`).
-   - Category-wise expense breakdown.
-   - Event transactions list (pure cash Mila & Diya).
-   - Direct "+ नया व्यवहार जोड़ें" action linking straight to `/entry/new?eventId=...`.
+   - Budget vs Spent vs Remaining (`शेष बचा`) progress bar and Mila/Diya summary.
+   - Category-wise expense cards with preset Indian wedding/event categories (`टेंट व सजावट`, `खान-पान / हलवाई`, etc.), vendor/payee notes (`कहाँ / किसको`), remaining per category, and 1-tap `+ खर्चा जोड़ें` quick-entry (with optional auto-linked `Diya` ledger transaction).
+   - Automatic Payee/Vendor-wise breakdown (`किसको / कहाँ कितना दिया`) aggregated from recorded given entries.
+   - Direct "+ दिया / खर्चा जोड़ें" and "+ शगुन मिला जोड़ें" actions linking straight to `/entry/new?eventId=...`.
    - Printable PDF & CSV ledger export.
 7. **नोट्स (Notes & Attachments)**: Instruction notes and locally attached files.
 8. **इतिहास (Reminders & Activity Log)**: Configured alarms and chronological audit log.
 
 ### C. Events List & Calendar (`EventsListScreen`)
-- **View Toggle**: List View ⟷ Interactive Month Calendar View.
+- **2-Type Scope Switcher**: Segmented switcher for `All`, `Own Family` (`अपना परिवार`), and `Relative Event` (`रिश्तेदार का आयोजन`) with live counts, host/attending badges, upcoming countdown pills, live Mila/Diya totals, and 1-tap Shagun quick actions.
+- **View Toggle**: List View / Interactive Month Calendar View.
 - **Filter Chips**: All, Upcoming, Today, Completed, Draft, Archived.
 - **Calendar Engine**:
   - Month-by-month navigation with quick "आज (Today)" jump.

@@ -226,5 +226,81 @@ void main() {
       expect(active.single.isOwnFamilyEvent, isTrue);
       expect(SchemaMigrations.currentSchemaVersion, greaterThanOrEqualTo(9));
     });
+
+    test('tracks guest invitation toggles (sent vs notSent) and budget category remaining balance', () async {
+      final db = AppDatabase.inMemory();
+      addTearDown(() async => db.close());
+      final repo = DriftEventsRepository(db);
+      final now = DateTime.now();
+
+      final event = Event(
+        id: 'ev-a2z-1',
+        title: 'सपरिवार विवाह समारोह',
+        eventType: EventType.shaadi,
+        eventDate: '2026-12-25',
+        budgetEstimatedPaise: 50000000, // Rs 5,00,000
+        createdAt: now,
+        updatedAt: now,
+      );
+      await repo.createEvent(event);
+
+      // Add invited and pending guests
+      final pendingGuest = EventGuest(
+        id: 'g-pend-1',
+        eventId: 'ev-a2z-1',
+        name: 'राकेश मामा',
+        familyOrGroup: 'लखनऊ',
+        accompanyingCount: 3,
+        invitationStatus: InvitationStatus.notSent,
+        attendanceStatus: AttendanceStatus.notConfirmed,
+        createdAt: now,
+      );
+      final sentGuest = EventGuest(
+        id: 'g-sent-1',
+        eventId: 'ev-a2z-1',
+        name: 'विनोद चाचा',
+        accompanyingCount: 2,
+        invitationStatus: InvitationStatus.sent,
+        attendanceStatus: AttendanceStatus.attending,
+        createdAt: now,
+      );
+      await repo.addGuest(pendingGuest);
+      await repo.addGuest(sentGuest);
+
+      // Toggle pendingGuest to sent
+      await repo.updateGuest(
+        pendingGuest.copyWith(
+          invitationStatus: InvitationStatus.sent,
+          attendanceStatus: AttendanceStatus.attending,
+        ),
+      );
+
+      // Add budget category & increment expense
+      final catering = EventBudgetCategory(
+        id: 'cat-1',
+        eventId: 'ev-a2z-1',
+        categoryName: 'खान-पान / हलवाई',
+        estimatedAmountPaise: 20000000, // Rs 2,00,000
+        actualAmountPaise: 5000000, // Rs 50,000 advance
+        notes: 'शर्मा कैटरर्स (₹50000)',
+        createdAt: now,
+      );
+      await repo.addBudgetCategory(catering);
+      await repo.updateBudgetCategory(
+        catering.copyWith(
+          actualAmountPaise: catering.actualAmountPaise + 2500000, // + Rs 25,000
+          notes: '${catering.notes} • मिठाई (₹25000)',
+        ),
+      );
+
+      final loaded = await repo.getEventById('ev-a2z-1');
+      expect(loaded, isNotNull);
+      expect(loaded!.guests.length, equals(2));
+      expect(loaded.guests.where((g) => g.invitationStatus == InvitationStatus.notSent).length, equals(0));
+      expect(loaded.totalGuestCount, equals(7)); // (1+3) + (1+2)
+      expect(loaded.confirmedGuestCount, equals(7));
+      expect(loaded.budgetCategories.single.actualAmountPaise, equals(7500000));
+      expect(loaded.remainingBudgetPaise, equals(50000000 - 7500000));
+    });
   });
 }

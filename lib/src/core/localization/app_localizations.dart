@@ -848,6 +848,29 @@ class AppLocalizations {
   String get takePhoto => isEnglish ? 'Take Photo' : (isUrdu ? 'فوٹو لیں' : 'फ़ोटो लें');
   String get proofImageError => isEnglish ? 'Could not attach photo. Please try again.' : (isUrdu ? 'فوٹو شامل نہ ہو سکی۔ دوبارہ کوشش کریں۔' : 'फ़ोटो जोड़ नहीं सकी। कृपया पुनः प्रयास करें।');
   String get skip => isEnglish ? 'Skip' : (isUrdu ? 'چھوڑیں' : 'छोड़ें');
+
+  // Home Dashboard Bento & Hero Sections
+  String get familyMembersShort => isEnglish ? 'Total Members' : (isUrdu ? 'کل اراکین' : 'कुल सदस्य');
+  String get viewShort => isEnglish ? 'View' : (isUrdu ? 'دیکھیں' : 'देखें');
+  String get setupShort => isEnglish ? 'Setup' : (isUrdu ? 'ترتیب' : 'सेटअप');
+  String get recordedSoFar => isEnglish ? 'Recorded so far' : (isUrdu ? 'اب تک درج' : 'अब तक दर्ज');
+  String get giftsLabel => isEnglish ? 'Gifts' : (isUrdu ? 'تحائف' : 'उपहार');
+  String get itemsCountSuffix => isEnglish ? 'items' : (isUrdu ? 'اشیاء' : 'वस्तुएं');
+  String get quickActionEntry => isEnglish ? 'New Entry' : (isUrdu ? 'نیا اندراج' : 'नई प्रविष्टि');
+  String get quickActionEvent => isEnglish ? 'New Event' : (isUrdu ? 'نیا پروگرام' : 'नया आयोजन');
+  String get backupShort => isEnglish ? 'Backup' : (isUrdu ? 'بیک اپ' : 'बैकअप');
+  String get upcomingEvents => isEnglish ? 'Upcoming Events' : (isUrdu ? 'آنے والی تقریبات' : 'आगामी आयोजन');
+  String get upcomingReminders => isEnglish ? 'Upcoming Reminders' : (isUrdu ? 'آنے والی یادیں' : 'आगामी यादें');
+  String get recentTransactions => isEnglish ? 'Recent Transactions' : (isUrdu ? 'حالیہ لین دین' : 'हाल के व्यवहार');
+  String get noUpcomingEvents => isEnglish ? 'No upcoming events' : (isUrdu ? 'کوئی آنے والی تقریب نہیں' : 'कोई आगामी आयोजन नहीं');
+  String get noPendingReminders => isEnglish ? 'No pending reminders' : (isUrdu ? 'کوئی باقی یاد دہانی نہیں' : 'कोई लंबित याद नहीं');
+  String get addShort => isEnglish ? 'Add' : (isUrdu ? 'شامل کریں' : 'जोड़ें');
+
+  String daysLeftLabel(int days) {
+    if (days <= 0) return today;
+    if (days == 1) return isEnglish ? 'Tomorrow' : (isUrdu ? 'کل' : 'कल');
+    return isEnglish ? '$days days left' : (isUrdu ? '$days دن باقی' : '$days दिन बाकी');
+  }
 }
 
 class _AppLocalizationsDelegate

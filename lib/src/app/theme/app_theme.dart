@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
 import '../../core/theme/theme_palette.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../../core/theme/express_type.dart';
 
 /// Centralized Material 3 Dynamic Theme Builder for व्यवहार (Vyavahaar)
@@ -22,21 +23,23 @@ class AppTheme {
     final brightness = palette.isDark ? Brightness.dark : Brightness.light;
     final isEnglish = locale?.languageCode == 'en';
     final primaryFamily = isEnglish ? 'Figtree' : 'Poppins';
+    final semantic = AppSemanticColors.fromPalette(palette);
 
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
+      extensions: [semantic],
       textTheme: ExpressType.theme(palette.textPrimary, locale: locale),
       colorScheme: ColorScheme(
         brightness: brightness,
         primary: palette.primary,
-        onPrimary: Colors.white,
+        onPrimary: semantic.onVibrant,
         secondary: palette.secondary,
-        onSecondary: Colors.white,
+        onSecondary: semantic.onVibrant,
         surface: palette.surface,
         onSurface: palette.textPrimary,
-        error: AppColors.diyaRed,
-        onError: Colors.white,
+        error: semantic.diya,
+        onError: semantic.onVibrant,
       ),
       scaffoldBackgroundColor: palette.background,
       fontFamily: primaryFamily,

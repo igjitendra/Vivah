@@ -5,6 +5,28 @@
 
 ---
 
+## [1.4.16] — 2026-11-26
+
+### Added
+- **`AppSemanticColors` ThemeExtension (`lib/src/core/theme/app_semantic_colors.dart`)**:
+  - Dynamically derives hero gradients, highlights, overlapping card tints, Mila/Diya semantic containers, gift/cash split accents, and shadow tokens from any active `ThemePalette`.
+  - Registered inside `AppTheme.fromPalette` with full `lerp` transition support across all 25 light & dark curated palettes.
+- **Professional Hero + Bento Home Dashboard (`lib/src/features/dashboard/presentation/dashboard_screen.dart`)**:
+  - Theme-adaptive curved hero banner with framed `AppSymbol`, title/tagline, live pending reminder notification bell badge, and settings trigger.
+  - Floating overlapping Family Profile banner (`हमारा परिवार`, location/subtitle, live member count, quick view/setup CTA).
+  - Side-by-side gradient Mila/Diya hero metric cards with vibrant icon badge, mini trend bars, quick `+` logging trigger, and tinted footer bar.
+  - Live Cash vs Gifts (`नकद` & `उपहार`) breakdown strip aggregated from recorded entries.
+  - 5-tile Quick Actions card (Entry, Event, People, Reports, Backup) and responsive side-by-side Bento cards for Upcoming Events (`आगामी आयोजन`) & Upcoming Reminders (`आगामी यादें`).
+  - Enhanced Recent Transactions card (`हाल के व्यवहार`) with directional pills, relative dates, and cash/gift indicators.
+
+### Changed
+- **Zero-Hardcoded-Color Compliance**:
+  - Eliminated all hardcoded hex/static color literals from `DashboardScreen` and `FloatingPillTabBar`, binding every visual token strictly to `AppSemanticColors` and `ThemeData`.
+- **Localized Dashboard Labels (`lib/src/core/localization/app_localizations.dart`)**:
+  - Added multilingual English, Hindi, and Urdu strings for all new Home Dashboard sections and countdown labels.
+
+---
+
 ## [1.4.15] — 2026-11-25
 
 ### Added

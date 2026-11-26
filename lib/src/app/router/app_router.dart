@@ -171,6 +171,10 @@ final GoRouter appRouter = GoRouter(
                   onOpenEntryDetails: (id) => context.push('/entry/$id'),
                   onFilterMila: () => context.go('/bahi?direction=received'),
                   onFilterDiya: () => context.go('/bahi?direction=given'),
+                  onOpenReminders: () => context.push('/reminders'),
+                  onOpenReports: () => context.push('/reports'),
+                  onOpenFamilyProfile: () => context.push('/family-profile'),
+                  onSetupFamilyProfile: () => context.push('/family-profile/edit'),
                 );
               },
             ),

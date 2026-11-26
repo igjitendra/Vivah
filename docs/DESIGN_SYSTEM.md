@@ -200,3 +200,17 @@ All core transaction, relation, and ceremony creation workflows utilize `Express
   - Header Title + Search Bar + Filter Chips unified into a single seamless header block using `cardBg` with hairline bottom separator.
 - **Detail & Modal AppBars**:
   - Consistent light surface background, dark high-contrast icons, zero visual clashes.
+
+### 6.7 Zero-Hardcoded-Color Architecture & Hero Bento Home Dashboard
+- **Source**: `lib/src/core/theme/app_semantic_colors.dart`, `lib/src/app/theme/app_theme.dart`, `lib/src/features/dashboard/presentation/dashboard_screen.dart`, `lib/src/shared/navigation/floating_pill_tab_bar.dart`
+- **Zero Hardcoded Colors Guarantee (`AppSemanticColors`)**:
+  - `AppSemanticColors extends ThemeExtension<AppSemanticColors>` is registered on `ThemeData` inside `AppTheme.fromPalette(ThemePalette)`.
+  - Every hero gradient (`heroStart`, `heroEnd`), highlight (`heroHighlight`), overlapping family banner tint (`heroCardBg`, `heroCardBorder`), card containers (`cardBg`, `cardSubtleBg`, `cardBorder`), and semantic financial tokens (`mila`, `milaContainer`, `diya`, `diyaContainer`, `giftAccent`, `cashAccent`, `info`, `warning`) are computed dynamically from the active `ThemePalette` (8 Light + 17 Dark palettes).
+  - UI widgets (`DashboardScreen`, `FloatingPillTabBar`) contain zero `Color(0x...)`, `Colors.white`, `Colors.black`, or static `AppColors.*` references.
+- **Hero + Bento Home Page Layout**:
+  - **Hero Brand & Overlapping Family Card**: Curved botanical gradient header featuring `AppSymbol`, localized app title & tagline, live notification bell with pending reminder counter badge, settings trigger, and floating overlapping Family Profile summary card (`हमारा परिवार` + member count + quick view/setup CTA).
+  - **Mila / Diya Hero Cards**: Soft semantic gradient cards with vibrant directional badge, tabular INR amount, rising mini-trend bars, bottom action footer, and 1-tap `+` quick entry button.
+  - **Gifts & Cash Split Row**: Live aggregation separating physical gift estimated values (`उपहार`) from cash transaction totals (`नकद`).
+  - **Quick Actions Strip**: Themed header bar + 5 tactile rounded tiles (New Entry, New Event, People, Reports, Backup).
+  - **Bento Split Cards**: Responsive side-by-side cards for Upcoming Events (`आगामी आयोजन` with days-remaining countdown) and Upcoming Reminders (`आगामी यादें` with urgency color dot), automatically stacking on narrow displays (`< 330dp`).
+  - **Recent Transactions Card**: Live feed of up to 4 recent recorded entries with directional pills, relative date, and cash/gift indicator.

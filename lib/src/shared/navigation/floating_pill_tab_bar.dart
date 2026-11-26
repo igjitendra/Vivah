@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_spacing.dart';
+import '../../core/theme/app_semantic_colors.dart';
 import '../widgets/express_squish.dart';
 
 class TabItemData {
@@ -32,15 +32,15 @@ class FloatingPillTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final semantic = AppSemanticColors.of(context);
     final double bottomInset = MediaQuery.of(context).padding.bottom;
     final double bottomMargin = (bottomInset > 0 ? bottomInset : 12.0) + 6.0;
 
-    final barBg = isDark ? const Color(0xFF161A24) : Colors.white;
-    final barBorder = isDark ? const Color(0xFF262C3D) : const Color(0xFFE2E8F0);
+    final barBg = semantic.cardBg;
+    final barBorder = semantic.cardBorder;
     final activeBg = theme.colorScheme.primary;
     final activeFg = theme.colorScheme.onPrimary;
-    final inactiveFg = isDark ? const Color(0xFF8895AA) : const Color(0xFF64748B);
+    final inactiveFg = semantic.textSecondary;
 
     return Positioned(
       left: 16,
@@ -56,7 +56,7 @@ class FloatingPillTabBar extends StatelessWidget {
             border: Border.all(color: barBorder, width: 1),
             boxShadow: [
               BoxShadow(
-                color: isDark ? Colors.black45 : const Color(0x1E0F172A),
+                color: semantic.shadow,
                 blurRadius: 18,
                 offset: const Offset(0, 6),
               ),

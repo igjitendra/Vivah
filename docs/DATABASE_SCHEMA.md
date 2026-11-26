@@ -3,8 +3,8 @@
 > **Database Engine**: Typed SQLite via Drift ORM (Cross-Platform Native SQLite on Android, iOS, Linux, macOS, Windows)  
 > **Database File**: `vyavahaar.db`  
 > **Configuration**: `PRAGMA journal_mode = WAL;`, `PRAGMA foreign_keys = ON;`, `PRAGMA busy_timeout = 5000;`  
-> **Current Schema Version**: v4 (Families, People, Events, Entries with direction/type/status, Entry Items, Reminders, App Settings)  
-> **Last Updated**: 2026-11-21  
+> **Current Schema Version**: v9 (Families, People v8 extended + Secondary Phones/Emails/Attachments, Events v9 extended + Scope/Host/Attending + 10 child tables, Entries, Entry Items, Reminders, App Settings)  
+> **Last Updated**: 2026-11-26  
 
 ---
 
@@ -136,16 +136,21 @@ erDiagram
 - `updated_at` (TEXT, NOT NULL, DEFAULT `(datetime('now'))`).
 - `archived_at` (TEXT, NULLABLE): Soft archive timestamp.
 
-### 3.3 `events` (Occasions & Ceremonies)
+### 3.3 `events` (Occasions & Ceremonies — Extended Schema v5/v9)
 - `id` (TEXT, PK, NOT NULL): Unique identifier (`event_uuid`).
 - `title` (TEXT, NOT NULL): Event name (e.g. "राहुल की शादी", "आराध्या का मुंडन").
-- `event_type` (TEXT, NOT NULL): `'शादी' | 'तिलक' | 'मुंडन' | 'बरात' | 'सगाई' | 'वर्षगांठ' | 'गृह प्रवेश' | 'अन्य'`.
+- `event_type` (TEXT, NOT NULL): Ceremony enum / type identifier (`shaadi`, `tilak`, `mundan`, `sagai`, `grihaPravesh`, `other`, etc.).
 - `event_date` (TEXT, NOT NULL): ISO date (`YYYY-MM-DD`).
 - `venue` (TEXT, NULLABLE): Location or venue.
 - `notes` (TEXT, NULLABLE): Remarks.
+- `category`, `end_date`, `start_time`, `end_time`, `is_all_day`, `address`, `village_city`, `landmark`, `map_link`, `description`, `status`, `priority`, `budget_estimated_paise`: Extended Schema v5 planning fields.
+- `event_scope` (TEXT, NOT NULL, DEFAULT `'ownFamily'`): `'ownFamily' | 'relative'` — distinguishes household-hosted celebrations from invited relative events (`Schema v9`).
+- `host_person_id` (TEXT, NULLABLE): Optional People Directory ID of the hosting relative (`Schema v9`, `idx_events_host`).
+- `host_person_name` (TEXT, NULLABLE): Display name of the hosting relative (`Schema v9`).
+- `attending_family_note` (TEXT, NULLABLE): Family members attending summary (e.g. `"पूरा परिवार"`, `"माताजी, पिताजी"`) (`Schema v9`).
 - `created_at` (TEXT, NOT NULL, DEFAULT `(datetime('now'))`).
 - `updated_at` (TEXT, NOT NULL, DEFAULT `(datetime('now'))`).
-- `archived_at` (TEXT, NULLABLE): Soft archive timestamp.
+- `archived_at` (TEXT, NULLABLE): Soft archive timestamp (`NULL` when active).
 
 ### 3.4 `entries` (Core व्यवहार Ledger Records)
 - `id` (TEXT, PK, NOT NULL): Unique transaction ID.

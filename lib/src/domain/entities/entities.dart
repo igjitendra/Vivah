@@ -345,6 +345,10 @@ class Event {
   final EventStatus status;
   final EventPriority priority;
   final int? budgetEstimatedPaise;
+  final EventScope eventScope;
+  final String? hostPersonId;
+  final String? hostPersonName;
+  final String? attendingFamilyNote;
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? archivedAt;
@@ -386,6 +390,10 @@ class Event {
     this.status = EventStatus.planned,
     this.priority = EventPriority.normal,
     this.budgetEstimatedPaise,
+    this.eventScope = EventScope.ownFamily,
+    this.hostPersonId,
+    this.hostPersonName,
+    this.attendingFamilyNote,
     required this.createdAt,
     required this.updatedAt,
     this.archivedAt,
@@ -405,6 +413,8 @@ class Event {
   });
 
   bool get isArchived => archivedAt != null;
+  bool get isRelativeEvent => eventScope == EventScope.relative;
+  bool get isOwnFamilyEvent => eventScope == EventScope.ownFamily;
 
   /// Returns custom category if specified by user, else default Hindi label
   String get displayTypeName {
@@ -462,6 +472,11 @@ class Event {
     EventStatus? status,
     EventPriority? priority,
     int? budgetEstimatedPaise,
+    EventScope? eventScope,
+    String? hostPersonId,
+    String? hostPersonName,
+    String? attendingFamilyNote,
+    bool clearHostInfo = false,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? archivedAt,
@@ -499,6 +514,10 @@ class Event {
       status: status ?? this.status,
       priority: priority ?? this.priority,
       budgetEstimatedPaise: budgetEstimatedPaise ?? this.budgetEstimatedPaise,
+      eventScope: eventScope ?? this.eventScope,
+      hostPersonId: clearHostInfo ? null : (hostPersonId ?? this.hostPersonId),
+      hostPersonName: clearHostInfo ? null : (hostPersonName ?? this.hostPersonName),
+      attendingFamilyNote: clearHostInfo ? null : (attendingFamilyNote ?? this.attendingFamilyNote),
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       archivedAt: archivedAt ?? this.archivedAt,

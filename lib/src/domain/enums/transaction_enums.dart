@@ -143,6 +143,28 @@ enum EventStatus {
   }
 }
 
+/// Ownership / scope of a social or family event:
+/// - ownFamily: Event hosted by the user's own household/family (अपना परिवार)
+/// - relative: Event hosted by a relative/person where the user's family is invited to attend (रिश्तेदार का आयोजन)
+enum EventScope {
+  ownFamily('own_family', 'अपना परिवार', 'Own Family'),
+  relative('relative', 'रिश्तेदार का', 'Relative');
+
+  final String value;
+  final String labelHindi;
+  final String labelEnglish;
+  const EventScope(this.value, this.labelHindi, this.labelEnglish);
+
+  static EventScope fromString(String? val) {
+    if (val == null) return EventScope.ownFamily;
+    final lower = val.trim().toLowerCase();
+    if (lower == 'relative' || lower == 'invited' || val.trim() == 'रिश्तेदार का') {
+      return EventScope.relative;
+    }
+    return EventScope.ownFamily;
+  }
+}
+
 /// Priority rating for events and event tasks
 enum EventPriority {
   low('कम', 'Low'),

@@ -96,10 +96,15 @@ class AppDatabase extends _$AppDatabase {
       ).get();
       if (peopleCols.length < 3) return true;
 
-      final auxTables = await customSelect(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('person_phones', 'person_emails', 'attachments')",
+      final eventCols = await customSelect(
+        "SELECT name FROM pragma_table_info('events') WHERE name IN ('status', 'event_scope', 'host_person_id', 'attending_family_note')",
       ).get();
-      if (auxTables.length < 3) return true;
+      if (eventCols.length < 4) return true;
+
+      final auxTables = await customSelect(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('person_phones', 'person_emails', 'attachments', 'event_functions', 'event_guests', 'event_tasks', 'event_budget_categories', 'event_notes', 'event_reminders')",
+      ).get();
+      if (auxTables.length < 9) return true;
 
       return false;
     } catch (_) {

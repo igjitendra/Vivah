@@ -7,6 +7,7 @@ import 'package:printing/printing.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
@@ -180,7 +181,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                 onPressed: () => _showFullEditEventDialog(event),
               ),
               PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, color: Colors.white),
+                icon: Icon(Icons.more_vert, color: textPrimary),
                 onSelected: (val) => _handleMenuAction(val, event, linkedEntries),
                 itemBuilder: (ctx) => [
                   const PopupMenuItem(value: 'edit', child: Text('पूर्ण विवरण संपादित करें (Full Edit)')),
@@ -278,12 +279,18 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
     Color primaryAccent,
   ) {
     final l10n = context.l10n;
+    final semantic = AppSemanticColors.of(context);
     final totalReceived = linkedEntries
-        .where((e) => e.direction.value == 'received' && e.status.value == 'recorded')
+        .where((e) => (e.direction == TransactionDirection.received || e.direction == TransactionDirection.mila) &&
+            e.status == TransactionStatus.recorded)
         .fold(0, (sum, e) => sum + (e.amountPaise ?? 0));
     final totalGiven = linkedEntries
-        .where((e) => e.direction.value == 'given' && e.status.value == 'recorded')
+        .where((e) => (e.direction == TransactionDirection.given || e.direction == TransactionDirection.diya) &&
+            e.status == TransactionStatus.recorded)
         .fold(0, (sum, e) => sum + (e.amountPaise ?? 0));
+    final hostParam = (event.hostPersonId != null && event.hostPersonId!.isNotEmpty)
+        ? '&personId=${event.hostPersonId}'
+        : '';
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -412,6 +419,151 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
+            ],
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.md),
+
+        // Event Scope & Quick Shagun Strip Card (Own Family vs Relative Event)
+        ExpressCard(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          radius: 16,
+          color: cardBg,
+          borderColor: cardBorder,
+          elevation: 0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: (event.isRelativeEvent ? semantic.info : semantic.primary).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: (event.isRelativeEvent ? semantic.info : semantic.primary).withValues(alpha: 0.28),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          event.isRelativeEvent ? Icons.people_alt_outlined : Icons.home_rounded,
+                          size: 15,
+                          color: event.isRelativeEvent ? semantic.info : semantic.primary,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          event.isRelativeEvent ? l10n.relativeEvent : l10n.ownFamilyEvent,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: event.isRelativeEvent ? semantic.info : semantic.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              if (event.isRelativeEvent) ...[
+                const SizedBox(height: 10),
+                if (event.hostPersonName != null && event.hostPersonName!.isNotEmpty)
+                  InkWell(
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: (event.hostPersonId != null && event.hostPersonId!.isNotEmpty)
+                        ? () => context.push('/person/${event.hostPersonId}')
+                        : null,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: semantic.cardSubtleBg,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: semantic.cardBorder),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.person_outline_rounded, size: 18, color: semantic.info),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.selectHostRelative,
+                                  style: TextStyle(fontSize: 10.5, color: textSecondary),
+                                ),
+                                Text(
+                                  event.hostPersonName!,
+                                  style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: textPrimary),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (event.hostPersonId != null && event.hostPersonId!.isNotEmpty)
+                            Icon(Icons.chevron_right_rounded, size: 18, color: textSecondary),
+                        ],
+                      ),
+                    ),
+                  ),
+                if (event.attendingFamilyNote != null && event.attendingFamilyNote!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.groups_outlined, size: 16, color: textSecondary),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          '${l10n.whoWillAttend}: ${event.attendingFamilyNote!}',
+                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: textPrimary),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: semantic.mila,
+                        backgroundColor: semantic.milaContainer,
+                        side: BorderSide(color: semantic.milaBorder),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: () => context.push('/entry/new?direction=received&eventId=${event.id}$hostParam'),
+                      icon: const Icon(Icons.arrow_downward_rounded, size: 16),
+                      label: Text(
+                        l10n.isEnglish ? '+ Received' : '+ शगुन मिला',
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: semantic.diya,
+                        backgroundColor: semantic.diyaContainer,
+                        side: BorderSide(color: semantic.diyaBorder),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: () => context.push('/entry/new?direction=given&eventId=${event.id}$hostParam'),
+                      icon: const Icon(Icons.arrow_upward_rounded, size: 16),
+                      label: Text(
+                        l10n.isEnglish ? '+ Given' : '+ शगुन दिया',
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -1620,6 +1772,15 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
     );
     final notesCtrl = TextEditingController(text: event.notes ?? '');
     final customCtrl = TextEditingController(text: event.category ?? '');
+    final hostNameCtrl = TextEditingController(text: event.hostPersonName ?? '');
+    final attendingCtrl = TextEditingController(text: event.attendingFamilyNote ?? '');
+    EventScope selScope = event.eventScope;
+    String? selHostPersonId = event.hostPersonId;
+    final peopleList = [...(ref.read(activePeopleListProvider).value ?? const <Person>[])]
+      ..sort((a, b) => a.fullName.compareTo(b.fullName));
+    if (selHostPersonId != null && !peopleList.any((p) => p.id == selHostPersonId)) {
+      selHostPersonId = null;
+    }
     EventType selType = event.eventType;
     EventStatus selStatus = event.status;
     String selDate = event.eventDate;
@@ -1671,6 +1832,101 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
+                  const SizedBox(height: 12),
+
+                  // Event Scope (Own Family vs Relative Event)
+                  Text(
+                    l10n.isEnglish ? 'Event Category' : 'आयोजन की श्रेणी',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ChoiceChip(
+                          label: SizedBox(
+                            width: double.infinity,
+                            child: Text(
+                              l10n.ownFamilyEvent,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ),
+                          selected: selScope == EventScope.ownFamily,
+                          onSelected: (_) => setDlgState(() => selScope = EventScope.ownFamily),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ChoiceChip(
+                          label: SizedBox(
+                            width: double.infinity,
+                            child: Text(
+                              l10n.relativeEvent,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ),
+                          selected: selScope == EventScope.relative,
+                          onSelected: (_) => setDlgState(() => selScope = EventScope.relative),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (selScope == EventScope.relative) ...[
+                    const SizedBox(height: 12),
+                    if (peopleList.isNotEmpty) ...[
+                      DropdownButtonFormField<String?>(
+                        value: selHostPersonId,
+                        isExpanded: true,
+                        items: [
+                          DropdownMenuItem<String?>(
+                            value: null,
+                            child: Text(l10n.isEnglish ? 'Select from People (Optional)' : 'रिश्तेदार सूची से चुनें (वैकल्पिक)'),
+                          ),
+                          ...peopleList.map(
+                            (p) => DropdownMenuItem<String?>(
+                              value: p.id,
+                              child: Text(
+                                '${p.fullName}${p.relationshipLabel != null && p.relationshipLabel!.isNotEmpty ? " (${p.relationshipLabel})" : ""}',
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                        ],
+                        onChanged: (val) => setDlgState(() {
+                          selHostPersonId = val;
+                          if (val != null) {
+                            final match = peopleList.where((p) => p.id == val).firstOrNull;
+                            if (match != null) {
+                              hostNameCtrl.text = match.fullName;
+                            }
+                          }
+                        }),
+                        decoration: InputDecoration(
+                          labelText: l10n.selectHostRelative,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                    TextField(
+                      controller: hostNameCtrl,
+                      decoration: InputDecoration(
+                        labelText: l10n.isEnglish ? 'Host Relative Name' : 'मेज़बान रिश्तेदार का नाम',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: attendingCtrl,
+                      decoration: InputDecoration(
+                        labelText: l10n.whoWillAttend,
+                        hintText: l10n.entireFamily,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 12),
 
                   // Event Type
@@ -1963,6 +2219,15 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                   villageCity: villageCityCtrl.text.trim().isNotEmpty ? villageCityCtrl.text.trim() : null,
                   budgetEstimatedPaise: budgetPaise > 0 ? budgetPaise : null,
                   notes: notesCtrl.text.trim().isNotEmpty ? notesCtrl.text.trim() : null,
+                  eventScope: selScope,
+                  clearHostInfo: selScope == EventScope.ownFamily,
+                  hostPersonId: selScope == EventScope.relative ? selHostPersonId : null,
+                  hostPersonName: selScope == EventScope.relative && hostNameCtrl.text.trim().isNotEmpty
+                      ? hostNameCtrl.text.trim()
+                      : null,
+                  attendingFamilyNote: selScope == EventScope.relative && attendingCtrl.text.trim().isNotEmpty
+                      ? attendingCtrl.text.trim()
+                      : null,
                   updatedAt: DateTime.now(),
                 );
 
@@ -1970,7 +2235,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                 if (selType == EventType.other && customCat.isNotEmpty) {
                   await ref.read(settingsRepositoryProvider).addCustomEventType(customCat);
                 }
-                Navigator.pop(ctx);
+                if (ctx.mounted) Navigator.pop(ctx);
                 _triggerRefresh();
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -1983,7 +2248,18 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
           ],
         ),
       ),
-    );
+    ).whenComplete(() {
+      Future<void>.delayed(const Duration(milliseconds: 350), () {
+        titleCtrl.dispose();
+        venueCtrl.dispose();
+        villageCityCtrl.dispose();
+        budgetCtrl.dispose();
+        notesCtrl.dispose();
+        customCtrl.dispose();
+        hostNameCtrl.dispose();
+        attendingCtrl.dispose();
+      });
+    });
   }
 
   void _showEditFunctionDialog(Event event, EventFunction fn) {

@@ -5,6 +5,28 @@
 
 ---
 
+## [1.4.17] — 2026-11-26
+
+### Added
+- **2-Type Event System (`Own Family` vs `Relative / Invited Events`, Schema v9)**:
+  - Added `EventScope` (`ownFamily`, `relative`) enum in `lib/src/domain/enums/transaction_enums.dart` and fields `eventScope`, `hostPersonId`, `hostPersonName`, `attendingFamilyNote` to `Event` entity in `lib/src/domain/entities/entities.dart`.
+  - Upgraded `AddEventScreen` (`lib/src/features/events/presentation/add_event_screen.dart`) with a 2-type Event Scope selector (`अपना परिवार` vs `रिश्तेदार का आयोजन`), searchable Host Relative picker modal linked to People Directory (`+ नया रिश्तेदार`), Family Members Attending chip selector from `FamilyProfile`, Village/City, Planned Shagun/Budget, and Priority chips.
+  - Upgraded `EventsListScreen` (`lib/src/features/events/presentation/events_list_screen.dart`) with a 3-segment Scope Switcher (`सभी`, `अपना परिवार`, `रिश्तेदार का आयोजन`) with live counts, Host/Attending metadata badges, upcoming event countdown pills, single-pass live `Mila`/`Diya` aggregation totals from recorded ledger entries, and 1-tap `+ शगुन` entry shortcuts pre-filling `eventId` and `hostPersonId`.
+  - Upgraded `EventDetailScreen` (`lib/src/features/events/presentation/event_detail_screen.dart`) Overview tab with an Event Scope & Quick Shagun Strip Card (tappable host link to `/person/:id`, attending members note, `+ शगुन मिला` / `+ शगुन दिया` buttons) and full Scope/Host editing in `_showFullEditEventDialog`.
+  - Added localized strings (`ownFamilyEvent`, `relativeEvent`, `selectHostRelative`, `whoWillAttend`, `entireFamily`, etc.) across English, Hindi, and Urdu in `lib/src/core/localization/app_localizations.dart`.
+  - Added `test/unit/events_migration_test.dart` covering Own Family & Relative creation, `archived_at = NULL`, `ON CONFLICT` updates preserving sub-entities & linked entries, null FK guests/participants, and Schema v9 migration repair.
+
+### Fixed
+- **Events Not Saving / Appearing Bug (`EventsDao.insertExtendedEventRow`)**:
+  - Fixed critical root cause where `event.archivedAt == null` wrote empty string `''` into SQLite `archived_at`, causing `watchActiveEvents()` (`WHERE archived_at IS NULL`) to exclude newly created events.
+  - Added SQLite Schema v9 migration (`lib/src/data/database/migrations/schema_migrations.dart`) repairing legacy `archived_at = ''` rows to `NULL` across `events`, `people`, and `entries`, and adding `event_scope`, `host_person_id`, `host_person_name`, `attending_family_note` columns and indexes (`idx_events_scope`, `idx_events_host`).
+  - Replaced destructive `INSERT OR REPLACE INTO events` with `ON CONFLICT(id) DO UPDATE SET ...` so updating an event preserves all child sub-tables (`event_functions`, `event_guests`, `event_tasks`, etc.) and linked ledger entries.
+  - Fixed `insertParticipant` and `insertGuest` to bind SQL `NULL` instead of empty string `''` for nullable foreign keys (`person_id`, `family_id`) under `PRAGMA foreign_keys = ON`.
+  - Added `updates: {events}` to all `EventsDao` sub-entity mutations for instant reactive UI refreshes and wrapped `DriftEventsRepository.createEvent` in a database transaction.
+  - Fixed `AppBar` `more_vert` action icon contrast (`Colors.white` -> `textPrimary`) in `EventDetailScreen` and prevented controller leaks on dialog dismiss.
+
+---
+
 ## [1.4.16] — 2026-11-26
 
 ### Added

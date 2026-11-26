@@ -8,13 +8,17 @@ Designed specifically for traditional Indian family events (विवाह, म
 
 ---
 
-## 2. Core Relational Schema (Version 5 Migration)
+## 2. Core Relational Schema (Version 5 & Version 9 Migration)
 
-The system introduces SQLite Schema v5 with non-destructive `ALTER TABLE` upgrades and 10 relational child tables governed by foreign keys and cascades.
+The system introduces SQLite Schema v5 (plus Schema v9 2-Type Event Scope support and self-healing `archived_at = NULL` repair) with non-destructive `ALTER TABLE` upgrades and 10 relational child tables governed by foreign keys and cascades.
 
 ### A. Extended `events` Table
 | Column | Type | Description |
 |---|---|---|
+| `event_scope` | `TEXT` | `'ownFamily'` (household event) or `'relative'` (invited relative event, Schema v9) |
+| `host_person_id` | `TEXT` | Linked `people.id` of hosting relative for `'relative'` events (Schema v9) |
+| `host_person_name` | `TEXT` | Host relative display name (Schema v9) |
+| `attending_family_note` | `TEXT` | Household members attending summary (Schema v9) |
 | `category` | `TEXT` | Predefined or custom event category |
 | `end_date` | `TEXT` | Multi-day celebration ending date (ISO 8601) |
 | `start_time` | `TEXT` | Primary function start time (`HH:mm`) |

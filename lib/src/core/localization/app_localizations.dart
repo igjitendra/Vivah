@@ -878,6 +878,17 @@ class AppLocalizations {
     if (days == 1) return isEnglish ? 'Tomorrow' : (isUrdu ? 'کل' : 'कल');
     return isEnglish ? '$days days left' : (isUrdu ? '$days دن باقی' : '$days दिन बाकी');
   }
+
+  // Two-Type Pro Event Scope & Details
+  String get ownFamilyEvent => isEnglish ? 'Our Family' : (isUrdu ? 'اپنا خاندان' : 'अपना परिवार');
+  String get ownFamilyEventSubtitle => isEnglish ? 'Hosted by our household' : (isUrdu ? 'ہمارے گھر کی تقریب' : 'हमारे घर का कार्यक्रम');
+  String get relativeEvent => isEnglish ? 'Relative Event' : (isUrdu ? 'رشتہ دار کی تقریب' : 'रिश्तेदार का आयोजन');
+  String get relativeEventSubtitle => isEnglish ? 'Invited event to attend' : (isUrdu ? 'جہاں ہمیں / خاندان کو جانا ہے' : 'जहाँ हमें / परिवार को जाना है');
+  String get selectHostRelative => isEnglish ? 'Host Relative (People)' : (isUrdu ? 'میزبان رشتہ دار' : 'आयोजक रिश्तेदार (People)');
+  String get whoWillAttend => isEnglish ? 'Family Members Going' : (isUrdu ? 'خاندان سے کون جائے گا؟' : 'परिवार से कौन-कौन जाएगा?');
+  String get entireFamily => isEnglish ? 'Entire Family' : (isUrdu ? 'پورا خاندان' : 'पूरा परिवार');
+  String get priorityLabel => isEnglish ? 'Priority' : (isUrdu ? 'ترجیح' : 'प्राथमिकता');
+  String get plannedShagunOrBudget => isEnglish ? 'Estimated Budget / Shagun (₹)' : (isUrdu ? 'تخمینی بجٹ / شگون (₹)' : 'अनुमानित बजट / शगुन (₹)');
 }
 
 class _AppLocalizationsDelegate

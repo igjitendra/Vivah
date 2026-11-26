@@ -21,7 +21,7 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
   /// Get all active events
   Future<List<EventRow>> getAllActiveEvents() {
     return (select(events)
-          ..where((t) => t.archivedAt.isNull())
+          ..where((t) => t.archivedAt.isNull() | t.archivedAt.equals(''))
           ..orderBy([(t) => OrderingTerm.desc(t.eventDate)]))
         .get();
   }
@@ -29,7 +29,7 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
   /// Watch all active events
   Stream<List<EventRow>> watchActiveEvents() {
     return (select(events)
-          ..where((t) => t.archivedAt.isNull())
+          ..where((t) => t.archivedAt.isNull() | t.archivedAt.equals(''))
           ..orderBy([(t) => OrderingTerm.desc(t.eventDate)]))
         .watch();
   }
@@ -37,7 +37,7 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
   /// Watch all archived events
   Stream<List<EventRow>> watchArchivedEvents() {
     return (select(events)
-          ..where((t) => t.archivedAt.isNotNull())
+          ..where((t) => t.archivedAt.isNotNull() & t.archivedAt.isNotValue(''))
           ..orderBy([(t) => OrderingTerm.desc(t.eventDate)]))
         .watch();
   }
@@ -45,7 +45,9 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
   /// Get upcoming events (event_date >= today)
   Future<List<EventRow>> getUpcomingEvents(String todayIso) {
     return (select(events)
-          ..where((t) => t.eventDate.isBiggerOrEqualValue(todayIso) & t.archivedAt.isNull())
+          ..where((t) =>
+              t.eventDate.isBiggerOrEqualValue(todayIso) &
+              (t.archivedAt.isNull() | t.archivedAt.equals('')))
           ..orderBy([(t) => OrderingTerm.asc(t.eventDate)]))
         .get();
   }
@@ -53,7 +55,9 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
   /// Get past events (event_date < today)
   Future<List<EventRow>> getPastEvents(String todayIso) {
     return (select(events)
-          ..where((t) => t.eventDate.isSmallerThanValue(todayIso) & t.archivedAt.isNull())
+          ..where((t) =>
+              t.eventDate.isSmallerThanValue(todayIso) &
+              (t.archivedAt.isNull() | t.archivedAt.equals('')))
           ..orderBy([(t) => OrderingTerm.desc(t.eventDate)]))
         .get();
   }
@@ -64,7 +68,7 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
     return (select(events)
           ..where((t) =>
               (t.title.like(pattern) | t.venue.like(pattern) | t.eventType.like(pattern)) &
-              t.archivedAt.isNull())
+              (t.archivedAt.isNull() | t.archivedAt.equals('')))
           ..orderBy([(t) => OrderingTerm.desc(t.eventDate)]))
         .get();
   }
@@ -149,39 +153,79 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
   // ADVANCED EXTENDED EVENT PERSISTENCE
   // =========================================================================
 
-  /// Inserts an extended event with full metadata into the events table
+  Variable<String> _nullableString(String? val) {
+    if (val == null || val.trim().isEmpty) {
+      return const Variable<String>(null);
+    }
+    return Variable.withString(val.trim());
+  }
+
+  /// Inserts or updates an extended event with full metadata without triggering FK cascade deletes
   Future<void> insertExtendedEventRow(Event event) async {
     await customInsert(
       '''
-      INSERT OR REPLACE INTO events (
+      INSERT INTO events (
         id, title, event_type, category, event_date, end_date, start_time, end_time,
         is_all_day, venue, address, village_city, landmark, map_link, description,
-        notes, status, priority, budget_estimated_paise, created_at, updated_at, archived_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        notes, status, priority, budget_estimated_paise,
+        event_scope, host_person_id, host_person_name, attending_family_note,
+        created_at, updated_at, archived_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        title = excluded.title,
+        event_type = excluded.event_type,
+        category = excluded.category,
+        event_date = excluded.event_date,
+        end_date = excluded.end_date,
+        start_time = excluded.start_time,
+        end_time = excluded.end_time,
+        is_all_day = excluded.is_all_day,
+        venue = excluded.venue,
+        address = excluded.address,
+        village_city = excluded.village_city,
+        landmark = excluded.landmark,
+        map_link = excluded.map_link,
+        description = excluded.description,
+        notes = excluded.notes,
+        status = excluded.status,
+        priority = excluded.priority,
+        budget_estimated_paise = excluded.budget_estimated_paise,
+        event_scope = excluded.event_scope,
+        host_person_id = excluded.host_person_id,
+        host_person_name = excluded.host_person_name,
+        attending_family_note = excluded.attending_family_note,
+        updated_at = excluded.updated_at,
+        archived_at = excluded.archived_at
       ''',
       variables: [
         Variable.withString(event.id),
-        Variable.withString(event.title),
+        Variable.withString(event.title.trim()),
         Variable.withString(event.eventType.labelHindi),
-        Variable.withString(event.category ?? ''),
+        _nullableString(event.category),
         Variable.withString(event.eventDate),
-        Variable.withString(event.endDate ?? ''),
-        Variable.withString(event.startTime ?? ''),
-        Variable.withString(event.endTime ?? ''),
+        _nullableString(event.endDate),
+        _nullableString(event.startTime),
+        _nullableString(event.endTime),
         Variable.withInt(event.isAllDay ? 1 : 0),
-        Variable.withString(event.venue ?? ''),
-        Variable.withString(event.address ?? ''),
-        Variable.withString(event.villageCity ?? ''),
-        Variable.withString(event.landmark ?? ''),
-        Variable.withString(event.mapLink ?? ''),
-        Variable.withString(event.description ?? ''),
-        Variable.withString(event.notes ?? ''),
+        _nullableString(event.venue),
+        _nullableString(event.address),
+        _nullableString(event.villageCity),
+        _nullableString(event.landmark),
+        _nullableString(event.mapLink),
+        _nullableString(event.description),
+        _nullableString(event.notes),
         Variable.withString(event.status.name),
         Variable.withString(event.priority.name),
-        Variable.withInt(event.budgetEstimatedPaise ?? 0),
+        event.budgetEstimatedPaise != null && event.budgetEstimatedPaise! > 0
+            ? Variable.withInt(event.budgetEstimatedPaise!)
+            : const Variable<int>(null),
+        Variable.withString(event.eventScope.value),
+        _nullableString(event.hostPersonId),
+        _nullableString(event.hostPersonName),
+        _nullableString(event.attendingFamilyNote),
         Variable.withString(event.createdAt.toIso8601String()),
         Variable.withString(event.updatedAt.toIso8601String()),
-        Variable.withString(event.archivedAt?.toIso8601String() ?? ''),
+        _nullableString(event.archivedAt?.toIso8601String()),
       ],
       updates: {events},
     );
@@ -246,19 +290,24 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
         Variable.withString(fn.eventId),
         Variable.withString(fn.title),
         Variable.withString(fn.functionDate),
-        Variable.withString(fn.startTime ?? ''),
-        Variable.withString(fn.endTime ?? ''),
-        Variable.withString(fn.venue ?? ''),
-        Variable.withString(fn.description ?? ''),
+        _nullableString(fn.startTime),
+        _nullableString(fn.endTime),
+        _nullableString(fn.venue),
+        _nullableString(fn.description),
         Variable.withString(fn.status.name),
         Variable.withString(fn.createdAt.toIso8601String()),
         Variable.withString(fn.updatedAt.toIso8601String()),
       ],
+      updates: {events},
     );
   }
 
   Future<void> deleteFunction(String id) async {
-    await customStatement('DELETE FROM event_functions WHERE id = ?', [id]);
+    await customUpdate(
+      'DELETE FROM event_functions WHERE id = ?',
+      variables: [Variable.withString(id)],
+      updates: {events},
+    );
   }
 
   // 2. Participants & Roles
@@ -297,19 +346,24 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
       variables: [
         Variable.withString(p.id),
         Variable.withString(p.eventId),
-        Variable.withString(p.personId ?? ''),
-        Variable.withString(p.familyId ?? ''),
+        _nullableString(p.personId),
+        _nullableString(p.familyId),
         Variable.withString(p.name),
         Variable.withString(p.role.name),
-        Variable.withString(p.phone ?? ''),
-        Variable.withString(p.notes ?? ''),
+        _nullableString(p.phone),
+        _nullableString(p.notes),
         Variable.withString(p.createdAt.toIso8601String()),
       ],
+      updates: {events},
     );
   }
 
   Future<void> deleteParticipant(String id) async {
-    await customStatement('DELETE FROM event_participants WHERE id = ?', [id]);
+    await customUpdate(
+      'DELETE FROM event_participants WHERE id = ?',
+      variables: [Variable.withString(id)],
+      updates: {events},
+    );
   }
 
   // 3. Guests & RSVP
@@ -352,22 +406,27 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
       variables: [
         Variable.withString(g.id),
         Variable.withString(g.eventId),
-        Variable.withString(g.personId ?? ''),
+        _nullableString(g.personId),
         Variable.withString(g.name),
-        Variable.withString(g.familyOrGroup ?? ''),
-        Variable.withString(g.phoneNumber ?? ''),
+        _nullableString(g.familyOrGroup),
+        _nullableString(g.phoneNumber),
         Variable.withString(g.invitationStatus.name),
         Variable.withString(g.attendanceStatus.name),
         Variable.withInt(g.accompanyingCount),
-        Variable.withString(g.notes ?? ''),
-        Variable.withString(g.invitationDate ?? ''),
+        _nullableString(g.notes),
+        _nullableString(g.invitationDate),
         Variable.withString(g.createdAt.toIso8601String()),
       ],
+      updates: {events},
     );
   }
 
   Future<void> deleteGuest(String id) async {
-    await customStatement('DELETE FROM event_guests WHERE id = ?', [id]);
+    await customUpdate(
+      'DELETE FROM event_guests WHERE id = ?',
+      variables: [Variable.withString(id)],
+      updates: {events},
+    );
   }
 
   // 4. Tasks & Checklist
@@ -408,14 +467,15 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
         Variable.withString(t.id),
         Variable.withString(t.eventId),
         Variable.withString(t.title),
-        Variable.withString(t.description ?? ''),
-        Variable.withString(t.assignedPersonName ?? ''),
-        Variable.withString(t.dueDate ?? ''),
+        _nullableString(t.description),
+        _nullableString(t.assignedPersonName),
+        _nullableString(t.dueDate),
         Variable.withString(t.priority.name),
         Variable.withString(t.status.name),
-        Variable.withString(t.completedAt?.toIso8601String() ?? ''),
+        _nullableString(t.completedAt?.toIso8601String()),
         Variable.withString(t.createdAt.toIso8601String()),
       ],
+      updates: {events},
     );
   }
 
@@ -425,14 +485,19 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
       'UPDATE event_tasks SET status = ?, completed_at = ? WHERE id = ?',
       variables: [
         Variable.withString(newStatus.name),
-        Variable.withString(completedAt ?? ''),
+        _nullableString(completedAt),
         Variable.withString(id),
       ],
+      updates: {events},
     );
   }
 
   Future<void> deleteTask(String id) async {
-    await customStatement('DELETE FROM event_tasks WHERE id = ?', [id]);
+    await customUpdate(
+      'DELETE FROM event_tasks WHERE id = ?',
+      variables: [Variable.withString(id)],
+      updates: {events},
+    );
   }
 
   // 5. Schedule
@@ -475,24 +540,27 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
       variables: [
         Variable.withString(s.id),
         Variable.withString(s.eventId),
-        s.functionId != null && s.functionId!.trim().isNotEmpty
-            ? Variable.withString(s.functionId!.trim())
-            : const Variable<String>(null),
+        _nullableString(s.functionId),
         Variable.withString(s.title),
         Variable.withString(s.activityDate),
         Variable.withString(s.startTime),
         Variable.withInt(s.durationMinutes),
-        Variable.withString(s.venue ?? ''),
-        Variable.withString(s.responsiblePerson ?? ''),
-        Variable.withString(s.description ?? ''),
+        _nullableString(s.venue),
+        _nullableString(s.responsiblePerson),
+        _nullableString(s.description),
         Variable.withString(s.status),
         Variable.withInt(s.sortOrder),
       ],
+      updates: {events},
     );
   }
 
   Future<void> deleteScheduleItem(String id) async {
-    await customStatement('DELETE FROM event_schedule_items WHERE id = ?', [id]);
+    await customUpdate(
+      'DELETE FROM event_schedule_items WHERE id = ?',
+      variables: [Variable.withString(id)],
+      updates: {events},
+    );
   }
 
   // 6. Budget Categories
@@ -532,14 +600,19 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
         Variable.withString(b.categoryName),
         Variable.withInt(b.estimatedAmountPaise),
         Variable.withInt(b.actualAmountPaise),
-        Variable.withString(b.notes ?? ''),
+        _nullableString(b.notes),
         Variable.withString(b.createdAt.toIso8601String()),
       ],
+      updates: {events},
     );
   }
 
   Future<void> deleteBudgetCategory(String id) async {
-    await customStatement('DELETE FROM event_budget_categories WHERE id = ?', [id]);
+    await customUpdate(
+      'DELETE FROM event_budget_categories WHERE id = ?',
+      variables: [Variable.withString(id)],
+      updates: {events},
+    );
   }
 
   // 7. Notes
@@ -580,11 +653,16 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
         Variable.withString(n.createdAt.toIso8601String()),
         Variable.withString(n.updatedAt.toIso8601String()),
       ],
+      updates: {events},
     );
   }
 
   Future<void> deleteNote(String id) async {
-    await customStatement('DELETE FROM event_notes WHERE id = ?', [id]);
+    await customUpdate(
+      'DELETE FROM event_notes WHERE id = ?',
+      variables: [Variable.withString(id)],
+      updates: {events},
+    );
   }
 
   // 8. Attachments
@@ -623,15 +701,20 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
         Variable.withString(a.eventId),
         Variable.withString(a.fileName),
         Variable.withString(a.filePath),
-        Variable.withString(a.fileType ?? ''),
+        _nullableString(a.fileType),
         Variable.withInt(a.fileSizeBytes),
         Variable.withString(a.createdAt.toIso8601String()),
       ],
+      updates: {events},
     );
   }
 
   Future<void> deleteAttachment(String id) async {
-    await customStatement('DELETE FROM event_attachments WHERE id = ?', [id]);
+    await customUpdate(
+      'DELETE FROM event_attachments WHERE id = ?',
+      variables: [Variable.withString(id)],
+      updates: {events},
+    );
   }
 
   // 9. Activity Logs
@@ -713,12 +796,13 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
         Variable.withString(rem.eventId),
         Variable.withString(rem.title),
         Variable.withString(rem.reminderDate),
-        Variable.withString(rem.reminderTime ?? ''),
-        Variable.withString(rem.preset ?? ''),
+        _nullableString(rem.reminderTime),
+        _nullableString(rem.preset),
         Variable.withInt(rem.isEnabled ? 1 : 0),
         Variable.withInt(rem.isCompleted ? 1 : 0),
         Variable.withString(rem.createdAt.toIso8601String()),
       ],
+      updates: {events},
     );
   }
 
@@ -729,10 +813,15 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
         Variable.withInt(isEnabled ? 1 : 0),
         Variable.withString(id),
       ],
+      updates: {events},
     );
   }
 
   Future<void> deleteReminder(String id) async {
-    await customStatement('DELETE FROM event_reminders WHERE id = ?', [id]);
+    await customUpdate(
+      'DELETE FROM event_reminders WHERE id = ?',
+      variables: [Variable.withString(id)],
+      updates: {events},
+    );
   }
 }

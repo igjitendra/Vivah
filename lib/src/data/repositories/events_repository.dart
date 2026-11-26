@@ -176,54 +176,56 @@ class DriftEventsRepository implements EventsRepository {
 
   @override
   Future<void> createEvent(Event event) async {
-    // 1. Insert main event row with all metadata
-    await _db.eventsDao.insertExtendedEventRow(event);
+    await _db.transaction(() async {
+      // 1. Insert main event row with all metadata
+      await _db.eventsDao.insertExtendedEventRow(event);
 
-    // 2. Insert any initial functions
-    for (final fn in event.functions) {
-      await _db.eventsDao.insertFunction(fn);
-    }
+      // 2. Insert any initial functions
+      for (final fn in event.functions) {
+        await _db.eventsDao.insertFunction(fn);
+      }
 
-    // 3. Insert participants
-    for (final p in event.participants) {
-      await _db.eventsDao.insertParticipant(p);
-    }
+      // 3. Insert participants
+      for (final p in event.participants) {
+        await _db.eventsDao.insertParticipant(p);
+      }
 
-    // 4. Insert guests
-    for (final g in event.guests) {
-      await _db.eventsDao.insertGuest(g);
-    }
+      // 4. Insert guests
+      for (final g in event.guests) {
+        await _db.eventsDao.insertGuest(g);
+      }
 
-    // 5. Insert tasks
-    for (final t in event.tasks) {
-      await _db.eventsDao.insertTask(t);
-    }
+      // 5. Insert tasks
+      for (final t in event.tasks) {
+        await _db.eventsDao.insertTask(t);
+      }
 
-    // 6. Insert schedule items
-    for (final s in event.schedule) {
-      await _db.eventsDao.insertScheduleItem(s);
-    }
+      // 6. Insert schedule items
+      for (final s in event.schedule) {
+        await _db.eventsDao.insertScheduleItem(s);
+      }
 
-    // 7. Insert budget categories
-    for (final b in event.budgetCategories) {
-      await _db.eventsDao.insertBudgetCategory(b);
-    }
+      // 7. Insert budget categories
+      for (final b in event.budgetCategories) {
+        await _db.eventsDao.insertBudgetCategory(b);
+      }
 
-    // 8. Insert reminders
-    for (final r in event.reminders) {
-      await _db.eventsDao.insertReminder(r);
-    }
+      // 8. Insert reminders
+      for (final r in event.reminders) {
+        await _db.eventsDao.insertReminder(r);
+      }
 
-    // 9. Log activity
-    await _db.eventsDao.insertActivityLog(
-      EventActivityLog(
-        id: const Uuid().v4(),
-        eventId: event.id,
-        action: 'कार्यक्रम तैयार किया गया',
-        details: 'नया कार्यक्रम "${event.title}" जोड़ा गया',
-        timestamp: DateTime.now(),
-      ),
-    );
+      // 9. Log activity
+      await _db.eventsDao.insertActivityLog(
+        EventActivityLog(
+          id: const Uuid().v4(),
+          eventId: event.id,
+          action: 'कार्यक्रम तैयार किया गया',
+          details: 'नया कार्यक्रम "${event.title}" जोड़ा गया',
+          timestamp: DateTime.now(),
+        ),
+      );
+    });
   }
 
   @override
@@ -564,6 +566,10 @@ class DriftEventsRepository implements EventsRepository {
     final statusStr = ext['status']?.toString();
     final priorityStr = ext['priority']?.toString();
     final budgetEstimated = (ext['budget_estimated_paise'] as num?)?.toInt();
+    final eventScope = EventScope.fromString(ext['event_scope']?.toString());
+    final hostPersonId = ext['host_person_id']?.toString();
+    final hostPersonName = ext['host_person_name']?.toString();
+    final attendingFamilyNote = ext['attending_family_note']?.toString();
 
     return Event(
       id: r.id,
@@ -585,6 +591,10 @@ class DriftEventsRepository implements EventsRepository {
       status: EventStatus.fromString(statusStr),
       priority: EventPriority.fromString(priorityStr),
       budgetEstimatedPaise: budgetEstimated != null && budgetEstimated > 0 ? budgetEstimated : null,
+      eventScope: eventScope,
+      hostPersonId: hostPersonId?.isNotEmpty == true ? hostPersonId : null,
+      hostPersonName: hostPersonName?.isNotEmpty == true ? hostPersonName : null,
+      attendingFamilyNote: attendingFamilyNote?.isNotEmpty == true ? attendingFamilyNote : null,
       createdAt: DateTime.tryParse(r.createdAt) ?? DateTime.now(),
       updatedAt: DateTime.tryParse(r.updatedAt) ?? DateTime.now(),
       archivedAt: r.archivedAt != null && r.archivedAt!.isNotEmpty ? DateTime.tryParse(r.archivedAt!) : null,

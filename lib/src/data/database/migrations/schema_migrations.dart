@@ -5,7 +5,7 @@ import 'package:drift/drift.dart';
 class SchemaMigrations {
   SchemaMigrations._();
 
-  static const int currentSchemaVersion = 8;
+  static const int currentSchemaVersion = 9;
 
   /// Executes all required migrations sequentially from `from` to `to`.
   static Future<void> migrate(
@@ -49,6 +49,11 @@ class SchemaMigrations {
       await ensureAllTablesAndColumns(db, m);
     }
 
+    // Migration v8 -> v9: Two-Type Events (Own Family vs Relative Invited Event) & empty archived_at cleanup
+    if (from < 9) {
+      await _migrateToV9(m, db);
+    }
+
     // Ensure foreign key integrity verification after migration
     await db.customStatement('PRAGMA foreign_key_check;');
   }
@@ -63,6 +68,7 @@ class SchemaMigrations {
     await _migrateToV5(migrator, db);
     await _migrateToV6(migrator, db);
     await _migrateToV7(migrator, db);
+    await _migrateToV9(migrator, db);
     await createAllIndexes(db);
     try {
       await db.customStatement('PRAGMA foreign_key_check;');
@@ -480,6 +486,30 @@ class SchemaMigrations {
     try {
       await db.customStatement(
           'CREATE INDEX IF NOT EXISTS idx_attachments_entry ON attachments(entry_id);');
+    } catch (_) {}
+  }
+
+  /// Migration v8 -> v9: Event Scope (Own Family vs Relative Invited Event) & archived_at cleanup
+  static Future<void> _migrateToV9(Migrator m, GeneratedDatabase db) async {
+    final cols = [
+      "ALTER TABLE events ADD COLUMN event_scope TEXT NOT NULL DEFAULT 'own_family';",
+      "ALTER TABLE events ADD COLUMN host_person_id TEXT;",
+      "ALTER TABLE events ADD COLUMN host_person_name TEXT;",
+      "ALTER TABLE events ADD COLUMN attending_family_note TEXT;",
+    ];
+    for (final sql in cols) {
+      try {
+        await db.customStatement(sql);
+      } catch (_) {}
+    }
+
+    // Repair any existing events saved with empty string '' in archived_at (which hid them from active queries)
+    try {
+      await db.customStatement("UPDATE events SET archived_at = NULL WHERE archived_at = '';");
+      await db.customStatement("UPDATE people SET archived_at = NULL WHERE archived_at = '';");
+      await db.customStatement("UPDATE entries SET archived_at = NULL WHERE archived_at = '';");
+      await db.customStatement('CREATE INDEX IF NOT EXISTS idx_events_scope ON events(event_scope);');
+      await db.customStatement('CREATE INDEX IF NOT EXISTS idx_events_host ON events(host_person_id);');
     } catch (_) {}
   }
 }

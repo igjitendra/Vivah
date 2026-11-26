@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/theme/app_semantic_colors.dart';
+import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/enums/transaction_enums.dart';
 import '../../../shared/widgets/express_button.dart';
+import '../../../shared/widgets/express_squish.dart';
 import '../../../app/app_providers.dart';
 
 /// Sub-event item helper for ceremonies and functions
@@ -39,10 +43,17 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
   // Controllers
   final _titleController = TextEditingController();
   final _venueController = TextEditingController();
+  final _villageCityController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _customCeremonyController = TextEditingController();
+  final _hostPersonNameController = TextEditingController();
+  final _attendingFamilyController = TextEditingController();
+  final _budgetController = TextEditingController();
 
+  EventScope _eventScope = EventScope.ownFamily;
+  String? _hostPersonId;
   EventType _selectedType = EventType.shaadi;
+  EventPriority _priority = EventPriority.normal;
   String? _selectedCustomTypeName;
   late String _eventDate;
   TimeOfDay? _startTime;
@@ -166,14 +177,14 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
                   _customCeremonyController.text = text;
                 });
                 _checkConflicts();
-                Navigator.pop(ctx);
               }
+              if (ctx.mounted) Navigator.pop(ctx);
             },
             child: Text(l10n.saveAndSelect, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
-    );
+    ).whenComplete(controller.dispose);
   }
 
   void _showEventTypePickerSheet(BuildContext context, AppLocalizations l10n, List<String> customTypes) {
@@ -436,9 +447,192 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
   void dispose() {
     _titleController.dispose();
     _venueController.dispose();
+    _villageCityController.dispose();
     _descriptionController.dispose();
     _customCeremonyController.dispose();
+    _hostPersonNameController.dispose();
+    _attendingFamilyController.dispose();
+    _budgetController.dispose();
     super.dispose();
+  }
+
+  void _openHostRelativePicker(BuildContext context, AppLocalizations l10n) {
+    final searchCtrl = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Consumer(
+        builder: (context, ref, _) {
+          final semantic = AppSemanticColors.of(context);
+          final peopleAsync = ref.watch(activePeopleListProvider);
+
+          return StatefulBuilder(
+            builder: (context, setSheetState) {
+              final query = searchCtrl.text.trim().toLowerCase();
+              return DraggableScrollableSheet(
+                initialChildSize: 0.72,
+                minChildSize: 0.45,
+                maxChildSize: 0.92,
+                builder: (_, scrollController) => Container(
+                  decoration: BoxDecoration(
+                    color: semantic.cardBg,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: semantic.cardBorder,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              l10n.selectHostRelative,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: semantic.textPrimary,
+                              ),
+                            ),
+                          ),
+                          TextButton.icon(
+                            onPressed: () async {
+                              Navigator.pop(ctx);
+                              final created = await context.push<Person>('/person/new');
+                              if (created != null && mounted) {
+                                setState(() {
+                                  _hostPersonId = created.id;
+                                  _hostPersonNameController.text = created.fullName;
+                                  if (_villageCityController.text.trim().isEmpty &&
+                                      (created.village ?? created.city ?? '').isNotEmpty) {
+                                    _villageCityController.text = created.village ?? created.city ?? '';
+                                  }
+                                });
+                              }
+                            },
+                            icon: Icon(Icons.person_add_alt_1, size: 16, color: semantic.primary),
+                            label: Text(
+                              l10n.quickAddRelative,
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: semantic.primary),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: searchCtrl,
+                        onChanged: (_) => setSheetState(() {}),
+                        decoration: InputDecoration(
+                          hintText: l10n.searchRelativeHint,
+                          prefixIcon: Icon(Icons.search, size: 18, color: semantic.textSecondary),
+                          filled: true,
+                          fillColor: semantic.cardSubtleBg,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: semantic.cardBorder),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Expanded(
+                        child: peopleAsync.when(
+                          loading: () => Center(child: CircularProgressIndicator(color: semantic.primary)),
+                          error: (e, _) => Center(child: Text('${l10n.errorGeneric}: $e')),
+                          data: (people) {
+                            final filtered = people.where((p) {
+                              if (query.isEmpty) return true;
+                              return p.fullName.toLowerCase().contains(query) ||
+                                  (p.relationshipLabel ?? '').toLowerCase().contains(query) ||
+                                  (p.village ?? '').toLowerCase().contains(query) ||
+                                  (p.phoneNumber ?? '').contains(query);
+                            }).toList();
+
+                            if (filtered.isEmpty) {
+                              return Center(
+                                child: Text(
+                                  l10n.noPeopleFound,
+                                  style: TextStyle(color: semantic.textSecondary, fontSize: 13),
+                                ),
+                              );
+                            }
+
+                            return ListView.separated(
+                              controller: scrollController,
+                              itemCount: filtered.length,
+                              separatorBuilder: (_, __) => Divider(
+                                height: 1,
+                                color: semantic.cardBorder.withValues(alpha: 0.6),
+                              ),
+                              itemBuilder: (context, idx) {
+                                final p = filtered[idx];
+                                final isSelected = _hostPersonId == p.id;
+                                return ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: semantic.primary.withValues(alpha: 0.14),
+                                    child: Text(
+                                      p.initials,
+                                      style: TextStyle(
+                                        color: semantic.primary,
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                                  title: Text(
+                                    p.displayName,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      color: semantic.textPrimary,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    [
+                                      if (p.relationshipLabel != null) p.relationshipLabel!,
+                                      if (p.village != null && p.village!.isNotEmpty) p.village!,
+                                      if (p.phoneNumber != null) p.phoneNumber!,
+                                    ].join(' • '),
+                                    style: TextStyle(fontSize: 11.5, color: semantic.textSecondary),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  trailing: isSelected
+                                      ? Icon(Icons.check_circle, color: semantic.primary)
+                                      : Icon(Icons.chevron_right, color: semantic.textSecondary),
+                                  onTap: () {
+                                    setState(() {
+                                      _hostPersonId = p.id;
+                                      _hostPersonNameController.text = p.fullName;
+                                      if (_villageCityController.text.trim().isEmpty &&
+                                          (p.village ?? p.city ?? '').isNotEmpty) {
+                                        _villageCityController.text = p.village ?? p.city ?? '';
+                                      }
+                                    });
+                                    Navigator.pop(ctx);
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    ).whenComplete(searchCtrl.dispose);
   }
 
   void _checkConflicts() async {
@@ -604,7 +798,7 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
           );
         },
       ),
-    );
+    ).whenComplete(titleController.dispose);
   }
 
   void _showEditSubEventDialog(int idx, AppLocalizations l10n) {
@@ -696,11 +890,21 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
           );
         },
       ),
-    );
+    ).whenComplete(titleController.dispose);
   }
 
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_eventScope == EventScope.relative &&
+        _hostPersonNameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.selectHostRelative),
+          backgroundColor: AppColors.terracotta,
+        ),
+      );
+      return;
+    }
     setState(() => _isSaving = true);
 
     try {
@@ -714,6 +918,10 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
           : (_selectedType == EventType.other && _customCeremonyController.text.trim().isNotEmpty
               ? _customCeremonyController.text.trim()
               : null);
+
+      final parsedBudgetPaise = _budgetController.text.trim().isNotEmpty
+          ? CurrencyUtils.parseInputToPaise(_budgetController.text.trim())
+          : null;
 
       final event = Event(
         id: eventId,
@@ -729,9 +937,19 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
             : null,
         isAllDay: _isAllDay,
         venue: _venueController.text.trim().isNotEmpty ? _venueController.text.trim() : null,
+        villageCity: _villageCityController.text.trim().isNotEmpty ? _villageCityController.text.trim() : null,
         description: _descriptionController.text.trim().isNotEmpty ? _descriptionController.text.trim() : null,
         status: EventStatus.planned,
-        priority: EventPriority.normal,
+        priority: _priority,
+        budgetEstimatedPaise: (parsedBudgetPaise != null && parsedBudgetPaise > 0) ? parsedBudgetPaise : null,
+        eventScope: _eventScope,
+        hostPersonId: _eventScope == EventScope.relative ? _hostPersonId : null,
+        hostPersonName: _eventScope == EventScope.relative && _hostPersonNameController.text.trim().isNotEmpty
+            ? _hostPersonNameController.text.trim()
+            : null,
+        attendingFamilyNote: _eventScope == EventScope.relative && _attendingFamilyController.text.trim().isNotEmpty
+            ? _attendingFamilyController.text.trim()
+            : null,
         createdAt: now,
         updatedAt: now,
         functions: _subEvents.map((s) => EventFunction(
@@ -800,7 +1018,9 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
     final textPrimary = theme.colorScheme.onSurface;
     final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
     final primaryAccent = theme.colorScheme.primary;
+    final semantic = AppSemanticColors.of(context);
     final customTypes = ref.watch(customEventTypesProvider).value ?? [];
+    final familyProfile = ref.watch(familyProfileProvider).value ?? const FamilyProfile();
 
     return Scaffold(
       backgroundColor: scaffoldBg,
@@ -857,6 +1077,265 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
                         ],
                       ),
                     ),
+                  ],
+
+                  // 0. Event Scope Switcher (Own Family vs Relative / Invited Event)
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: semantic.cardBg,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: semantic.cardBorder),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ExpressSquish(
+                            scale: 0.97,
+                            onTap: () => setState(() => _eventScope = EventScope.ownFamily),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 8),
+                              decoration: BoxDecoration(
+                                color: _eventScope == EventScope.ownFamily
+                                    ? semantic.primary.withValues(alpha: 0.14)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: _eventScope == EventScope.ownFamily
+                                      ? semantic.primary
+                                      : Colors.transparent,
+                                  width: 1.3,
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.home_rounded,
+                                    size: 20,
+                                    color: _eventScope == EventScope.ownFamily
+                                        ? semantic.primary
+                                        : semantic.textSecondary,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    l10n.ownFamilyEvent,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w800,
+                                      color: _eventScope == EventScope.ownFamily
+                                          ? semantic.primary
+                                          : semantic.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    l10n.ownFamilyEventSubtitle,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      color: semantic.textSecondary,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: ExpressSquish(
+                            scale: 0.97,
+                            onTap: () => setState(() => _eventScope = EventScope.relative),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 8),
+                              decoration: BoxDecoration(
+                                color: _eventScope == EventScope.relative
+                                    ? semantic.infoContainer
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: _eventScope == EventScope.relative
+                                      ? semantic.info
+                                      : Colors.transparent,
+                                  width: 1.3,
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.card_membership_rounded,
+                                    size: 20,
+                                    color: _eventScope == EventScope.relative
+                                        ? semantic.info
+                                        : semantic.textSecondary,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    l10n.relativeEvent,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w800,
+                                      color: _eventScope == EventScope.relative
+                                          ? semantic.info
+                                          : semantic.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    l10n.relativeEventSubtitle,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      color: semantic.textSecondary,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // 0B. Host Relative & Attending Family Card (Only for Relative Events)
+                  if (_eventScope == EventScope.relative) ...[
+                    _buildSectionCard(
+                      title: l10n.selectHostRelative,
+                      icon: Icons.people_alt_outlined,
+                      cardBg: cardBg,
+                      cardBorder: semantic.info.withValues(alpha: 0.35),
+                      textPrimary: textPrimary,
+                      primaryAccent: semantic.info,
+                      children: [
+                        ExpressSquish(
+                          scale: 0.98,
+                          onTap: () => _openHostRelativePicker(context, l10n),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: inputBg,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: _hostPersonId != null
+                                    ? semantic.info.withValues(alpha: 0.5)
+                                    : cardBorder,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.person_search_rounded, size: 20, color: semantic.info),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    _hostPersonNameController.text.trim().isNotEmpty
+                                        ? _hostPersonNameController.text.trim()
+                                        : l10n.selectRelativeTapHint,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: _hostPersonNameController.text.trim().isNotEmpty
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
+                                      color: _hostPersonNameController.text.trim().isNotEmpty
+                                          ? textPrimary
+                                          : textSecondary,
+                                    ),
+                                  ),
+                                ),
+                                Icon(Icons.chevron_right, color: textSecondary),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        TextFormField(
+                          controller: _hostPersonNameController,
+                          textCapitalization: TextCapitalization.words,
+                          style: TextStyle(color: textPrimary, fontSize: 13.5),
+                          onChanged: (_) {
+                            if (_hostPersonId != null) {
+                              setState(() => _hostPersonId = null);
+                            }
+                          },
+                          decoration: _inputDecoration('या आयोजक रिश्तेदार का नाम लिखें', inputBg, textSecondary),
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          l10n.whoWillAttend,
+                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: textPrimary),
+                        ),
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: {
+                            l10n.entireFamily,
+                            if (familyProfile.headOfFamily.trim().isNotEmpty)
+                              familyProfile.headOfFamily.trim(),
+                            ...familyProfile.members.map((m) => m.name.trim()).where((n) => n.isNotEmpty),
+                          }.map((memberOption) {
+                            final currentText = _attendingFamilyController.text.trim();
+                            final isSelected = memberOption == l10n.entireFamily
+                                ? currentText == memberOption
+                                : currentText.split(',').map((s) => s.trim()).contains(memberOption);
+                            return ExpressSquish(
+                              scale: 0.94,
+                              onTap: () {
+                                setState(() {
+                                  if (memberOption == l10n.entireFamily) {
+                                    _attendingFamilyController.text = isSelected ? '' : memberOption;
+                                  } else {
+                                    final parts = currentText
+                                        .split(',')
+                                        .map((s) => s.trim())
+                                        .where((s) => s.isNotEmpty && s != l10n.entireFamily)
+                                        .toList();
+                                    if (parts.contains(memberOption)) {
+                                      parts.remove(memberOption);
+                                    } else {
+                                      parts.add(memberOption);
+                                    }
+                                    _attendingFamilyController.text = parts.join(', ');
+                                  }
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? semantic.info : inputBg,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isSelected ? semantic.info : cardBorder,
+                                  ),
+                                ),
+                                child: Text(
+                                  memberOption,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: isSelected ? semantic.onVibrant : textPrimary,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _attendingFamilyController,
+                          style: TextStyle(color: textPrimary, fontSize: 13.5),
+                          decoration: _inputDecoration('उदा. पूरा परिवार / पिताजी व माताजी', inputBg, textSecondary),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
                   ],
 
                   // 1. Core Event Details Card
@@ -1371,9 +1850,9 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
 
                   const SizedBox(height: 14),
 
-                  // 4. Location & Notes Card
+                  // 4. Location, Budget, Priority & Notes Card
                   _buildSectionCard(
-                    title: 'स्थान व अतिरिक्त नोट्स',
+                    title: 'स्थान, बजट व प्राथमिकता',
                     icon: Icons.location_on_outlined,
                     cardBg: cardBg,
                     cardBorder: cardBorder,
@@ -1388,6 +1867,72 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
                         decoration: _inputDecoration(l10n.eventLocationHint, inputBg, textSecondary).copyWith(
                           prefixIcon: Icon(Icons.pin_drop_outlined, size: 18, color: textSecondary),
                         ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(l10n.villageOrCity, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12.5, color: textPrimary)),
+                                const SizedBox(height: 6),
+                                TextFormField(
+                                  controller: _villageCityController,
+                                  style: TextStyle(color: textPrimary, fontSize: 13.5),
+                                  decoration: _inputDecoration(l10n.villageOrCityHint, inputBg, textSecondary),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _eventScope == EventScope.relative
+                                      ? 'अनुमानित शगुन (₹)'
+                                      : 'अनुमानित बजट (₹)',
+                                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12.5, color: textPrimary),
+                                ),
+                                const SizedBox(height: 6),
+                                TextFormField(
+                                  controller: _budgetController,
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                  style: TextStyle(color: textPrimary, fontSize: 13.5),
+                                  decoration: _inputDecoration('उदा. 5100', inputBg, textSecondary).copyWith(
+                                    prefixIcon: Icon(Icons.currency_rupee, size: 16, color: textSecondary),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Text(l10n.priorityLabel, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: textPrimary)),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: EventPriority.values.map((p) {
+                          final isSelected = _priority == p;
+                          return ChoiceChip(
+                            label: Text(
+                              l10n.isEnglish ? p.labelEnglish : p.labelHindi,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                color: isSelected ? semantic.onVibrant : textPrimary,
+                              ),
+                            ),
+                            selected: isSelected,
+                            selectedColor: primaryAccent,
+                            backgroundColor: inputBg,
+                            onSelected: (_) => setState(() => _priority = p),
+                          );
+                        }).toList(),
                       ),
                       const SizedBox(height: 14),
                       Text('विवरण / नोट्स (वैकल्पिक)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: textPrimary)),

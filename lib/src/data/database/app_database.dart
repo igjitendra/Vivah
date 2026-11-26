@@ -76,41 +76,14 @@ class AppDatabase extends _$AppDatabase {
         await customStatement('PRAGMA foreign_keys = ON;');
         await customStatement('PRAGMA journal_mode = WAL;');
         await customStatement('PRAGMA busy_timeout = 5000;');
-        if (details.wasCreated || details.hadUpgrade) {
-          await SchemaMigrations.ensureAllTablesAndColumns(this, createMigrator());
-        } else {
-          // Fast (<1ms) self-healing check in case DB was restored/opened with missing extended columns
-          final needsRepair = await _hasMissingExtendedSchema();
-          if (needsRepair) {
-            await SchemaMigrations.ensureAllTablesAndColumns(this, createMigrator());
-          }
-        }
+        // Always run self-healing to ensure extended schema columns and aux tables exist.
+        // All statements use IF NOT EXISTS / try-catch so this is safe and idempotent (<5ms on warm DB).
+        // This guards against background-isolate DB opens where onUpgrade may not have fired.
+        await SchemaMigrations.ensureAllTablesAndColumns(this, createMigrator());
       },
     );
   }
 
-  Future<bool> _hasMissingExtendedSchema() async {
-    try {
-      final peopleCols = await customSelect(
-        "SELECT name FROM pragma_table_info('people') WHERE name IN ('first_name', 'whatsapp_number', 'contact_source')",
-      ).get();
-      if (peopleCols.length < 3) return true;
-
-      final eventCols = await customSelect(
-        "SELECT name FROM pragma_table_info('events') WHERE name IN ('status', 'event_scope', 'host_person_id', 'attending_family_note')",
-      ).get();
-      if (eventCols.length < 4) return true;
-
-      final auxTables = await customSelect(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('person_phones', 'person_emails', 'attachments', 'event_functions', 'event_guests', 'event_tasks', 'event_budget_categories', 'event_notes', 'event_reminders')",
-      ).get();
-      if (auxTables.length < 9) return true;
-
-      return false;
-    } catch (_) {
-      return true;
-    }
-  }
 }
 
 @pragma('vm:entry-point')

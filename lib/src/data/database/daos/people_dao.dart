@@ -3,6 +3,7 @@ import '../../../domain/entities/entities.dart';
 import '../app_database.dart';
 import '../tables/people_table.dart';
 import '../tables/entries_table.dart';
+import '../migrations/schema_migrations.dart';
 
 part 'people_dao.g.dart';
 
@@ -158,8 +159,24 @@ class PeopleDao extends DatabaseAccessor<AppDatabase> with _$PeopleDaoMixin {
     return Variable.withString(val.trim());
   }
 
-  /// Save or update complete person with all extended columns, phones, and emails
+  /// Save or update complete person with all extended columns, phones, and emails.
+  /// Includes self-healing: if extended columns are missing, repairs schema and retries once.
   Future<void> saveExtendedPerson(Person person) async {
+    try {
+      await _saveExtendedPersonInternal(person);
+    } catch (e) {
+      final msg = e.toString();
+      if (msg.contains('no column named') || msg.contains('table people has no column')) {
+        // Extended columns missing on this DB instance; repair schema and retry
+        await SchemaMigrations.ensureAllTablesAndColumns(db, Migrator(db));
+        await _saveExtendedPersonInternal(person);
+      } else {
+        rethrow;
+      }
+    }
+  }
+
+  Future<void> _saveExtendedPersonInternal(Person person) async {
     await transaction(() async {
       // 1. Upsert in people table (ON CONFLICT updates in-place without triggering FK DELETE cascades)
       await customInsert(

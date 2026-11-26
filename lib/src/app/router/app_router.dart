@@ -17,6 +17,7 @@ import '../../features/entries/presentation/add_entry_screen.dart';
 import '../../features/entries/presentation/entry_detail_screen.dart';
 import '../../features/reports/presentation/reports_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/more/presentation/more_screen.dart';
 import '../../features/family_profile/presentation/family_profile_screen.dart';
 import '../../features/family_profile/presentation/edit_family_profile_screen.dart';
 import '../../features/reminders/presentation/reminders_screen.dart';
@@ -60,10 +61,10 @@ const List<TabItemData> appTabs = [
     routePath: '/people',
   ),
   TabItemData(
-    label: AppStrings.tabSettings,
-    activeIcon: Icons.settings,
-    inactiveIcon: Icons.settings_outlined,
-    routePath: '/settings',
+    label: AppStrings.tabMore,
+    activeIcon: Icons.more_horiz_rounded,
+    inactiveIcon: Icons.more_horiz_rounded,
+    routePath: '/more',
   ),
 ];
 
@@ -104,10 +105,10 @@ final GoRouter appRouter = GoRouter(
             routePath: '/people',
           ),
           TabItemData(
-            label: l10n.tabSettings,
-            activeIcon: Icons.settings,
-            inactiveIcon: Icons.settings_outlined,
-            routePath: '/settings',
+            label: l10n.tabMore,
+            activeIcon: Icons.more_horiz_rounded,
+            inactiveIcon: Icons.more_horiz_rounded,
+            routePath: '/more',
           ),
         ];
 
@@ -163,7 +164,7 @@ final GoRouter appRouter = GoRouter(
                   onNewEntryGiven: () => context.push('/entry/new?direction=given'),
                   onNewEvent: () => context.push('/event/new'),
                   onNewPerson: () => context.push('/person/new'),
-                  onOpenSettings: () => context.go('/settings'),
+                  onOpenSettings: () => context.push('/settings'),
                   onOpenEventDetails: (id) => context.push('/event/$id'),
                   onViewAllEntries: () => context.go('/bahi'),
                   onViewAllEvents: () => context.go('/events'),
@@ -212,14 +213,20 @@ final GoRouter appRouter = GoRouter(
             ),
           ),
         ),
-        // Tab 5: Settings (सेटिंग्स)
+        // Tab 5: More (अधिक)
         GoRoute(
-          path: '/settings',
+          path: '/more',
           pageBuilder: (context, state) => NoTransitionPage(
-            child: SettingsScreen(
-              onOpenLanguageSelector: () => context.push('/language'),
+            child: MoreScreen(
+              onOpenSettings: () => context.push('/settings'),
               onOpenReports: () => context.push('/reports'),
               onOpenReminders: () => context.push('/reminders'),
+              onOpenLanguageSelector: () => context.push('/language'),
+              onOpenThemeGallery: () => context.push('/theme'),
+              onOpenFamilyProfile: (isEmpty) => context.push(
+                isEmpty ? '/family-profile/edit' : '/family-profile',
+              ),
+              onOpenOnboarding: () => context.push('/onboarding?fromSettings=true'),
             ),
           ),
         ),
@@ -307,6 +314,15 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       parentNavigatorKey: _rootNavigatorKey,
+      path: '/settings',
+      builder: (context, state) => SettingsScreen(
+        onOpenLanguageSelector: () => context.push('/language'),
+        onOpenReports: () => context.push('/reports'),
+        onOpenReminders: () => context.push('/reminders'),
+      ),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
       path: '/reminders',
       builder: (context, state) => const RemindersScreen(),
     ),
@@ -330,6 +346,6 @@ int _calculateSelectedIndex(String path) {
   if (path.startsWith('/bahi')) return 1;
   if (path.startsWith('/events')) return 2;
   if (path.startsWith('/people')) return 3;
-  if (path.startsWith('/settings')) return 4;
+  if (path.startsWith('/more')) return 4;
   return 0;
 }

@@ -20,6 +20,10 @@
   - Enhanced Recent Transactions card (`हाल के व्यवहार`) with directional pills, relative dates, and cash/gift indicators.
 
 ### Changed
+- **Bottom Footer Tab Bar Upgrade (`More` / `अधिक` Tab)**:
+  - Replaced the 5th bottom navigation tab ("Settings") with a dedicated **"More"** (`अधिक` / `•••`) tab routed to `/more` (`lib/src/features/more/presentation/more_screen.dart`).
+  - Added theme-adaptive `MoreScreen` hub providing 1-tap access to Family Profile, Reports & Exports, Reminders (with live pending badge), Theme Gallery, Language Selector, App Tour, Quick Shortcuts, and Full-Screen Settings (`/settings`).
+  - Moved `/settings` to a full-screen subroute accessible from the Home Hero gear icon and the More hub.
 - **Zero-Hardcoded-Color Compliance**:
   - Eliminated all hardcoded hex/static color literals from `DashboardScreen` and `FloatingPillTabBar`, binding every visual token strictly to `AppSemanticColors` and `ThemeData`.
 - **Localized Dashboard Labels (`lib/src/core/localization/app_localizations.dart`)**:

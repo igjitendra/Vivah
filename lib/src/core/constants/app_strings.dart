@@ -12,6 +12,7 @@ class AppStrings {
   static const String tabEvents = 'कार्यक्रम';
   static const String tabPeople = 'लोग';
   static const String tabSettings = 'सेटिंग्स';
+  static const String tabMore = 'अधिक';
 
   // Financial Semantics
   static const String mila = 'मिला';

@@ -57,6 +57,13 @@ class AppLocalizations {
   String get tabEvents => isEnglish ? 'Events' : (isUrdu ? 'تقاریب' : 'कार्यक्रम');
   String get tabPeople => isEnglish ? 'People' : (isUrdu ? 'افراد' : 'लोग');
   String get tabSettings => isEnglish ? 'Settings' : (isUrdu ? 'ترتیبات' : 'सेटिंग्स');
+  String get tabMore => isEnglish ? 'More' : (isUrdu ? 'مزید' : 'अधिक');
+  String get moreTitle => isEnglish ? 'More Options' : (isUrdu ? 'مزید اختیارات' : 'अधिक विकल्प');
+  String get backupAndRestore => isEnglish ? 'Backup & Restore' : (isUrdu ? 'بیک اپ اور بحالی' : 'बैकअप व रिस्टोर');
+  String get reportsAndExports => isEnglish ? 'Reports & Exports' : (isUrdu ? 'رپورٹس اور ایکسپورٹ' : 'रिपोर्ट व एक्सपोर्ट');
+  String get appearanceAndThemes => isEnglish ? 'Themes & Colors' : (isUrdu ? 'تھیم اور رنگ' : 'थीम व रंग');
+  String get keyboardShortcuts => isEnglish ? 'Quick Shortcuts' : (isUrdu ? 'فوری شارٹ کٹس' : 'त्वरित शॉर्टकट');
+  String get pending => isEnglish ? 'pending' : (isUrdu ? 'باقی' : 'लंबित');
 
   // Financial Semantics (Strictly pure Mila / Diya without credit/debt/netting)
   String get received => isEnglish ? 'Received' : (isUrdu ? 'ملا' : 'मिला');

@@ -49,7 +49,7 @@ class _VyavahaarAppState extends ConsumerState<VyavahaarApp> {
         appRouter.go('/people');
         break;
       case AppShortcut.tab5:
-        appRouter.go('/settings');
+        appRouter.go('/more');
         break;
       case AppShortcut.newEntry:
         appRouter.push('/entry/new');
@@ -58,7 +58,7 @@ class _VyavahaarAppState extends ConsumerState<VyavahaarApp> {
         appRouter.go('/bahi');
         break;
       case AppShortcut.settings:
-        appRouter.go('/settings');
+        appRouter.push('/settings');
         break;
       case AppShortcut.shortcutsHelp:
         final ctx = appRouter.routerDelegate.navigatorKey.currentContext;

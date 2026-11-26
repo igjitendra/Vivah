@@ -150,3 +150,4 @@ One-tap direct intent triggers integrated via `url_launcher`:
 3. **Database Architecture Test (`test-database-architecture.py`)**: 14/14 tests passed (31,700-row scale test).
 4. **Advanced Event Architecture Test (`test-advanced-event-architecture.py`)**: 10/10 tests passed.
 5. **Domain Unit Tests (`test/unit/contacts_and_people_test.dart`)**: 5/5 unit test groups passed.
+6. **Schema Migration & UPSERT Integrity (`test/unit/people_migration_test.dart`)**: Verifies Schema v8 self-healing extended columns (`first_name`, `whatsapp_number`, `contact_source`, `person_phones`, `person_emails`) and `ON CONFLICT(id) DO UPDATE` safe in-place updates preserving foreign-key-referenced transactions.

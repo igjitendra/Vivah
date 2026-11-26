@@ -36,6 +36,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
   String _contactSource = 'manual';
   String? _externalContactId;
   DateTime? _importedAt;
+  ContactDraft? _importedDraft;
   bool _isSaving = false;
 
   final List<String> _quickRelations = [
@@ -50,27 +51,30 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
   void initState() {
     super.initState();
     if (widget.initialDraft != null) {
-      _populateFromDraft(widget.initialDraft!);
+      _applyDraft(widget.initialDraft!);
     }
   }
 
-  void _populateFromDraft(ContactDraft d) {
-    setState(() {
-      _contactSource = 'phone_import';
-      _externalContactId = d.externalId;
-      _importedAt = DateTime.now();
+  void _applyDraft(ContactDraft d) {
+    _importedDraft = d;
+    _contactSource = 'phone_import';
+    _externalContactId = d.externalId;
+    _importedAt = DateTime.now();
 
-      _nameController.text = d.name;
-      if (d.primaryPhone != null) _phoneController.text = d.primaryPhone!;
-      if (d.village != null && d.village!.isNotEmpty) {
-        _villageController.text = d.village!;
-      } else if (d.city != null && d.city!.isNotEmpty) {
-        _villageController.text = d.city!;
-      } else if (d.address != null && d.address!.isNotEmpty) {
-        _villageController.text = d.address!;
-      }
-      if (d.notes != null) _notesController.text = d.notes!;
-    });
+    _nameController.text = d.name;
+    if (d.primaryPhone != null) _phoneController.text = d.primaryPhone!;
+    if (d.village != null && d.village!.isNotEmpty) {
+      _villageController.text = d.village!;
+    } else if (d.city != null && d.city!.isNotEmpty) {
+      _villageController.text = d.city!;
+    } else if (d.address != null && d.address!.isNotEmpty) {
+      _villageController.text = d.address!;
+    }
+    if (d.notes != null) _notesController.text = d.notes!;
+  }
+
+  void _populateFromDraft(ContactDraft d) {
+    setState(() => _applyDraft(d));
   }
 
   @override
@@ -123,20 +127,30 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
             onPressed: () async {
               final name = nameController.text.trim();
               if (name.isEmpty) return;
-              final repo = ref.read(familiesRepositoryProvider);
-              final newId = const Uuid().v4();
-              final now = DateTime.now();
-              await repo.createFamily(Family(id: newId, name: name, createdAt: now, updatedAt: now));
-              if (mounted) {
-                setState(() => _selectedFamilyId = newId);
-                Navigator.pop(ctx);
+              try {
+                final repo = ref.read(familiesRepositoryProvider);
+                final newId = const Uuid().v4();
+                final now = DateTime.now();
+                await repo.createFamily(Family(id: newId, name: name, createdAt: now, updatedAt: now));
+                if (mounted) {
+                  setState(() => _selectedFamilyId = newId);
+                }
+                if (ctx.mounted) {
+                  Navigator.pop(ctx);
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('${l10n.errorGeneric}: $e'), backgroundColor: Colors.red),
+                  );
+                }
               }
             },
             child: Text(l10n.save, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
-    );
+    ).whenComplete(nameController.dispose);
   }
 
   Future<void> _handleSave() async {
@@ -150,18 +164,30 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
     try {
       final repo = ref.read(peopleRepositoryProvider);
       final now = DateTime.now();
+      final draft = _importedDraft;
 
       final person = Person(
         id: const Uuid().v4(),
         familyId: _selectedFamilyId,
         fullName: name,
+        firstName: draft?.firstName,
+        middleName: draft?.middleName,
+        lastName: draft?.lastName,
+        nickname: draft?.nickname,
+        dateOfBirth: draft?.birthday,
         phoneNumber: _phoneController.text.trim().isNotEmpty ? _phoneController.text.trim() : null,
-        secondaryPhones: const [],
+        secondaryPhones: draft?.secondaryPhones ?? const [],
         whatsappNumber: _whatsappController.text.trim().isNotEmpty ? _whatsappController.text.trim() : null,
-        emails: const [],
-        village: _villageController.text.trim().isNotEmpty ? _villageController.text.trim() : null,
-        address: _villageController.text.trim().isNotEmpty ? _villageController.text.trim() : null,
+        emails: draft?.emails ?? const [],
+        village: _villageController.text.trim().isNotEmpty ? _villageController.text.trim() : draft?.village,
+        city: draft?.city,
+        district: draft?.district,
+        state: draft?.state,
+        pinCode: draft?.pinCode,
+        address: _villageController.text.trim().isNotEmpty ? _villageController.text.trim() : draft?.address,
         relationshipLabel: _relationController.text.trim().isNotEmpty ? _relationController.text.trim() : null,
+        occupation: draft?.jobTitle,
+        company: draft?.company,
         notes: _notesController.text.trim().isNotEmpty ? _notesController.text.trim() : null,
         tags: const [],
         contactSource: _contactSource,
@@ -466,16 +492,19 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                       familiesAsync.when(
                         loading: () => const LinearProgressIndicator(),
                         error: (err, _) => const SizedBox.shrink(),
-                        data: (families) => DropdownButtonFormField<String?>(
-                          value: _selectedFamilyId,
-                          hint: Text(l10n.noFamily, style: TextStyle(color: textSecondary, fontSize: 13)),
-                          items: [
-                            DropdownMenuItem(value: null, child: Text(l10n.noFamily, style: TextStyle(color: textPrimary))),
-                            ...families.map((f) => DropdownMenuItem(value: f.id, child: Text(f.name, style: TextStyle(color: textPrimary)))),
-                          ],
-                          onChanged: (val) => setState(() => _selectedFamilyId = val),
-                          decoration: _inputDecoration(l10n.selectFamilyOptional, inputBg, textSecondary),
-                        ),
+                        data: (families) {
+                          final safeValue = families.any((f) => f.id == _selectedFamilyId) ? _selectedFamilyId : null;
+                          return DropdownButtonFormField<String?>(
+                            value: safeValue,
+                            hint: Text(l10n.noFamily, style: TextStyle(color: textSecondary, fontSize: 13)),
+                            items: [
+                              DropdownMenuItem(value: null, child: Text(l10n.noFamily, style: TextStyle(color: textPrimary))),
+                              ...families.map((f) => DropdownMenuItem(value: f.id, child: Text(f.name, style: TextStyle(color: textPrimary)))),
+                            ],
+                            onChanged: (val) => setState(() => _selectedFamilyId = val),
+                            decoration: _inputDecoration(l10n.selectFamilyOptional, inputBg, textSecondary),
+                          );
+                        },
                       ),
                     ],
                   ),

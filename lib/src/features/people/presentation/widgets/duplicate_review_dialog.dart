@@ -90,7 +90,7 @@ class _DuplicateReviewDialogState extends State<DuplicateReviewDialog> {
             const SizedBox(height: 12),
 
             // Content Area: Side-by-side comparison or merge chooser
-            Expanded(
+            Flexible(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 child: _isMergeMode ? _buildMergeChooser(cardBorder, textPrimary, textSecondary, primaryAccent) : _buildSideBySideComparison(cardBorder, textPrimary, textSecondary),

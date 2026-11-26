@@ -78,9 +78,33 @@ class AppDatabase extends _$AppDatabase {
         await customStatement('PRAGMA busy_timeout = 5000;');
         if (details.wasCreated || details.hadUpgrade) {
           await SchemaMigrations.ensureAllTablesAndColumns(this, createMigrator());
+        } else {
+          // Fast (<1ms) self-healing check in case DB was restored/opened with missing extended columns
+          final needsRepair = await _hasMissingExtendedSchema();
+          if (needsRepair) {
+            await SchemaMigrations.ensureAllTablesAndColumns(this, createMigrator());
+          }
         }
       },
     );
+  }
+
+  Future<bool> _hasMissingExtendedSchema() async {
+    try {
+      final peopleCols = await customSelect(
+        "SELECT name FROM pragma_table_info('people') WHERE name IN ('first_name', 'whatsapp_number', 'contact_source')",
+      ).get();
+      if (peopleCols.length < 3) return true;
+
+      final auxTables = await customSelect(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('person_phones', 'person_emails', 'attachments')",
+      ).get();
+      if (auxTables.length < 3) return true;
+
+      return false;
+    } catch (_) {
+      return true;
+    }
   }
 }
 

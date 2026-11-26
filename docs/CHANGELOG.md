@@ -29,6 +29,13 @@
 - **Localized Dashboard Labels (`lib/src/core/localization/app_localizations.dart`)**:
   - Added multilingual English, Hindi, and Urdu strings for all new Home Dashboard sections and countdown labels.
 
+### Fixed
+- **People & Contact Import SQLite Schema + UI Stability Fixes (`Schema v8`)**:
+  - **Resolved `table people has no column named first_name` Crash**: Bumped `SchemaMigrations.currentSchemaVersion` to `8`, ensured `migrate(from < 8)` runs `ensureAllTablesAndColumns`, and added a `<1ms` schema integrity verification (`_hasMissingExtendedSchema`) in `AppDatabase.beforeOpen` so legacy/restored databases self-heal automatically.
+  - **Safe SQLite UPSERT (`PeopleDao.saveExtendedPerson`)**: Replaced `INSERT OR REPLACE INTO people` (which triggered `DELETE` and could fail or cascade on foreign-key-referenced transactions) with `ON CONFLICT(id) DO UPDATE SET ...`, added `updates: {people}` for instant Drift stream updates, and deduplicated secondary phones/emails using deterministic indexed IDs.
+  - **`AddPersonScreen` & `ContactImportSheet` Robustness**: Preserved full imported `ContactDraft` properties (`firstName`, `lastName`, `emails`, `secondaryPhones`, `company`, `occupation`, `city`, `state`, `pinCode`), eliminated `setState` in `initState`, disposed dialog controllers cleanly, wrapped all async contact import/merge operations in `try/catch`, and guarded family dropdown values against deleted IDs.
+  - **`PeopleListScreen` & `PersonDetailScreen` Hardening**: Replaced overflowing metadata/action `Row`s with responsive `Wrap` layouts, supported `TransactionDirection.mila`/`diya` aliases in totals, enabled clearing nullable fields during person edit, and added `test/unit/people_migration_test.dart`.
+
 ---
 
 ## [1.4.15] — 2026-11-25

@@ -65,21 +65,30 @@ class _ContactImportSheetState extends ConsumerState<ContactImportSheet> {
       _statusText = 'फ़ोन संपर्क खोला जा रहा है...';
     });
 
-    final draft = await ContactsService.pickSinglePhoneContact();
-    if (!mounted) return;
+    try {
+      final draft = await ContactsService.pickSinglePhoneContact();
+      if (!mounted) return;
 
-    setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
 
-    if (draft != null) {
-      if (widget.onSingleContactPicked != null) {
-        widget.onSingleContactPicked!(draft);
-        Navigator.pop(context);
-      } else {
-        // Multi-mode: add to review
-        setState(() {
-          _fetchedDrafts = [draft];
-          _selectedDraftIds.add(draft.id);
-        });
+      if (draft != null) {
+        if (widget.onSingleContactPicked != null) {
+          widget.onSingleContactPicked!(draft);
+          Navigator.pop(context);
+        } else {
+          // Multi-mode: add to review
+          setState(() {
+            _fetchedDrafts = [draft];
+            _selectedDraftIds.add(draft.id);
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${context.l10n.errorGeneric}: $e'), backgroundColor: Colors.red),
+        );
       }
     }
   }
@@ -104,22 +113,33 @@ class _ContactImportSheetState extends ConsumerState<ContactImportSheet> {
       _statusText = 'फ़ोन संपर्क पढ़े जा रहे हैं...';
     });
 
-    final drafts = await ContactsService.fetchAllPhoneContacts(withPhotos: false);
-    if (!mounted) return;
+    try {
+      final drafts = await ContactsService.fetchAllPhoneContacts(withPhotos: false);
+      if (!mounted) return;
 
-    setState(() {
-      _isLoading = false;
-      _fetchedDrafts = drafts;
-      _selectedDraftIds.addAll(drafts.map((d) => d.id));
-    });
+      setState(() {
+        _isLoading = false;
+        _fetchedDrafts = drafts;
+        _selectedDraftIds
+          ..clear()
+          ..addAll(drafts.map((d) => d.id));
+      });
 
-    if (drafts.isEmpty && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.noContactsSelected),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      if (drafts.isEmpty && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.noContactsSelected),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${context.l10n.errorGeneric}: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -129,16 +149,27 @@ class _ContactImportSheetState extends ConsumerState<ContactImportSheet> {
       _statusText = 'vCard फ़ाइल पढ़ी जा रही है...';
     });
 
-    final drafts = await ContactsService.pickAndParseVCardFile();
-    if (!mounted) return;
+    try {
+      final drafts = await ContactsService.pickAndParseVCardFile();
+      if (!mounted) return;
 
-    setState(() {
-      _isLoading = false;
-      if (drafts.isNotEmpty) {
-        _fetchedDrafts = drafts;
-        _selectedDraftIds.addAll(drafts.map((d) => d.id));
+      setState(() {
+        _isLoading = false;
+        if (drafts.isNotEmpty) {
+          _fetchedDrafts = drafts;
+          _selectedDraftIds
+            ..clear()
+            ..addAll(drafts.map((d) => d.id));
+        }
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${context.l10n.errorGeneric}: $e'), backgroundColor: Colors.red),
+        );
       }
-    });
+    }
   }
 
   Future<void> _executeImport(List<Person> existingPeople) async {
@@ -149,47 +180,64 @@ class _ContactImportSheetState extends ConsumerState<ContactImportSheet> {
       _statusText = 'संपर्क सहेजे जा रहे हैं...';
     });
 
-    final repo = ref.read(peopleRepositoryProvider);
-    final selectedDrafts = _fetchedDrafts!.where((d) => _selectedDraftIds.contains(d.id)).toList();
+    try {
+      final repo = ref.read(peopleRepositoryProvider);
+      final selectedDrafts = _fetchedDrafts!.where((d) => _selectedDraftIds.contains(d.id)).toList();
 
-    final toCreate = <ContactDraft>[];
+      final toCreate = <ContactDraft>[];
+      int mergedCount = 0;
 
-    for (final draft in selectedDrafts) {
-      final res = repo.detectDuplicate(draft, existingPeople);
-      final userChoice = _duplicateResolutions[draft.id];
+      for (final draft in selectedDrafts) {
+        final res = repo.detectDuplicate(draft, existingPeople);
+        final userChoice = _duplicateResolutions[draft.id];
 
-      if (res.isDuplicate && res.existingPerson != null) {
-        if (userChoice == DuplicateResolutionChoice.skip) {
-          continue;
-        } else if (userChoice == DuplicateResolutionChoice.merge) {
-          final keepFields = _mergeFieldChoices[draft.id] ?? {'name': false, 'phone': false, 'address': true, 'job': true, 'company': true};
-          await repo.mergePersonWithDraft(res.existingPerson!, draft, keepFields);
-          continue;
+        if (res.isDuplicate && res.existingPerson != null) {
+          if (userChoice == DuplicateResolutionChoice.skip) {
+            continue;
+          } else if (userChoice == DuplicateResolutionChoice.merge) {
+            final keepFields = _mergeFieldChoices[draft.id] ?? {'name': false, 'phone': false, 'address': true, 'job': true, 'company': true};
+            await repo.mergePersonWithDraft(res.existingPerson!, draft, keepFields);
+            mergedCount++;
+            continue;
+          }
         }
+        toCreate.add(draft);
       }
-      toCreate.add(draft);
-    }
 
-    if (toCreate.isNotEmpty) {
-      await repo.importBatchContacts(
-        toCreate,
-        defaultFamilyId: _defaultFamilyId,
-        defaultRelationship: _defaultRelationship,
+      int createdCount = 0;
+      if (toCreate.isNotEmpty) {
+        createdCount = await repo.importBatchContacts(
+          toCreate,
+          defaultFamilyId: _defaultFamilyId,
+          defaultRelationship: _defaultRelationship,
+        );
+      }
+
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+
+      Navigator.pop(context);
+      widget.onImportCompleted?.call();
+
+      final int totalSaved = createdCount + mergedCount;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            mergedCount > 0
+                ? '$createdCount नए जोड़े गए और $mergedCount विलय किए गए'
+                : '$totalSaved संपर्क सफलतापूर्वक आयात किए गए',
+          ),
+          backgroundColor: AppColors.milaGreen,
+        ),
       );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${context.l10n.errorGeneric}: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
-
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    Navigator.pop(context);
-    widget.onImportCompleted?.call();
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${toCreate.length} संपर्क सफलतापूर्वक आयात किए गए'),
-        backgroundColor: Colors.green,
-      ),
-    );
   }
 
   @override
@@ -298,12 +346,13 @@ class _ContactImportSheetState extends ConsumerState<ContactImportSheet> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String?>(
-                    value: _defaultFamilyId,
+                    value: families.any((f) => f.id == _defaultFamilyId) ? _defaultFamilyId : null,
                     hint: Text(l10n.selectFamilyOptional, style: TextStyle(fontSize: 11, color: textSecondary)),
                     isDense: true,
+                    isExpanded: true,
                     items: [
-                      DropdownMenuItem(value: null, child: Text(l10n.noFamily, style: const TextStyle(fontSize: 12))),
-                      ...families.map((f) => DropdownMenuItem(value: f.id, child: Text(f.name, style: const TextStyle(fontSize: 12)))),
+                      DropdownMenuItem(value: null, child: Text(l10n.noFamily, style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis)),
+                      ...families.map((f) => DropdownMenuItem(value: f.id, child: Text(f.name, style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis))),
                     ],
                     onChanged: (val) => setState(() => _defaultFamilyId = val),
                     decoration: InputDecoration(
@@ -320,10 +369,11 @@ class _ContactImportSheetState extends ConsumerState<ContactImportSheet> {
                     value: _defaultRelationship,
                     hint: Text(l10n.relationCategory, style: TextStyle(fontSize: 11, color: textSecondary)),
                     isDense: true,
+                    isExpanded: true,
                     items: [
-                      DropdownMenuItem(value: null, child: Text('रिश्ता (वैकल्पिक)', style: const TextStyle(fontSize: 12))),
+                      DropdownMenuItem(value: null, child: Text('रिश्ता (वैकल्पिक)', style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis)),
                       ...const ['पिता', 'माता', 'भाई', 'बहन', 'चाचा', 'चाची', 'मामा', 'मामी', 'मित्र', 'रिश्तेदार', 'अन्य'].map(
-                        (r) => DropdownMenuItem(value: r, child: Text(r, style: const TextStyle(fontSize: 12))),
+                        (r) => DropdownMenuItem(value: r, child: Text(r, style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis)),
                       ),
                     ],
                     onChanged: (val) => setState(() => _defaultRelationship = val),

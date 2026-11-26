@@ -5,7 +5,7 @@ import 'package:drift/drift.dart';
 class SchemaMigrations {
   SchemaMigrations._();
 
-  static const int currentSchemaVersion = 7;
+  static const int currentSchemaVersion = 8;
 
   /// Executes all required migrations sequentially from `from` to `to`.
   static Future<void> migrate(
@@ -42,6 +42,11 @@ class SchemaMigrations {
     // Migration v6 -> v7: Attachments table for entry proof images
     if (from < 7) {
       await _migrateToV7(m, db);
+    }
+
+    // Migration v7 -> v8: Self-heal extended people/event columns and auxiliary tables
+    if (from < 8) {
+      await ensureAllTablesAndColumns(db, m);
     }
 
     // Ensure foreign key integrity verification after migration

@@ -119,30 +119,41 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
               final name = nameController.text.trim();
               if (name.isEmpty) return;
 
-              final repo = ref.read(familiesRepositoryProvider);
-              final now = DateTime.now();
-              final family = Family(
-                id: const Uuid().v4(),
-                name: name,
-                description: descController.text.trim().isNotEmpty ? descController.text.trim() : null,
-                createdAt: now,
-                updatedAt: now,
-              );
-
-              await repo.createFamily(family);
-
-              if (context.mounted) {
-                Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(l10n.familySavedSuccess)),
+              try {
+                final repo = ref.read(familiesRepositoryProvider);
+                final now = DateTime.now();
+                final family = Family(
+                  id: const Uuid().v4(),
+                  name: name,
+                  description: descController.text.trim().isNotEmpty ? descController.text.trim() : null,
+                  createdAt: now,
+                  updatedAt: now,
                 );
+
+                await repo.createFamily(family);
+
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l10n.familySavedSuccess)),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('${l10n.errorGeneric}: $e'), backgroundColor: Colors.red),
+                  );
+                }
               }
             },
             child: Text(l10n.save, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
-    );
+    ).whenComplete(() {
+      nameController.dispose();
+      descController.dispose();
+    });
   }
 
   void _showFamilyMembersSheet(BuildContext context, Family family, AppLocalizations l10n) {
@@ -249,14 +260,19 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
     );
 
     if (confirmed == true) {
-      final repo = ref.read(peopleRepositoryProvider);
-      await repo.bulkAssignFamily(_selectedPersonIds.toList(), chosenFamilyId);
-      setState(() {
-        _isMultiSelectMode = false;
-        _selectedPersonIds.clear();
-      });
-      if (mounted) {
+      try {
+        final repo = ref.read(peopleRepositoryProvider);
+        await repo.bulkAssignFamily(_selectedPersonIds.toList(), chosenFamilyId);
+        if (!mounted) return;
+        setState(() {
+          _isMultiSelectMode = false;
+          _selectedPersonIds.clear();
+        });
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('परिवार सफलतापूर्वक अपडेट किया गया')));
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('त्रुटि: $e'), backgroundColor: Colors.red));
+        }
       }
     }
   }
@@ -278,15 +294,23 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
       ),
     );
 
-    if (confirmed == true && tagCtrl.text.trim().isNotEmpty) {
-      final repo = ref.read(peopleRepositoryProvider);
-      await repo.bulkAddTag(_selectedPersonIds.toList(), tagCtrl.text.trim());
-      setState(() {
-        _isMultiSelectMode = false;
-        _selectedPersonIds.clear();
-      });
-      if (mounted) {
+    final tagText = tagCtrl.text.trim();
+    tagCtrl.dispose();
+
+    if (confirmed == true && tagText.isNotEmpty) {
+      try {
+        final repo = ref.read(peopleRepositoryProvider);
+        await repo.bulkAddTag(_selectedPersonIds.toList(), tagText);
+        if (!mounted) return;
+        setState(() {
+          _isMultiSelectMode = false;
+          _selectedPersonIds.clear();
+        });
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('टैग सफलतापूर्वक लगाया गया')));
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('त्रुटि: $e'), backgroundColor: Colors.red));
+        }
       }
     }
   }
@@ -318,7 +342,8 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
       for (final entry in entriesAsync.value!) {
         if (entry.archivedAt != null || entry.status != TransactionStatus.recorded) continue;
         final existing = personStats[entry.personId] ?? (totalMila: 0, totalDiya: 0, count: 0);
-        final isReceived = entry.direction == TransactionDirection.received;
+        final isReceived = entry.direction == TransactionDirection.received ||
+            entry.direction == TransactionDirection.mila;
         final amount = entry.amountPaise ?? 0;
         personStats[entry.personId] = (
           totalMila: existing.totalMila + (isReceived ? amount : 0),
@@ -1009,9 +1034,12 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
                                 ],
                               ),
                               const SizedBox(height: 3),
-                              Row(
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 4,
+                                crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
-                                  if (p.relationshipLabel != null) ...[
+                                  if (p.relationshipLabel != null)
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                                       decoration: BoxDecoration(
@@ -1021,11 +1049,11 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
                                       child: Text(
                                         p.relationshipLabel!,
                                         style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: primaryAccent),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    const SizedBox(width: 6),
-                                  ],
-                                  if (p.village != null && p.village!.isNotEmpty) ...[
+                                  if (p.village != null && p.village!.isNotEmpty)
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
@@ -1035,27 +1063,23 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
                                       child: Text(
                                         p.village!,
                                         style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFFB45309)),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    const SizedBox(width: 6),
-                                  ],
                                   if (p.phoneNumber != null)
-                                    Expanded(
-                                      child: Text(
-                                        p.phoneNumber!,
-                                        style: TextStyle(color: textSecondary, fontSize: 12),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                                    Text(
+                                      p.phoneNumber!,
+                                      style: TextStyle(color: textSecondary, fontSize: 12),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     )
                                   else if (p.address != null)
-                                    Expanded(
-                                      child: Text(
-                                        p.address!,
-                                        style: TextStyle(color: textSecondary, fontSize: 12),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                                    Text(
+                                      p.address!,
+                                      style: TextStyle(color: textSecondary, fontSize: 12),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                 ],
                               ),
@@ -1231,7 +1255,12 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
         }
 
         return ListView.builder(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.md,
+            AppSpacing.md,
+            AppSpacing.floatingTabBottomPadding + 20,
+          ),
           itemCount: filtered.length,
           itemBuilder: (context, index) {
             final f = filtered[index];

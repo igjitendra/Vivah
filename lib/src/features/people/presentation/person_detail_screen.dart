@@ -160,11 +160,12 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> {
                     loading: () => const LinearProgressIndicator(),
                     error: (err, _) => const SizedBox.shrink(),
                     data: (families) => DropdownButtonFormField<String?>(
-                      value: selectedFamilyId,
+                      value: families.any((f) => f.id == selectedFamilyId) ? selectedFamilyId : null,
                       hint: Text(l10n.noFamily),
+                      isExpanded: true,
                       items: [
-                        DropdownMenuItem(value: null, child: Text(l10n.noFamily)),
-                        ...families.map((f) => DropdownMenuItem(value: f.id, child: Text(f.name))),
+                        DropdownMenuItem(value: null, child: Text(l10n.noFamily, overflow: TextOverflow.ellipsis)),
+                        ...families.map((f) => DropdownMenuItem(value: f.id, child: Text(f.name, overflow: TextOverflow.ellipsis))),
                       ],
                       onChanged: (val) => setDialogState(() => selectedFamilyId = val),
                       decoration: InputDecoration(
@@ -322,37 +323,62 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> {
                 final name = nameController.text.trim();
                 if (name.isEmpty) return;
 
-                final repo = ref.read(peopleRepositoryProvider);
-                final updated = person.copyWith(
-                  fullName: name,
-                  nickname: nicknameController.text.trim().isNotEmpty ? nicknameController.text.trim() : null,
-                  dateOfBirth: dobController.text.trim().isNotEmpty ? dobController.text.trim() : null,
-                  familyId: selectedFamilyId,
-                  relationshipLabel: relationController.text.trim().isNotEmpty ? relationController.text.trim() : null,
-                  phoneNumber: phoneController.text.trim().isNotEmpty ? phoneController.text.trim() : null,
-                  whatsappNumber: whatsappController.text.trim().isNotEmpty ? whatsappController.text.trim() : null,
-                  address: villageController.text.trim().isNotEmpty ? villageController.text.trim() : null,
-                  village: villageController.text.trim().isNotEmpty ? villageController.text.trim() : null,
-                  city: cityController.text.trim().isNotEmpty ? cityController.text.trim() : null,
-                  district: districtController.text.trim().isNotEmpty ? districtController.text.trim() : null,
-                  state: stateController.text.trim().isNotEmpty ? stateController.text.trim() : null,
-                  pinCode: pinCodeController.text.trim().isNotEmpty ? pinCodeController.text.trim() : null,
-                  occupation: occupationController.text.trim().isNotEmpty ? occupationController.text.trim() : null,
-                  company: companyController.text.trim().isNotEmpty ? companyController.text.trim() : null,
-                  tags: tagsController.text.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList(),
-                  notes: notesController.text.trim().isNotEmpty ? notesController.text.trim() : null,
-                  isAppEditedAfterImport: true,
-                  updatedAt: DateTime.now(),
-                );
+                try {
+                  final repo = ref.read(peopleRepositoryProvider);
+                  String? nonEmpty(TextEditingController c) =>
+                      c.text.trim().isNotEmpty ? c.text.trim() : null;
 
-                await repo.updatePerson(updated);
-
-                if (mounted) {
-                  Navigator.pop(ctx);
-                  setState(() => _refreshKey++);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.personUpdatedSuccess), backgroundColor: AppColors.milaGreen),
+                  final updated = Person(
+                    id: person.id,
+                    familyId: selectedFamilyId,
+                    fullName: name,
+                    firstName: person.firstName,
+                    middleName: person.middleName,
+                    lastName: person.lastName,
+                    nickname: nonEmpty(nicknameController),
+                    gender: person.gender,
+                    dateOfBirth: nonEmpty(dobController),
+                    photoPath: person.photoPath,
+                    phoneNumber: nonEmpty(phoneController),
+                    secondaryPhones: person.secondaryPhones,
+                    whatsappNumber: nonEmpty(whatsappController),
+                    emails: person.emails,
+                    address: nonEmpty(villageController),
+                    village: nonEmpty(villageController),
+                    city: nonEmpty(cityController),
+                    district: nonEmpty(districtController),
+                    state: nonEmpty(stateController),
+                    pinCode: nonEmpty(pinCodeController),
+                    relationshipLabel: nonEmpty(relationController),
+                    relationshipNotes: person.relationshipNotes,
+                    notes: nonEmpty(notesController),
+                    occupation: nonEmpty(occupationController),
+                    company: nonEmpty(companyController),
+                    tags: tagsController.text.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList(),
+                    contactSource: person.contactSource,
+                    externalContactId: person.externalContactId,
+                    importedAt: person.importedAt,
+                    isAppEditedAfterImport: true,
+                    createdAt: person.createdAt,
+                    updatedAt: DateTime.now(),
+                    archivedAt: person.archivedAt,
                   );
+
+                  await repo.updatePerson(updated);
+
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  if (mounted) {
+                    setState(() => _refreshKey++);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(l10n.personUpdatedSuccess), backgroundColor: AppColors.milaGreen),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('${l10n.errorGeneric}: $e'), backgroundColor: Colors.red),
+                    );
+                  }
                 }
               },
               child: Text(l10n.save, style: const TextStyle(color: Colors.white)),
@@ -360,7 +386,23 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> {
           ],
         ),
       ),
-    );
+    ).whenComplete(() {
+      nameController.dispose();
+      nicknameController.dispose();
+      dobController.dispose();
+      phoneController.dispose();
+      whatsappController.dispose();
+      villageController.dispose();
+      cityController.dispose();
+      districtController.dispose();
+      stateController.dispose();
+      pinCodeController.dispose();
+      relationController.dispose();
+      notesController.dispose();
+      occupationController.dispose();
+      companyController.dispose();
+      tagsController.dispose();
+    });
   }
 
   Future<void> _confirmDeletePerson(BuildContext context, Person person, AppLocalizations l10n) async {
@@ -508,16 +550,18 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> {
 
               for (final e in personEntries) {
                 if (e.status == TransactionStatus.recorded) {
-                  if (e.direction == TransactionDirection.received) {
+                  if (e.direction == TransactionDirection.received ||
+                      e.direction == TransactionDirection.mila) {
                     totalMila += (e.amountPaise ?? 0);
-                  } else if (e.direction == TransactionDirection.given) {
+                  } else if (e.direction == TransactionDirection.given ||
+                      e.direction == TransactionDirection.diya) {
                     totalDiya += (e.amountPaise ?? 0);
                   }
                 }
               }
 
               return ListView(
-                padding: const EdgeInsets.all(AppSpacing.md),
+                padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, 40),
                 children: [
                   // Profile Header Card
                   Container(
@@ -592,8 +636,10 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> {
                         const SizedBox(height: 16),
 
                         // Action Buttons Bar (Call, WhatsApp, SMS, Email, Share)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 10,
+                          runSpacing: 8,
                           children: [
                             if (person.phoneNumber != null && person.phoneNumber!.isNotEmpty) ...[
                               _buildActionButton(
@@ -602,31 +648,26 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> {
                                 color: Colors.green,
                                 onTap: () => ContactsService.callPhone(person.phoneNumber!),
                               ),
-                              const SizedBox(width: 14),
                               _buildActionButton(
                                 icon: Icons.chat_bubble,
                                 label: 'व्हाट्सएप',
                                 color: Colors.teal,
                                 onTap: () => ContactsService.openWhatsApp(person.whatsappNumber ?? person.phoneNumber!),
                               ),
-                              const SizedBox(width: 14),
                               _buildActionButton(
                                 icon: Icons.sms,
                                 label: 'एसएमएस',
                                 color: Colors.blue,
                                 onTap: () => ContactsService.sendSms(person.phoneNumber!),
                               ),
-                              const SizedBox(width: 14),
                             ],
-                            if (person.emails.isNotEmpty) ...[
+                            if (person.emails.isNotEmpty)
                               _buildActionButton(
                                 icon: Icons.email,
                                 label: 'ईमेल',
                                 color: Colors.deepPurple,
                                 onTap: () => ContactsService.sendEmail(person.emails.first),
                               ),
-                              const SizedBox(width: 14),
-                            ],
                             _buildActionButton(
                               icon: Icons.share,
                               label: 'शेयर',
@@ -908,7 +949,8 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> {
                     )
                   else
                     ...personEntries.map((e) {
-                      final isReceived = e.direction == TransactionDirection.received;
+                      final isReceived = e.direction == TransactionDirection.received ||
+                          e.direction == TransactionDirection.mila;
                       final amountColor = isReceived ? Colors.green : Colors.red;
                       final prefix = isReceived ? '+' : '-';
 

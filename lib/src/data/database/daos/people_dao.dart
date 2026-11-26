@@ -161,10 +161,10 @@ class PeopleDao extends DatabaseAccessor<AppDatabase> with _$PeopleDaoMixin {
   /// Save or update complete person with all extended columns, phones, and emails
   Future<void> saveExtendedPerson(Person person) async {
     await transaction(() async {
-      // 1. Insert or replace in people table
+      // 1. Upsert in people table (ON CONFLICT updates in-place without triggering FK DELETE cascades)
       await customInsert(
         '''
-        INSERT OR REPLACE INTO people (
+        INSERT INTO people (
           id, family_id, full_name, phone_number, relationship_label, address, notes,
           first_name, middle_name, last_name, nickname, gender, date_of_birth, photo_path,
           whatsapp_number, village, city, district, state, pin_code, relationship_notes,
@@ -177,11 +177,41 @@ class PeopleDao extends DatabaseAccessor<AppDatabase> with _$PeopleDaoMixin {
           ?, ?, ?, ?, ?, ?,
           ?, ?, ?, ?
         )
+        ON CONFLICT(id) DO UPDATE SET
+          family_id = excluded.family_id,
+          full_name = excluded.full_name,
+          phone_number = excluded.phone_number,
+          relationship_label = excluded.relationship_label,
+          address = excluded.address,
+          notes = excluded.notes,
+          first_name = excluded.first_name,
+          middle_name = excluded.middle_name,
+          last_name = excluded.last_name,
+          nickname = excluded.nickname,
+          gender = excluded.gender,
+          date_of_birth = excluded.date_of_birth,
+          photo_path = excluded.photo_path,
+          whatsapp_number = excluded.whatsapp_number,
+          village = excluded.village,
+          city = excluded.city,
+          district = excluded.district,
+          state = excluded.state,
+          pin_code = excluded.pin_code,
+          relationship_notes = excluded.relationship_notes,
+          occupation = excluded.occupation,
+          company = excluded.company,
+          tags = excluded.tags,
+          contact_source = excluded.contact_source,
+          external_contact_id = excluded.external_contact_id,
+          imported_at = excluded.imported_at,
+          is_app_edited_after_import = excluded.is_app_edited_after_import,
+          updated_at = excluded.updated_at,
+          archived_at = excluded.archived_at
         ''',
         variables: [
           Variable.withString(person.id),
           _nullableString(person.familyId),
-          Variable.withString(person.fullName),
+          Variable.withString(person.fullName.trim()),
           _nullableString(person.phoneNumber),
           _nullableString(person.relationshipLabel),
           _nullableString(person.address),
@@ -211,42 +241,49 @@ class PeopleDao extends DatabaseAccessor<AppDatabase> with _$PeopleDaoMixin {
           Variable.withString(person.updatedAt.toIso8601String()),
           _nullableString(person.archivedAt?.toIso8601String()),
         ],
+        updates: {people},
       );
 
-      // 2. Refresh secondary phone numbers
+      // 2. Refresh secondary phone numbers cleanly
       await customStatement('DELETE FROM person_phones WHERE person_id = ?', [person.id]);
-      for (final phone in person.secondaryPhones) {
-        if (phone.trim().isNotEmpty && phone.trim() != person.phoneNumber?.trim()) {
-          await customInsert(
-            '''
-            INSERT INTO person_phones (id, person_id, phone_number, label, is_primary, created_at)
-            VALUES (?, ?, ?, 'mobile', 0, datetime('now'))
-            ''',
-            variables: [
-              Variable.withString('${person.id}_${phone.hashCode}'),
-              Variable.withString(person.id),
-              Variable.withString(phone.trim()),
-            ],
-          );
-        }
+      final uniquePhones = person.secondaryPhones
+          .map((p) => p.trim())
+          .where((p) => p.isNotEmpty && p != person.phoneNumber?.trim())
+          .toSet()
+          .toList();
+      for (int i = 0; i < uniquePhones.length; i++) {
+        await customInsert(
+          '''
+          INSERT INTO person_phones (id, person_id, phone_number, label, is_primary, created_at)
+          VALUES (?, ?, ?, 'mobile', 0, datetime('now'))
+          ''',
+          variables: [
+            Variable.withString('${person.id}_p$i'),
+            Variable.withString(person.id),
+            Variable.withString(uniquePhones[i]),
+          ],
+        );
       }
 
-      // 3. Refresh emails
+      // 3. Refresh emails cleanly
       await customStatement('DELETE FROM person_emails WHERE person_id = ?', [person.id]);
-      for (final email in person.emails) {
-        if (email.trim().isNotEmpty) {
-          await customInsert(
-            '''
-            INSERT INTO person_emails (id, person_id, email, label, is_primary, created_at)
-            VALUES (?, ?, ?, 'email', 0, datetime('now'))
-            ''',
-            variables: [
-              Variable.withString('${person.id}_${email.hashCode}'),
-              Variable.withString(person.id),
-              Variable.withString(email.trim()),
-            ],
-          );
-        }
+      final uniqueEmails = person.emails
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toSet()
+          .toList();
+      for (int i = 0; i < uniqueEmails.length; i++) {
+        await customInsert(
+          '''
+          INSERT INTO person_emails (id, person_id, email, label, is_primary, created_at)
+          VALUES (?, ?, ?, 'email', 0, datetime('now'))
+          ''',
+          variables: [
+            Variable.withString('${person.id}_e$i'),
+            Variable.withString(person.id),
+            Variable.withString(uniqueEmails[i]),
+          ],
+        );
       }
     });
   }
@@ -273,6 +310,7 @@ class PeopleDao extends DatabaseAccessor<AppDatabase> with _$PeopleDaoMixin {
             _nullableString(familyId),
             Variable.withString(id),
           ],
+          updates: {people},
         );
       }
     });
@@ -292,6 +330,7 @@ class PeopleDao extends DatabaseAccessor<AppDatabase> with _$PeopleDaoMixin {
               Variable.withString(existingTags.join(',')),
               Variable.withString(id),
             ],
+            updates: {people},
           );
         }
       }

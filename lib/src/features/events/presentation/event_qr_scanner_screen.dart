@@ -1,12 +1,13 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' hide Family;
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../app/app_providers.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/services/event_qr_service.dart';
+import '../../../core/services/profile_qr_service.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
@@ -93,8 +94,8 @@ class _EventQrScannerScreenState extends ConsumerState<EventQrScannerScreen> {
       _isProcessingScan = true;
     }
 
-    final payload = EventQrService.tryDecode(rawValue);
-    if (payload == null) {
+    final decoded = ProfileQrService.decodeAny(rawValue);
+    if (decoded == null) {
       _showInvalidQrFeedback();
       await Future<void>.delayed(const Duration(milliseconds: 900));
       if (mounted) {
@@ -105,43 +106,113 @@ class _EventQrScannerScreenState extends ConsumerState<EventQrScannerScreen> {
       return;
     }
 
-    // Pause live camera while user reviews the event preview sheet
+    // Pause live camera while user reviews the preview sheet
     try {
       await _controller.stop();
     } catch (_) {}
 
     if (!mounted) return;
-    final existingEvents = ref.read(activeEventsListProvider).value ?? const <Event>[];
-    final isDuplicate = existingEvents.any(
-      (e) =>
-          e.title.trim().toLowerCase() == payload.title.trim().toLowerCase() &&
-          e.eventDate.trim() == payload.eventDate.trim(),
-    );
 
-    final createdEvent = await showModalBottomSheet<Event?>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _ScannedEventPreviewSheet(
-        payload: payload,
-        isDuplicate: isDuplicate,
-      ),
-    );
+    switch (decoded) {
+      case VyavahaarDecodedEvent(:final payload):
+        final existingEvents = ref.read(activeEventsListProvider).value ?? const <Event>[];
+        final isDuplicate = existingEvents.any(
+          (e) =>
+              e.title.trim().toLowerCase() == payload.title.trim().toLowerCase() &&
+              e.eventDate.trim() == payload.eventDate.trim(),
+        );
 
-    if (!mounted) return;
+        final createdEvent = await showModalBottomSheet<Event?>(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => _ScannedEventPreviewSheet(
+            payload: payload,
+            isDuplicate: isDuplicate,
+          ),
+        );
 
-    if (createdEvent != null) {
-      ref.invalidate(activeEventsListProvider);
-      ref.invalidate(dashboardSummaryProvider);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.eventAddedFromQrSuccess),
-          backgroundColor: AppSemanticColors.of(context).mila,
-        ),
-      );
-      context.pushReplacement('/event/${createdEvent.id}');
-      return;
+        if (!mounted) return;
+        if (createdEvent != null) {
+          ref.invalidate(activeEventsListProvider);
+          ref.invalidate(dashboardSummaryProvider);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.l10n.eventAddedFromQrSuccess),
+              backgroundColor: AppSemanticColors.of(context).mila,
+            ),
+          );
+          context.pushReplacement('/event/${createdEvent.id}');
+          return;
+        }
+        break;
+
+      case VyavahaarDecodedPerson(:final payload):
+        final existingPeople = ref.read(activePeopleListProvider).value ?? const <Person>[];
+        final dup = ref.read(peopleRepositoryProvider).detectDuplicate(
+              ContactDraft(
+                id: 'qr_dup_check',
+                name: payload.fullName,
+                phones: [
+                  if (payload.phoneNumber != null) payload.phoneNumber!,
+                  ...payload.secondaryPhones,
+                ],
+                emails: payload.emails,
+              ),
+              existingPeople,
+            );
+
+        final createdPerson = await showModalBottomSheet<Person?>(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => _ScannedPersonPreviewSheet(
+            payload: payload,
+            isDuplicate: dup.isDuplicate,
+          ),
+        );
+
+        if (!mounted) return;
+        if (createdPerson != null) {
+          ref.invalidate(activePeopleListProvider);
+          ref.invalidate(dashboardSummaryProvider);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.l10n.relativeAddedFromQrSuccess),
+              backgroundColor: AppSemanticColors.of(context).mila,
+            ),
+          );
+          context.pushReplacement('/person/${createdPerson.id}');
+          return;
+        }
+        break;
+
+      case VyavahaarDecodedFamily(:final payload):
+        final importedOk = await showModalBottomSheet<bool>(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => _ScannedFamilyPreviewSheet(payload: payload),
+        );
+
+        if (!mounted) return;
+        if (importedOk == true) {
+          ref.invalidate(activeFamiliesListProvider);
+          ref.invalidate(activePeopleListProvider);
+          ref.invalidate(dashboardSummaryProvider);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.l10n.familyAddedFromQrSuccess),
+              backgroundColor: AppSemanticColors.of(context).mila,
+            ),
+          );
+          Navigator.of(context).pop(true);
+          return;
+        }
+        break;
     }
 
     // User dismissed preview sheet -> resume scanning
@@ -161,7 +232,7 @@ class _EventQrScannerScreenState extends ConsumerState<EventQrScannerScreen> {
     _lastInvalidToastAt = now;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(context.l10n.invalidEventQr),
+        content: Text(context.l10n.invalidVyavahaarQr),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -233,7 +304,7 @@ class _EventQrScannerScreenState extends ConsumerState<EventQrScannerScreen> {
                           ),
                         ),
                         child: Text(
-                          l10n.scanEventQr,
+                          l10n.scanVyavahaarQr,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.titleMedium?.copyWith(
@@ -990,6 +1061,446 @@ class _ScopeOptionChip extends StatelessWidget {
                 color: semantic.textSecondary,
                 fontSize: 10.5,
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ScannedPersonPreviewSheet extends ConsumerStatefulWidget {
+  final PersonQrPayload payload;
+  final bool isDuplicate;
+
+  const _ScannedPersonPreviewSheet({
+    required this.payload,
+    required this.isDuplicate,
+  });
+
+  @override
+  ConsumerState<_ScannedPersonPreviewSheet> createState() => _ScannedPersonPreviewSheetState();
+}
+
+class _ScannedPersonPreviewSheetState extends ConsumerState<_ScannedPersonPreviewSheet> {
+  late final TextEditingController _relationController;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _relationController = TextEditingController(text: widget.payload.relationshipLabel ?? '');
+  }
+
+  @override
+  void dispose() {
+    _relationController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveRelative() async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
+    try {
+      final person = widget.payload.toNewPerson(
+        overrideRelationship: _relationController.text.trim(),
+      );
+      await ref.read(peopleRepositoryProvider).createPerson(person);
+      if (mounted) Navigator.of(context).pop(person);
+    } catch (err) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${context.l10n.errorGeneric}: $err')),
+        );
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final semantic = AppSemanticColors.of(context);
+    final l10n = context.l10n;
+    final p = widget.payload;
+    final phones = [
+      if (p.phoneNumber != null) p.phoneNumber!,
+      ...p.secondaryPhones,
+    ].join(', ');
+    final locationParts = [
+      if (p.address != null) p.address!,
+      if (p.village != null) p.village!,
+      if (p.city != null) p.city!,
+      if (p.state != null) p.state!,
+    ].join(', ');
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        decoration: BoxDecoration(
+          color: theme.scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border(top: BorderSide(color: semantic.cardBorder)),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                  decoration: BoxDecoration(color: semantic.cardBorder, borderRadius: BorderRadius.circular(2)),
+                ),
+              ),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: semantic.milaContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(Icons.person_add_alt_1_rounded, color: semantic.mila, size: 22),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.qrRelativePreview,
+                          style: TextStyle(color: semantic.mila, fontSize: 12, fontWeight: FontWeight.w700),
+                        ),
+                        Text(
+                          p.fullName,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: semantic.textPrimary,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              if (widget.isDuplicate) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: semantic.warningContainer,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: semantic.warning.withValues(alpha: 0.35)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline_rounded, color: semantic.warning, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          l10n.duplicatePersonWarning,
+                          style: TextStyle(color: semantic.textPrimary, fontSize: 12.5, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: AppSpacing.md),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: semantic.cardBg,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: semantic.cardBorder),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (phones.isNotEmpty) ...[
+                      _PreviewInfoRow(icon: Icons.phone_outlined, label: phones, semantic: semantic),
+                      const SizedBox(height: 8),
+                    ],
+                    if (p.emails.isNotEmpty) ...[
+                      _PreviewInfoRow(icon: Icons.email_outlined, label: p.emails.join(', '), semantic: semantic),
+                      const SizedBox(height: 8),
+                    ],
+                    if (locationParts.isNotEmpty) ...[
+                      _PreviewInfoRow(icon: Icons.location_on_outlined, label: locationParts, semantic: semantic),
+                      const SizedBox(height: 8),
+                    ],
+                    if (p.occupation != null)
+                      _PreviewInfoRow(icon: Icons.work_outline_rounded, label: p.occupation!, semantic: semantic),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              TextField(
+                controller: _relationController,
+                decoration: InputDecoration(
+                  labelText: l10n.relationship,
+                  prefixIcon: const Icon(Icons.diversity_3_outlined),
+                  filled: true,
+                  fillColor: semantic.cardBg,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(color: semantic.cardBorder),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _isSaving ? null : () => Navigator.of(context).pop(null),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: BorderSide(color: semantic.cardBorder),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      child: Text(l10n.cancel),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    flex: 2,
+                    child: ExpressButton(
+                      label: l10n.addRelativeFromQr,
+                      icon: Icons.person_add_alt_1_rounded,
+                      isLoading: _isSaving,
+                      onPressed: _saveRelative,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ScannedFamilyPreviewSheet extends ConsumerStatefulWidget {
+  final FamilyProfileQrPayload payload;
+
+  const _ScannedFamilyPreviewSheet({required this.payload});
+
+  @override
+  ConsumerState<_ScannedFamilyPreviewSheet> createState() => _ScannedFamilyPreviewSheetState();
+}
+
+class _ScannedFamilyPreviewSheetState extends ConsumerState<_ScannedFamilyPreviewSheet> {
+  bool _includeMembers = true;
+  bool _isSaving = false;
+
+  Future<void> _saveImportedFamily() async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
+
+    try {
+      final famRepo = ref.read(familiesRepositoryProvider);
+      final peopleRepo = ref.read(peopleRepositoryProvider);
+      final existingFamilies = await famRepo.getAllActiveFamilies();
+      final matchFamily = existingFamilies
+          .where((f) => f.name.trim().toLowerCase() == widget.payload.familyName.trim().toLowerCase())
+          .firstOrNull;
+
+      final Family targetFamily;
+      if (matchFamily != null) {
+        targetFamily = matchFamily;
+      } else {
+        targetFamily = widget.payload.toNewFamily();
+        await famRepo.createFamily(targetFamily);
+      }
+
+      if (_includeMembers) {
+        final existingPeople = await peopleRepo.getAllActivePeople();
+        final candidates = widget.payload.toRelativePersons(familyId: targetFamily.id);
+        for (final candidate in candidates) {
+          final dup = peopleRepo.detectDuplicate(
+            ContactDraft(
+              id: 'qr_fam_${candidate.id}',
+              name: candidate.fullName,
+              phones: candidate.allPhoneNumbers,
+              emails: candidate.emails,
+            ),
+            existingPeople,
+          );
+          if (!dup.isDuplicate) {
+            await peopleRepo.createPerson(candidate);
+            existingPeople.add(candidate);
+          }
+        }
+      }
+
+      if (mounted) Navigator.of(context).pop(true);
+    } catch (err) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${context.l10n.errorGeneric}: $err')),
+        );
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final semantic = AppSemanticColors.of(context);
+    final l10n = context.l10n;
+    final p = widget.payload;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(top: BorderSide(color: semantic.cardBorder)),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                decoration: BoxDecoration(color: semantic.cardBorder, borderRadius: BorderRadius.circular(2)),
+              ),
+            ),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: semantic.infoContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.family_restroom_rounded, color: semantic.info, size: 22),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.qrFamilyPreview,
+                        style: TextStyle(color: semantic.info, fontSize: 12, fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        p.familyName,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: semantic.textPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: semantic.cardBg,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: semantic.cardBorder),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (p.headOfFamily != null) ...[
+                    _PreviewInfoRow(icon: Icons.person_outline, label: '${l10n.mukhiyaBadge}: ${p.headOfFamily}', semantic: semantic),
+                    const SizedBox(height: 8),
+                  ],
+                  if (p.gotra != null) ...[
+                    _PreviewInfoRow(icon: Icons.account_tree_outlined, label: '${l10n.gotra}: ${p.gotra}', semantic: semantic),
+                    const SizedBox(height: 8),
+                  ],
+                  if (p.nativePlace != null || p.currentCity != null) ...[
+                    _PreviewInfoRow(
+                      icon: Icons.location_on_outlined,
+                      label: [if (p.nativePlace != null) p.nativePlace!, if (p.currentCity != null) p.currentCity!].join(' • '),
+                      semantic: semantic,
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  if (p.primaryPhone != null)
+                    _PreviewInfoRow(icon: Icons.phone_outlined, label: p.primaryPhone!, semantic: semantic),
+                  if (p.members.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: p.members
+                          .map(
+                            (m) => Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: semantic.cardSubtleBg,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: semantic.cardBorder),
+                              ),
+                              child: Text(
+                                m.relationship.isNotEmpty ? '${m.name} (${m.relationship})' : m.name,
+                                style: TextStyle(color: semantic.textPrimary, fontSize: 11.5, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            SwitchListTile.adaptive(
+              contentPadding: EdgeInsets.zero,
+              value: _includeMembers,
+              activeColor: semantic.primary,
+              onChanged: (val) => setState(() => _includeMembers = val),
+              title: Text(
+                l10n.includeMembersToggle,
+                style: TextStyle(color: semantic.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _isSaving ? null : () => Navigator.of(context).pop(false),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: BorderSide(color: semantic.cardBorder),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: Text(l10n.cancel),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  flex: 2,
+                  child: ExpressButton(
+                    label: l10n.addFamilyFromQr,
+                    icon: Icons.group_add_rounded,
+                    isLoading: _isSaving,
+                    onPressed: _saveImportedFamily,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

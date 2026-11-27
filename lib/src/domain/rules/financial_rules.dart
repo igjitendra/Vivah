@@ -58,6 +58,18 @@ class FinancialRules {
         .length;
   }
 
+  /// Enforces that a gift item's monetary price/value is only retained when a bill/receipt photo exists.
+  static int? sanitizeItemEstimatedValue({
+    required int? estimatedValuePaise,
+    required String? photoPath,
+  }) {
+    final hasBill = photoPath != null && photoPath.trim().isNotEmpty;
+    if (!hasBill || estimatedValuePaise == null || estimatedValuePaise <= 0) {
+      return null;
+    }
+    return estimatedValuePaise;
+  }
+
   /// Validates a transaction entry according to domain rules
   static void validateTransactionEntry({
     required TransactionType type,

@@ -196,5 +196,36 @@ void main() {
         returnsNormally,
       );
     });
+
+    test('Bill Proof Rule: gift item value is stripped when bill photo is missing', () {
+      expect(
+        FinancialRules.sanitizeItemEstimatedValue(
+          estimatedValuePaise: 250000,
+          photoPath: null,
+        ),
+        isNull,
+      );
+      expect(
+        FinancialRules.sanitizeItemEstimatedValue(
+          estimatedValuePaise: 250000,
+          photoPath: '   ',
+        ),
+        isNull,
+      );
+      expect(
+        FinancialRules.sanitizeItemEstimatedValue(
+          estimatedValuePaise: 250000,
+          photoPath: '/app/attachments/bill_123.jpg',
+        ),
+        equals(250000),
+      );
+      expect(
+        FinancialRules.sanitizeItemEstimatedValue(
+          estimatedValuePaise: 0,
+          photoPath: '/app/attachments/bill_123.jpg',
+        ),
+        isNull,
+      );
+    });
   });
 }

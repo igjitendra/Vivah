@@ -342,6 +342,28 @@ class _EntryDetailScreenState extends ConsumerState<EntryDetailScreen> {
                           style: TextStyle(color: textSecondary, fontSize: 13, fontWeight: FontWeight.bold),
                         ),
                       ],
+                      if (entry.notes != null && entry.notes!.contains('UPI/ऑनलाइन')) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.indigo.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.indigo.withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.qr_code_2_rounded, size: 14, color: Colors.indigo),
+                              const SizedBox(width: 4),
+                              Text(
+                                l10n.upiOnlinePaymentBadge,
+                                style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -543,10 +565,15 @@ class _EntryDetailScreenState extends ConsumerState<EntryDetailScreen> {
                                         '${it.itemName} (${it.quantity % 1 == 0 ? it.quantity.toInt() : it.quantity} ${it.unit ?? ""})',
                                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textPrimary),
                                       ),
-                                      if (it.estimatedValuePaise != null)
+                                      if (hasPhoto && it.estimatedValuePaise != null)
                                         Text(
-                                          '${l10n.estimated}: ${CurrencyUtils.formatPaiseToRupees(it.estimatedValuePaise!)}',
+                                          '${l10n.estimated}: ${CurrencyUtils.formatPaiseToRupees(it.estimatedValuePaise!)} • ${l10n.billAttachedBadge}',
                                           style: TextStyle(color: textSecondary, fontSize: 12),
+                                        )
+                                      else if (!hasPhoto)
+                                        Text(
+                                          l10n.priceLockedNoBillLabel,
+                                          style: TextStyle(color: Colors.orange.shade700, fontSize: 11.5),
                                         ),
                                     ],
                                   ),

@@ -12,6 +12,7 @@ import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/enums/transaction_enums.dart';
+import '../../../domain/rules/financial_rules.dart';
 import '../../../shared/widgets/express_squish.dart';
 import '../../../shared/widgets/express_button.dart';
 import '../../../shared/widgets/full_screen_image_viewer.dart';
@@ -55,8 +56,11 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
   final TextEditingController _receivedByController = TextEditingController();
   final TextEditingController _handedOverByController = TextEditingController();
   final TextEditingController _proofCaptionController = TextEditingController();
+  final TextEditingController _upiRefController = TextEditingController();
 
   String _paymentMode = 'cash'; // 'cash' | 'online' | 'gift'
+  String? _selectedUpiApp;
+  static const List<String> _upiApps = ['PhonePe', 'GPay', 'Paytm', 'BHIM', 'Bank/NEFT'];
   final List<EntryItem> _items = [];
   String? _proofPhotoPath;
   String? _proofPhotoSizeLabel;
@@ -85,6 +89,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
     _receivedByController.dispose();
     _handedOverByController.dispose();
     _proofCaptionController.dispose();
+    _upiRefController.dispose();
     super.dispose();
   }
 
@@ -224,6 +229,10 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) {
+          final hasBillPhoto = itemPhotoPath != null &&
+              itemPhotoPath!.isNotEmpty &&
+              File(itemPhotoPath!).existsSync();
+
           Future<void> captureItemPhoto(ImageSource source) async {
             setDialogState(() => isPickingPhoto = true);
             try {
@@ -317,22 +326,8 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  Text('${l10n.estimated} (₹)', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: estValueController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      prefixText: '₹ ',
-                      hintText: l10n.hintAmountEstimate,
-                      filled: true,
-                      fillColor: inputBg,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-                    ),
-                  ),
                   const SizedBox(height: 14),
-                  Text(l10n.giftPhotoTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text(l10n.giftBillPhotoTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   const SizedBox(height: 8),
                   if (isPickingPhoto)
                     const Center(
@@ -341,7 +336,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                     )
-                  else if (itemPhotoPath != null && File(itemPhotoPath!).existsSync()) ...[
+                  else if (hasBillPhoto) ...[
                     Stack(
                       children: [
                         GestureDetector(
@@ -386,6 +381,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                               onPressed: () => setDialogState(() {
                                 itemPhotoPath = null;
                                 itemPhotoSizeLabel = null;
+                                estValueController.clear();
                               }),
                             ),
                           ),
@@ -423,6 +419,45 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Icon(
+                        hasBillPhoto ? Icons.verified_outlined : Icons.lock_outline_rounded,
+                        size: 16,
+                        color: hasBillPhoto ? AppColors.milaGreen : Colors.orange.shade700,
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          '${l10n.estimated} (₹)',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: estValueController,
+                    enabled: hasBillPhoto,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      prefixText: '₹ ',
+                      hintText: hasBillPhoto ? l10n.hintAmountEstimate : l10n.priceLockedNoBillLabel,
+                      filled: true,
+                      fillColor: hasBillPhoto ? inputBg : inputBg.withValues(alpha: 0.45),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    hasBillPhoto ? l10n.billAttachedUnlockHint : l10n.billRequiredForPriceHint,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: hasBillPhoto ? AppColors.milaGreen : Colors.orange.shade800,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -438,8 +473,13 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                   if (name.isEmpty) return;
 
                   final qty = double.tryParse(qtyController.text.trim()) ?? 1.0;
-                  final estRupees = int.tryParse(estValueController.text.trim());
-                  final estPaise = estRupees != null && estRupees > 0 ? CurrencyUtils.rupeesToPaise(estRupees) : null;
+                  final rawEstPaise = CurrencyUtils.parseInputToPaise(estValueController.text.trim());
+                  final estPaise = hasBillPhoto
+                      ? FinancialRules.sanitizeItemEstimatedValue(
+                          estimatedValuePaise: rawEstPaise,
+                          photoPath: itemPhotoPath,
+                        )
+                      : null;
 
                   final now = DateTime.now();
                   final updatedItem = EntryItem(
@@ -932,7 +972,10 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                 itemName: item.itemName,
                 quantity: item.quantity,
                 unit: item.unit,
-                estimatedValuePaise: item.estimatedValuePaise,
+                estimatedValuePaise: FinancialRules.sanitizeItemEstimatedValue(
+                  estimatedValuePaise: item.estimatedValuePaise,
+                  photoPath: item.photoPath,
+                ),
                 notes: item.notes,
                 photoPath: item.photoPath,
                 createdAt: now,
@@ -940,7 +983,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
               ))
           .toList();
 
-      // Assemble formatted notes incorporating cultural metadata
+      // Assemble formatted notes incorporating cultural & UPI metadata
       final noteParts = <String>[];
       if (_notesController.text.trim().isNotEmpty) {
         noteParts.add(_notesController.text.trim());
@@ -953,9 +996,17 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
         if (_handedOverByController.text.trim().isNotEmpty) {
           noteParts.add('[द्वारा: ${_handedOverByController.text.trim()}]');
         }
-        if (_paymentMode == 'online') {
-          noteParts.add('[माध्यम: UPI/ऑनलाइन]');
-        }
+      }
+      if (_transactionType != TransactionType.item && _paymentMode == 'online') {
+        final upiDetails = <String>[
+          if (_selectedUpiApp != null && _selectedUpiApp!.isNotEmpty) _selectedUpiApp!,
+          if (_upiRefController.text.trim().isNotEmpty) 'Ref: ${_upiRefController.text.trim()}',
+        ];
+        noteParts.add(
+          upiDetails.isNotEmpty
+              ? '[माध्यम: UPI/ऑनलाइन • ${upiDetails.join(' • ')}]'
+              : '[माध्यम: UPI/ऑनलाइन]',
+        );
       }
 
       final entry = TransactionEntry(
@@ -1799,14 +1850,21 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                                               '${it.itemName} (${it.quantity % 1 == 0 ? it.quantity.toInt() : it.quantity} ${it.unit ?? ''})',
                                               style: TextStyle(fontSize: 13, color: textPrimary, fontWeight: FontWeight.w600),
                                             ),
-                                            Row(
+                                            Wrap(
+                                              spacing: 6,
+                                              runSpacing: 2,
+                                              crossAxisAlignment: WrapCrossAlignment.center,
                                               children: [
-                                                if (it.estimatedValuePaise != null)
+                                                if (hasPhoto && it.estimatedValuePaise != null)
                                                   Text(
-                                                    '₹${CurrencyUtils.paiseToRupees(it.estimatedValuePaise!)}',
-                                                    style: TextStyle(fontSize: 11, color: textSecondary),
+                                                    '₹${CurrencyUtils.paiseToRupees(it.estimatedValuePaise!)} (${l10n.billAttachedBadge})',
+                                                    style: TextStyle(fontSize: 11, color: textSecondary, fontWeight: FontWeight.w600),
+                                                  )
+                                                else if (!hasPhoto)
+                                                  Text(
+                                                    l10n.priceLockedNoBillLabel,
+                                                    style: TextStyle(fontSize: 10.5, color: Colors.orange.shade700, fontWeight: FontWeight.w500),
                                                   ),
-                                                if (it.estimatedValuePaise != null) const SizedBox(width: 6),
                                                 Text(
                                                   hasPhoto ? '• ${l10n.changePhotoLabel}' : '• ${l10n.addGiftPhoto}',
                                                   style: TextStyle(
@@ -1923,17 +1981,76 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
 
                   const SizedBox(height: 12),
 
-                  // 7. SPECIFIC FIELDS: RECEIVED BY (मिला) VS GIVEN BY / PAYMENT MODE (दिया)
-                  if (isReceived) ...[
-                    // Received By (किसने प्राप्त किया)
-                    ExpressCard(
-                      radius: 18,
-                      color: cardBg,
-                      borderColor: cardBorder,
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                  // 7. PAYMENT MODE (Cash / Online UPI for both Received & Given) & Cultural Meta
+                  ExpressCard(
+                    radius: 18,
+                    color: cardBg,
+                    borderColor: cardBorder,
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (_transactionType != TransactionType.item) ...[
+                          Text(l10n.paymentMode, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary)),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              _buildPaymentChip('cash', l10n.paymentCash, Icons.money, primaryAccent, inputBg, textPrimary, textSecondary),
+                              const SizedBox(width: 8),
+                              _buildPaymentChip('online', l10n.paymentOnline, Icons.qr_code, primaryAccent, inputBg, textPrimary, textSecondary),
+                              if (!isReceived) ...[
+                                const SizedBox(width: 8),
+                                _buildPaymentChip('gift', l10n.paymentGiftOnly, Icons.card_giftcard, primaryAccent, inputBg, textPrimary, textSecondary),
+                              ],
+                            ],
+                          ),
+                          if (_paymentMode == 'online') ...[
+                            const SizedBox(height: 12),
+                            Text(l10n.upiAppLabel, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: textSecondary)),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: _upiApps.map((app) {
+                                final isAppSelected = _selectedUpiApp == app;
+                                return ChoiceChip(
+                                  label: Text(
+                                    app,
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: isAppSelected ? Colors.white : textPrimary,
+                                    ),
+                                  ),
+                                  selected: isAppSelected,
+                                  selectedColor: primaryAccent,
+                                  backgroundColor: inputBg,
+                                  onSelected: (_) => setState(() {
+                                    _selectedUpiApp = isAppSelected ? null : app;
+                                  }),
+                                );
+                              }).toList(),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(l10n.upiRefLabel, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textPrimary)),
+                            const SizedBox(height: 6),
+                            TextFormField(
+                              controller: _upiRefController,
+                              style: TextStyle(color: textPrimary, fontSize: 13.5),
+                              decoration: InputDecoration(
+                                hintText: l10n.upiRefHint,
+                                hintStyle: TextStyle(color: textSecondary, fontSize: 12.5),
+                                prefixIcon: Icon(Icons.qr_code_2_rounded, size: 18, color: primaryAccent),
+                                filled: true,
+                                fillColor: inputBg,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 14),
+                        ],
+                        if (isReceived) ...[
                           Text(l10n.receivedBy, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary)),
                           const SizedBox(height: 8),
                           TextFormField(
@@ -1961,31 +2078,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                               );
                             }).toList(),
                           ),
-                        ],
-                      ),
-                    ),
-                  ] else ...[
-                    // Given Mode: Payment Mode + Handed Over By
-                    ExpressCard(
-                      radius: 18,
-                      color: cardBg,
-                      borderColor: cardBorder,
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(l10n.paymentMode, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary)),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              _buildPaymentChip('cash', l10n.paymentCash, Icons.money, primaryAccent, inputBg, textPrimary, textSecondary),
-                              const SizedBox(width: 8),
-                              _buildPaymentChip('online', l10n.paymentOnline, Icons.qr_code, primaryAccent, inputBg, textPrimary, textSecondary),
-                              const SizedBox(width: 8),
-                              _buildPaymentChip('gift', l10n.paymentGiftOnly, Icons.card_giftcard, primaryAccent, inputBg, textPrimary, textSecondary),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
+                        ] else ...[
                           Text(l10n.handedOverBy, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary)),
                           const SizedBox(height: 8),
                           TextFormField(
@@ -2014,9 +2107,9 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                             }).toList(),
                           ),
                         ],
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
 
                   const SizedBox(height: 12),
 
@@ -2276,7 +2369,14 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
     final isSelected = _transactionType == type;
     return ExpressSquish(
       scale: 0.95,
-      onTap: () => setState(() => _transactionType = type),
+      onTap: () => setState(() {
+        _transactionType = type;
+        if (type == TransactionType.item) {
+          _paymentMode = 'gift';
+        } else if (_paymentMode == 'gift') {
+          _paymentMode = 'cash';
+        }
+      }),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(

@@ -11,6 +11,7 @@ import '../../../domain/entities/entities.dart';
 import '../../../domain/enums/transaction_enums.dart';
 import '../../../shared/widgets/empty_detail_pane.dart';
 import '../../../shared/widgets/express_squish.dart';
+import '../../../shared/widgets/profile_share_actions.dart';
 import '../../../app/app_providers.dart';
 import 'person_detail_screen.dart';
 import 'widgets/contact_import_sheet.dart';
@@ -716,6 +717,11 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
         shape: const Border(),
         iconTheme: IconThemeData(color: textPrimary),
         actions: [
+          IconButton(
+            tooltip: l10n.scanVyavahaarQr,
+            icon: Icon(Icons.qr_code_scanner_rounded, color: primaryAccent),
+            onPressed: () => context.push('/scan-event'),
+          ),
           if (_currentTab == 0 && !_isMultiSelectMode)
             IconButton(
               tooltip: 'मल्टी-सेलेक्ट मोड',
@@ -1105,6 +1111,13 @@ class _PeopleListScreenState extends ConsumerState<PeopleListScreen> {
                               onPressed: () => ContactsService.openWhatsApp(p.phoneNumber!),
                             ),
                           ],
+                          IconButton(
+                            icon: Icon(Icons.share_outlined, size: 19, color: textSecondary),
+                            tooltip: l10n.shareRelativeTitle,
+                            constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+                            padding: EdgeInsets.zero,
+                            onPressed: () => ProfileShareActions.showRelativeShareSheet(context, p),
+                          ),
                           PopupMenuButton<String>(
                             tooltip: 'व्यवहार जोड़ें',
                             constraints: const BoxConstraints(minWidth: 34, minHeight: 34),

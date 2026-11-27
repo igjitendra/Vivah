@@ -8,6 +8,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../domain/entities/family_profile.dart';
 import '../../../app/app_providers.dart';
+import '../../../shared/widgets/profile_share_actions.dart';
 import 'widgets/add_edit_member_dialog.dart';
 
 /// Screen displaying the complete Profile of the user's own family (हमारा परिवार)
@@ -105,6 +106,22 @@ class FamilyProfileScreen extends ConsumerWidget {
         elevation: 0,
         centerTitle: false,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_scanner_rounded),
+            color: textPrimary,
+            tooltip: l10n.scanVyavahaarQr,
+            onPressed: () => context.push('/scan-event'),
+          ),
+          if (profileAsync.value != null && profileAsync.value!.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.qr_code_2_rounded),
+              color: AppColors.terracotta,
+              tooltip: l10n.shareFamilyProfile,
+              onPressed: () => ProfileShareActions.showFamilyProfileShareSheet(
+                context,
+                profileAsync.value!,
+              ),
+            ),
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             color: AppColors.terracotta,
@@ -544,6 +561,24 @@ class _FamilyHeroCard extends StatelessWidget {
               ],
             ),
           ],
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.terracotta,
+                side: BorderSide(color: AppColors.terracotta.withValues(alpha: 0.4)),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () => ProfileShareActions.showFamilyProfileShareSheet(context, profile),
+              icon: const Icon(Icons.qr_code_2_rounded, size: 18),
+              label: Text(
+                l10n.shareFamilyProfile,
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+              ),
+            ),
+          ),
         ],
       ),
     );

@@ -966,6 +966,50 @@ class AppLocalizations {
     };
     return '${eventTitle.trim()} — $suffix';
   }
+
+  // UPI / Online Payment & Bill-Backed Gift Price
+  String get upiAppLabel => isEnglish ? 'UPI App / Mode' : (isUrdu ? 'UPI ایپ' : 'UPI ऐप चुनें');
+  String get upiRefLabel => isEnglish ? 'UPI ID / Transaction Ref (Optional)' : (isUrdu ? 'UPI آئی ڈی / ٹرانزیکشن نمبر (اختیاری)' : 'UPI ID / रेफरेंस नं. (ऐच्छिक)');
+  String get upiRefHint => isEnglish ? 'e.g. GPay / UTR / name@upi' : (isUrdu ? 'مثال: 412345678901 یا name@upi' : 'उदा. 412345678901 या name@upi');
+  String get onlineUpiShort => isEnglish ? 'Online / UPI' : (isUrdu ? 'آن لائن / UPI' : 'ऑनलाइन / UPI');
+  String get giftBillPhotoTitle => isEnglish ? 'Bill / Receipt Photo (Required for Price)' : (isUrdu ? 'بل / رسید کی تصویر (قیمت کے لیے ضروری)' : 'बिल / रसीद फ़ोटो (कीमत लिखने हेतु आवश्यक)');
+  String get billRequiredForPriceHint => isEnglish
+      ? 'Attach bill/receipt photo above to unlock price entry'
+      : (isUrdu ? 'قیمت درج کرنے کے لیے پہلے اوپر بل کی تصویر شامل کریں' : 'बिना बिल प्रूफ़ कीमत दर्ज नहीं हो सकती — पहले ऊपर बिल फ़ोटो जोड़ें');
+  String get billAttachedUnlockHint => isEnglish
+      ? 'Bill attached — you can now enter bill amount'
+      : (isUrdu ? 'بل منسلک ہو گیا — اب قیمت درج کریں' : 'बिल संलग्न ✓ — अब बिल अनुसार कीमत दर्ज करें');
+  String get billAttachedBadge => isEnglish ? 'Bill' : (isUrdu ? 'بل' : 'बिल ✓');
+  String get priceLockedNoBillLabel => isEnglish ? 'Price locked (no bill photo)' : (isUrdu ? 'بغیر بل قیمت بند' : 'बिना बिल कीमत लॉक');
+
+  // Family Profile & Relative Sharing + Unified QR
+  String get shareFamilyProfile => isEnglish ? 'Share Family Profile' : (isUrdu ? 'خاندانی پروفائل شیئر کریں' : 'परिवार प्रोफ़ाइल शेयर करें');
+  String get familyQrTitle => isEnglish ? 'Family Profile QR Card' : (isUrdu ? 'خاندانی پروفائل QR کارڈ' : 'पारिवारिक प्रोफ़ाइल QR कार्ड');
+  String get shareRelativeTitle => isEnglish ? 'Share Relative' : (isUrdu ? 'رشتہ دار شیئر کریں' : 'रिश्तेदार शेयर करें');
+  String get relativeQrTitle => isEnglish ? 'Relative QR Card' : (isUrdu ? 'رشتہ دار QR کارڈ' : 'रिश्तेदार QR कार्ड');
+  String get scanVyavahaarQr => isEnglish ? 'Scan QR Code' : (isUrdu ? 'QR کوڈ اسکین کریں' : 'QR कोड स्कैन करें');
+  String get invalidVyavahaarQr => isEnglish
+      ? 'This is not a valid Vyavahaar QR code.'
+      : (isUrdu ? 'یہ درست ویوہار QR کوڈ نہیں ہے۔' : 'यह मान्य व्यवहार QR कोड नहीं है।');
+  String get qrShareProfileHint => isEnglish
+      ? 'Relatives can scan this QR with Vyavahaar Scanner to save these contact details directly.'
+      : (isUrdu ? 'رشتہ دار ویوہار اسکینر سے یہ QR اسکین کر کے تفصیلات براہ راست محفوظ کر سکتے ہیں۔' : 'रिश्तेदार व्यवहार ऐप के स्कैनर से यह QR स्कैन करके विवरण तुरंत सेव कर सकते हैं।');
+  String get shareTextCardLabel => isEnglish ? 'Share Text' : (isUrdu ? 'متن شیئر کریں' : 'टेक्स्ट शेयर');
+  String get qrRelativePreview => isEnglish ? 'Relative Profile Found' : (isUrdu ? 'رشتہ دار کی تفصیلات ملیں' : 'रिश्तेदार का विवरण प्राप्त');
+  String get qrFamilyPreview => isEnglish ? 'Family Profile Found' : (isUrdu ? 'خاندان کا پروفائل ملا' : 'परिवार का विवरण प्राप्त');
+  String get addRelativeFromQr => isEnglish ? 'Save to Relatives' : (isUrdu ? 'رشتہ داروں میں محفوظ کریں' : 'रिश्तेदारों में जोड़ें');
+  String get addFamilyFromQr => isEnglish ? 'Save Family & Relatives' : (isUrdu ? 'خاندان اور اراکین محفوظ کریں' : 'परिवार व सदस्य जोड़ें');
+  String get includeMembersToggle => isEnglish ? 'Also add family members as relatives' : (isUrdu ? 'خاندان کے اراکین کو بھی رشتہ داروں میں شامل کریں' : 'परिवार के सदस्यों को भी रिश्तेदार सूची में जोड़ें');
+  String get duplicatePersonWarning => isEnglish
+      ? 'A matching person already exists in your directory. Saving will add a new entry.'
+      : (isUrdu ? 'ملتا جلتا شخص پہلے سے فہرست میں موجود ہے۔' : 'इसी नाम या फ़ोन नंबर वाला व्यक्ति पहले से मौजूद है।');
+  String get relativeAddedFromQrSuccess => isEnglish
+      ? 'Relative saved from QR.'
+      : (isUrdu ? 'QR سے رشتہ دار محفوظ ہو گیا۔' : 'QR से रिश्तेदार सफलतापूर्वक जुड़ गया।');
+  String get familyAddedFromQrSuccess => isEnglish
+      ? 'Family profile saved to your directory.'
+      : (isUrdu ? 'QR سے خاندانی پروفائل محفوظ ہو گیا۔' : 'QR से परिवार व संबंधित सदस्य जुड़ गए।');
+  String get upiOnlinePaymentBadge => isEnglish ? 'Online / UPI Payment' : (isUrdu ? 'آن لائن / UPI ادائیگی' : 'ऑनलाइन / UPI भुगतान');
 }
 
 class _AppLocalizationsDelegate

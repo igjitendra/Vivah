@@ -11,6 +11,7 @@ import '../../../domain/enums/transaction_enums.dart';
 import '../../../app/app_providers.dart';
 import '../../../shared/widgets/direction_badge.dart';
 import '../../../shared/widgets/express_squish.dart';
+import '../../../shared/widgets/profile_share_actions.dart';
 import '../services/contacts_service.dart';
 
 /// Person Profile & Personal Ledger History Screen
@@ -510,7 +511,7 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> {
                 icon: Icon(Icons.more_vert, color: textPrimary),
                 onSelected: (val) {
                   if (val == 'edit') _showEditPersonDialog(context, person, l10n);
-                  if (val == 'share') ContactsService.sharePersonCard(person);
+                  if (val == 'share') ProfileShareActions.showRelativeShareSheet(context, person);
                   if (val == 'vcard') ContactsService.exportAndShareVCard([person]);
                   if (val == 'delete') _confirmDeletePerson(context, person, l10n);
                 },
@@ -670,9 +671,9 @@ class _PersonDetailScreenState extends ConsumerState<PersonDetailScreen> {
                               ),
                             _buildActionButton(
                               icon: Icons.share,
-                              label: 'शेयर',
+                              label: 'शेयर / QR',
                               color: primaryAccent,
-                              onTap: () => ContactsService.sharePersonCard(person),
+                              onTap: () => ProfileShareActions.showRelativeShareSheet(context, person),
                             ),
                           ],
                         ),

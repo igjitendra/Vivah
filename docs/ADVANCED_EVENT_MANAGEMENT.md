@@ -118,3 +118,11 @@ The system is tested and verified across three independent test tiers:
 2. **Database Architecture Test (`test-database-architecture.py`)**: 14/14 tests passed (Foreign keys, cascade integrity, 31,700-row scale test).
 3. **Advanced Event Architecture Test (`test-advanced-event-architecture.py`)**: 10/10 tests passed (Schema v5, 10 child tables, guest RSVP tallies, task progress, financial isolation, conflict detection).
 4. **Flutter Domain Unit Tests (`test/unit/event_management_test.dart`)**: 5/5 test groups covering budget utilization, task percentages, guest headcounts, and immutability.
+
+---
+
+## 7. Offline Event QR Sharing & Header Scanner
+
+- **Offline Payload (`EventQrService`)**: Serializes event metadata (`title`, `eventType`, `eventDate`, `venue`, `villageCity`, host family/relative name, notes, and up to 8 ceremony functions) into a compact JSON QR payload requiring zero internet access.
+- **QR Card Generation (`EventQrSheet`)**: Automatically prompts after creating a new event in `AddEventScreen`, and is accessible anytime from `EventDetailScreen` AppBar/menu. Supports high-DPI PNG image sharing via `share_plus`.
+- **Header QR Scanner (`EventQrScannerScreen`)**: Accessible directly from the Home Dashboard hero header and Events List AppBar (`/scan-event`). Supports live camera scanning (`mobile_scanner`) with flash & camera toggle as well as gallery image scanning, validates Vyavahaar QR payloads, warns on duplicate events, and saves imported events with editable host info and `EventScope` selection.

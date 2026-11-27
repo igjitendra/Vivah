@@ -18,6 +18,7 @@ import '../../../shared/widgets/express_squish.dart';
 import '../../../shared/widgets/express_button.dart';
 import '../../reports/services/pdf_service.dart';
 import '../../reports/services/csv_service.dart';
+import 'widgets/event_qr_sheet.dart';
 
 /// Complete, Advanced Event Management System Details Screen
 /// Features 8 structured tabs, real-time data persistence, conflict detection,
@@ -162,6 +163,15 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
             ),
             actions: [
               IconButton(
+                tooltip: l10n.viewEventQr,
+                icon: Icon(Icons.qr_code_2_rounded, color: primaryAccent),
+                onPressed: () => EventQrSheet.show(
+                  context,
+                  event,
+                  familyProfile: ref.read(familyProfileProvider).value,
+                ),
+              ),
+              IconButton(
                 tooltip: 'कार्यक्रम संपादित करें (Edit Event)',
                 icon: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
@@ -188,6 +198,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                 icon: Icon(Icons.more_vert, color: textPrimary),
                 onSelected: (val) => _handleMenuAction(val, event, linkedEntries),
                 itemBuilder: (ctx) => [
+                  PopupMenuItem(value: 'qr', child: Text(l10n.viewEventQr)),
                   const PopupMenuItem(value: 'edit', child: Text('पूर्ण विवरण संपादित करें (Full Edit)')),
                   const PopupMenuItem(value: 'duplicate', child: Text('प्रतिलिपि बनाएं (Duplicate)')),
                   const PopupMenuItem(value: 'share', child: Text('निमंत्रण साझा करें (Share)')),
@@ -2278,6 +2289,13 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
   void _handleMenuAction(String action, Event event, List<TransactionEntry> linkedEntries) async {
     final repo = ref.read(eventsRepositoryProvider);
     switch (action) {
+      case 'qr':
+        EventQrSheet.show(
+          context,
+          event,
+          familyProfile: ref.read(familyProfileProvider).value,
+        );
+        break;
       case 'edit':
         _showEditEventDialog(event);
         break;

@@ -889,6 +889,21 @@ class AppLocalizations {
   String get entireFamily => isEnglish ? 'Entire Family' : (isUrdu ? 'پورا خاندان' : 'पूरा परिवार');
   String get priorityLabel => isEnglish ? 'Priority' : (isUrdu ? 'ترجیح' : 'प्राथमिकता');
   String get plannedShagunOrBudget => isEnglish ? 'Estimated Budget / Shagun (₹)' : (isUrdu ? 'تخمینی بجٹ / شگون (₹)' : 'अनुमानित बजट / शगुन (₹)');
+
+  // Event QR Code & Scanner
+  String get scanEventQr => isEnglish ? 'Scan Event QR' : (isUrdu ? 'تقریب QR اسکین کریں' : 'कार्यक्रम QR स्कैन करें');
+  String get eventQrTitle => isEnglish ? 'Event QR Invitation' : (isUrdu ? 'تقریب QR دعوت نامہ' : 'कार्यक्रम QR निमंत्रण');
+  String get viewEventQr => isEnglish ? 'View QR Code' : (isUrdu ? 'QR کوڈ دیکھیں' : 'QR कोड देखें');
+  String get shareQrCard => isEnglish ? 'Share QR Card' : (isUrdu ? 'QR کارڈ شیئر کریں' : 'QR कार्ड शेयर करें');
+  String get addEventFromQr => isEnglish ? 'Add to My Events' : (isUrdu ? 'میری تقریبات میں شامل کریں' : 'मेरे कार्यक्रमों में जोड़ें');
+  String get qrEventPreview => isEnglish ? 'Event Invitation Found' : (isUrdu ? 'تقریب کا دعوت نامہ ملا' : 'कार्यक्रम निमंत्रण प्राप्त');
+  String get invalidEventQr => isEnglish ? 'This is not a valid Vyavahaar Event QR code.' : (isUrdu ? 'یہ درست ویوہار تقریب QR کوڈ نہیں ہے۔' : 'यह मान्य व्यवहार कार्यक्रम QR कोड नहीं है।');
+  String get scanFromGallery => isEnglish ? 'Scan from Gallery' : (isUrdu ? 'گیلری سے اسکین کریں' : 'गैलरी से चुनें');
+  String get hostNameLabel => isEnglish ? 'Host / Inviter Name' : (isUrdu ? 'میزبان کا نام' : 'मेज़बान / आयोजक का नाम');
+  String get duplicateEventWarning => isEnglish ? 'A matching event with the same title and date already exists.' : (isUrdu ? 'اس عنوان اور تاریخ کی تقریب پہلے سے موجود ہے۔' : 'इसी नाम और तारीख का कार्यक्रम पहले से मौजूद है।');
+  String get qrScanInstruction => isEnglish ? 'Point the camera at any Vyavahaar Event QR code to add it instantly.' : (isUrdu ? 'فوری شامل کرنے کے لیے کیمرہ ویوہار ایونٹ QR پر رکھیں۔' : 'तुरंत जोड़ने के लिए कैमरा किसी व्यवहार कार्यक्रम QR कोड पर रखें।');
+  String get qrShareHint => isEnglish ? 'Relatives can scan this QR with Vyavahaar Scanner to save the event automatically.' : (isUrdu ? 'رشتہ دار ویوہار اسکینر سے یہ QR اسکین کر کے تقریب خودکار محفوظ کر سکتے ہیں۔' : 'रिश्तेदार व्यवहार ऐप के स्कैनर से यह QR स्कैन करके कार्यक्रम तुरंत जोड़ सकते हैं।');
+  String get eventAddedFromQrSuccess => isEnglish ? 'Event added to your list from QR.' : (isUrdu ? 'QR سے تقریب آپ کی فہرست میں شامل ہو گئی۔' : 'QR से कार्यक्रम आपकी सूची में जुड़ गया है।');
 }
 
 class _AppLocalizationsDelegate

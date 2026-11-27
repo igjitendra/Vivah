@@ -10,6 +10,7 @@ import '../../features/ledger/presentation/ledger_screen.dart';
 import '../../features/events/presentation/events_list_screen.dart';
 import '../../features/events/presentation/add_event_screen.dart';
 import '../../features/events/presentation/event_detail_screen.dart';
+import '../../features/events/presentation/event_qr_scanner_screen.dart';
 import '../../features/people/presentation/people_list_screen.dart';
 import '../../features/people/presentation/add_person_screen.dart';
 import '../../features/people/presentation/person_detail_screen.dart';
@@ -176,6 +177,7 @@ final GoRouter appRouter = GoRouter(
                   onOpenReports: () => context.push('/reports'),
                   onOpenFamilyProfile: () => context.push('/family-profile'),
                   onSetupFamilyProfile: () => context.push('/family-profile/edit'),
+                  onScanEventQr: () => context.push('/scan-event'),
                 );
               },
             ),
@@ -200,6 +202,7 @@ final GoRouter appRouter = GoRouter(
             child: EventsListScreen(
               onNewEvent: () => context.push('/event/new'),
               onOpenEventDetail: (id) => context.push('/event/$id'),
+              onScanEventQr: () => context.push('/scan-event'),
             ),
           ),
         ),
@@ -265,6 +268,11 @@ final GoRouter appRouter = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       path: '/event/new',
       builder: (context, state) => const AddEventScreen(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/scan-event',
+      builder: (context, state) => const EventQrScannerScreen(),
     ),
     GoRoute(
       parentNavigatorKey: _rootNavigatorKey,

@@ -11,6 +11,10 @@
     <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
 
+    <!-- Camera Permission for Offline Event QR Code Scanning -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
     <!-- Android 11+ Package Visibility Queries for Dial, SMS, Mail & WhatsApp -->
     <queries>
         <intent>

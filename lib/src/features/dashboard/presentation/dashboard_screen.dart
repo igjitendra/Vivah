@@ -34,6 +34,7 @@ class DashboardScreen extends ConsumerWidget {
   final VoidCallback? onOpenReports;
   final VoidCallback? onOpenFamilyProfile;
   final VoidCallback? onSetupFamilyProfile;
+  final VoidCallback? onScanEventQr;
 
   const DashboardScreen({
     super.key,
@@ -55,6 +56,7 @@ class DashboardScreen extends ConsumerWidget {
     this.onOpenReports,
     this.onOpenFamilyProfile,
     this.onSetupFamilyProfile,
+    this.onScanEventQr,
   });
 
   @override
@@ -94,6 +96,7 @@ class DashboardScreen extends ConsumerWidget {
                   pendingReminderCount: pendingReminders.length,
                   onOpenReminders: onOpenReminders ?? onOpenSettings,
                   onOpenSettings: onOpenSettings,
+                  onScanEventQr: onScanEventQr,
                   onFamilyTap: familyProfile.isEmpty
                       ? (onSetupFamilyProfile ?? onOpenSettings)
                       : (onOpenFamilyProfile ?? onOpenSettings),
@@ -379,6 +382,7 @@ class _HeroFamilyHeader extends StatelessWidget {
   final VoidCallback onOpenReminders;
   final VoidCallback onOpenSettings;
   final VoidCallback onFamilyTap;
+  final VoidCallback? onScanEventQr;
 
   const _HeroFamilyHeader({
     required this.semantic,
@@ -388,6 +392,7 @@ class _HeroFamilyHeader extends StatelessWidget {
     required this.onOpenReminders,
     required this.onOpenSettings,
     required this.onFamilyTap,
+    this.onScanEventQr,
   });
 
   @override
@@ -527,6 +532,33 @@ class _HeroFamilyHeader extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
+
+                  // QR Event Scanner Button
+                  if (onScanEventQr != null) ...[
+                    Tooltip(
+                      message: l10n.scanEventQr,
+                      child: ExpressSquish(
+                        scale: 0.90,
+                        onTap: onScanEventQr!,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: semantic.onHero.withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: semantic.onHero.withValues(alpha: 0.18),
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.qr_code_scanner_rounded,
+                            color: semantic.onHero,
+                            size: 21,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
 
                   // Notification Bell with live pending reminder badge
                   ExpressSquish(

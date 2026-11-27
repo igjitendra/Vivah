@@ -5,6 +5,23 @@
 
 ---
 
+## [1.4.18] — 2026-11-26
+
+### Added
+- **Offline Event QR Code Invitation & Header Scanner**:
+  - Added `EventQrService` (`lib/src/core/services/event_qr_service.dart`) encoding events (title, type, date, venue, city, host family/person, notes, and up to 8 ceremony sub-functions) into compact offline JSON payloads and validating scanned QR data.
+  - Added `EventQrSheet` (`lib/src/features/events/presentation/widgets/event_qr_sheet.dart`) rendering a theme-adaptive QR invitation card via `qr_flutter` with high-DPI PNG image capture and native sharing via `share_plus`.
+  - Auto-opens QR invitation sheet immediately after saving a new event in `AddEventScreen` (`lib/src/features/events/presentation/add_event_screen.dart`), and added 1-tap QR view/share buttons in `EventDetailScreen` (`lib/src/features/events/presentation/event_detail_screen.dart`) AppBar and menu.
+  - Added `EventQrScannerScreen` (`lib/src/features/events/presentation/event_qr_scanner_screen.dart`) using `mobile_scanner` (live camera scan, torch toggle, camera switch, plus gallery QR image analysis via `file_picker`), duplicate detection, scope selection (`EventScope.relative` / `EventScope.ownFamily`), editable host name preview modal, and 1-tap save to local database.
+  - Added Header Scanner icon (`Icons.qr_code_scanner_rounded`) in `DashboardScreen` hero header (`lib/src/features/dashboard/presentation/dashboard_screen.dart`) and `EventsListScreen` AppBar (`lib/src/features/events/presentation/events_list_screen.dart`) wired to `/scan-event` in `app_router.dart`.
+  - Added `CAMERA` permission in `android/app/src/main/AndroidManifest.xml`, localization keys in `app_localizations.dart`, and unit tests in `test/unit/event_qr_service_test.dart`.
+
+### Fixed
+- **Database Extended Schema Self-Healing (`AppDatabase`, `PeopleDao`)**:
+  - Enforced unconditional idempotent `SchemaMigrations.ensureAllTablesAndColumns` during `beforeOpen` in `lib/src/data/database/app_database.dart` and added automatic schema-repair retry in `PeopleDao.saveExtendedPerson` (`lib/src/data/database/daos/people_dao.dart`) to guard against missing `people` extended columns on upgraded databases.
+
+---
+
 ## [1.4.17] — 2026-11-26
 
 ### Added

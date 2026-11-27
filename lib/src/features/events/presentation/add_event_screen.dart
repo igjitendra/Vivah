@@ -13,6 +13,7 @@ import '../../../domain/enums/transaction_enums.dart';
 import '../../../shared/widgets/express_button.dart';
 import '../../../shared/widgets/express_squish.dart';
 import '../../../app/app_providers.dart';
+import 'widgets/event_qr_sheet.dart';
 
 /// Sub-event item helper for ceremonies and functions
 class _SubEventItem {
@@ -994,7 +995,14 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.eventSavedSuccess), backgroundColor: AppColors.milaGreen),
         );
-        Navigator.pop(context, event);
+        await EventQrSheet.show(
+          context,
+          event,
+          familyProfile: ref.read(familyProfileProvider).value,
+        );
+        if (mounted) {
+          Navigator.pop(context, event);
+        }
       }
     } catch (err) {
       if (mounted) {

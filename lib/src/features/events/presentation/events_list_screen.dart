@@ -25,11 +25,13 @@ enum EventSort { dateAsc, dateDesc, titleAsc, priority }
 class EventsListScreen extends ConsumerStatefulWidget {
   final VoidCallback onNewEvent;
   final ValueChanged<String>? onOpenEventDetail;
+  final VoidCallback? onScanEventQr;
 
   const EventsListScreen({
     super.key,
     required this.onNewEvent,
     this.onOpenEventDetail,
+    this.onScanEventQr,
   });
 
   @override
@@ -509,6 +511,14 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         shape: const Border(),
+        actions: [
+          if (widget.onScanEventQr != null)
+            IconButton(
+              onPressed: widget.onScanEventQr,
+              tooltip: l10n.scanEventQr,
+              icon: Icon(Icons.qr_code_scanner_rounded, color: primaryAccent),
+            ),
+        ],
       ),
       floatingActionButton: wide
           ? null

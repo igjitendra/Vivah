@@ -195,6 +195,7 @@ void main() {
               title: 'हल्दी रस्म',
               functionDate: '2026-12-09',
               createdAt: now,
+              updatedAt: now,
             ),
           ],
           createdAt: now,

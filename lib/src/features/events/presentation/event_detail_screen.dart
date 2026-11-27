@@ -1,7 +1,10 @@
+import 'package:characters/characters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 import 'package:printing/printing.dart';
 import '../../../core/constants/app_colors.dart';
@@ -16,6 +19,7 @@ import '../../../app/app_providers.dart';
 import '../../../shared/widgets/direction_badge.dart';
 import '../../../shared/widgets/express_squish.dart';
 import '../../../shared/widgets/express_button.dart';
+import '../../people/services/contacts_service.dart';
 import '../../reports/services/pdf_service.dart';
 import '../../reports/services/csv_service.dart';
 import 'widgets/event_qr_sheet.dart';
@@ -41,7 +45,6 @@ class EventDetailScreen extends ConsumerStatefulWidget {
 
 class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  int _refreshCounter = 0;
   String _guestFilter = 'all';
   String _guestSearchQuery = '';
   final TextEditingController _guestSearchCtrl = TextEditingController();
@@ -60,7 +63,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
   }
 
   void _triggerRefresh() {
-    setState(() => _refreshCounter++);
+    ref.invalidate(eventDetailProvider(widget.eventId));
+    ref.invalidate(activeEventsListProvider);
+    ref.invalidate(archivedEventsListProvider);
   }
 
   @override
@@ -342,7 +347,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          event.status.labelHindi,
+                          event.status.labelForLocale(l10n.locale.languageCode),
                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: _statusColor(event.status)),
                         ),
                       ),
@@ -370,7 +375,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                     ),
                     icon: Icon(Icons.edit_outlined, size: 14, color: primaryAccent),
                     label: Text(
-                      'संपादित करें',
+                      l10n.edit,
                       style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: primaryAccent),
                     ),
                     onPressed: () => _showFullEditEventDialog(event),
@@ -415,11 +420,43 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                       child: Text(
                         '${event.venue!}${event.villageCity != null && event.villageCity!.isNotEmpty ? ", ${event.villageCity!}" : ""}',
                         style: TextStyle(fontSize: 13, color: textPrimary, fontWeight: FontWeight.w500),
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    if (event.mapLink != null && event.mapLink!.trim().isNotEmpty)
+                      TextButton.icon(
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        onPressed: () async {
+                          final uri = Uri.tryParse(event.mapLink!.trim());
+                          if (uri != null && await canLaunchUrl(uri)) {
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          }
+                        },
+                        icon: Icon(Icons.map_outlined, size: 15, color: semantic.info),
+                        label: Text(
+                          l10n.tr('Map', 'नक्शा', 'نقشہ'),
+                          style: TextStyle(fontSize: 11.5, color: semantic.info, fontWeight: FontWeight.w700),
+                        ),
+                      ),
                   ],
+                ),
+              ],
+              if ((event.address != null && event.address!.isNotEmpty) ||
+                  (event.landmark != null && event.landmark!.isNotEmpty)) ...[
+                const SizedBox(height: 4),
+                Text(
+                  [
+                    if (event.address != null && event.address!.isNotEmpty) event.address!,
+                    if (event.landmark != null && event.landmark!.isNotEmpty) event.landmark!,
+                  ].join(' • '),
+                  style: TextStyle(fontSize: 12, color: textSecondary),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
               if (event.budgetEstimatedPaise != null && event.budgetEstimatedPaise! > 0) ...[
@@ -564,7 +601,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                       onPressed: () => context.push('/entry/new?direction=received&eventId=${event.id}$hostParam'),
                       icon: const Icon(Icons.arrow_downward_rounded, size: 16),
                       label: Text(
-                        l10n.isEnglish ? '+ Received' : '+ शगुन मिला',
+                        l10n.tr('+ Received', '+ शगुन मिला', '+ ملا شگون'),
                         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
                       ),
                     ),
@@ -582,8 +619,48 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                       onPressed: () => context.push('/entry/new?direction=given&eventId=${event.id}$hostParam'),
                       icon: const Icon(Icons.arrow_upward_rounded, size: 16),
                       label: Text(
-                        l10n.isEnglish ? '+ Given' : '+ शगुन दिया',
+                        l10n.tr('+ Given', '+ शगुन दिया', '+ دیا شگون'),
                         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: semantic.info,
+                        side: BorderSide(color: cardBorder),
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: () => _tabController.animateTo(3),
+                      icon: const Icon(Icons.group_add_outlined, size: 15),
+                      label: Text(
+                        '+ ${l10n.eventGuests} (${event.guests.length})',
+                        style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: primaryAccent,
+                        side: BorderSide(color: cardBorder),
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: () => _tabController.animateTo(4),
+                      icon: const Icon(Icons.checklist_rounded, size: 15),
+                      label: Text(
+                        '+ ${l10n.eventTasks} (${event.completedTasksCount}/${event.tasks.length})',
+                        style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),
@@ -775,12 +852,15 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                     CircleAvatar(
                       radius: 12,
                       backgroundColor: primaryAccent.withValues(alpha: 0.15),
-                      child: Text(p.name.substring(0, 1), style: TextStyle(fontSize: 10, color: primaryAccent, fontWeight: FontWeight.bold)),
+                      child: Text(
+                        p.name.trim().isNotEmpty ? p.name.trim().characters.first : '?',
+                        style: TextStyle(fontSize: 10, color: primaryAccent, fontWeight: FontWeight.bold),
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Text(p.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: textPrimary)),
                     const SizedBox(width: 4),
-                    Text('(${p.role.labelHindi})', style: TextStyle(fontSize: 11, color: textSecondary)),
+                    Text('(${p.role.labelForLocale(l10n.locale.languageCode)})', style: TextStyle(fontSize: 11, color: textSecondary)),
                   ],
                 ),
               );
@@ -1145,29 +1225,29 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
         ),
         const SizedBox(height: 8),
 
-        // Secondary Copy / Export Actions (Card text & Who is Sent vs Pending report)
+        // Secondary Copy / Bulk Mark Actions
         Row(
           children: [
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: () => _copyInvitationToClipboard(event),
                 icon: Icon(Icons.card_giftcard_outlined, size: 15, color: textPrimary),
-                label: Text('निमंत्रण कार्ड कॉपी', style: TextStyle(fontSize: 11.5, color: textPrimary)),
+                label: Text('निमंत्रण कार्ड कॉपी', style: TextStyle(fontSize: 11.5, color: textPrimary), overflow: TextOverflow.ellipsis),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
                   side: BorderSide(color: cardBorder),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: guests.isEmpty ? null : () => _copyInvitationStatusSummary(event),
                 icon: Icon(Icons.checklist_rtl_outlined, size: 15, color: semantic.info),
-                label: Text('भेजी/बाकी सूची कॉपी', style: TextStyle(fontSize: 11.5, color: semantic.info)),
+                label: Text('भेजी/बाकी सूची कॉपी', style: TextStyle(fontSize: 11.5, color: semantic.info), overflow: TextOverflow.ellipsis),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
                   side: BorderSide(color: cardBorder),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
@@ -1175,6 +1255,26 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
             ),
           ],
         ),
+        if (notSentCount > 0) ...[
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _confirmBulkMarkGuestsSent(event),
+              icon: Icon(Icons.done_all_rounded, size: 16, color: semantic.mila),
+              label: Text(
+                '${context.l10n.inviteSentBulkLabel} ($notSentCount)',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: semantic.mila),
+              ),
+              style: OutlinedButton.styleFrom(
+                backgroundColor: semantic.milaContainer,
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                side: BorderSide(color: semantic.milaBorder),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: 12),
 
         // Search Box
@@ -1314,9 +1414,9 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                       ),
                       IconButton(
                         icon: Icon(Icons.share_outlined, size: 18, color: semantic.info),
-                        tooltip: 'व्यक्तिगत निमंत्रण कॉपी',
+                        tooltip: 'व्यक्तिगत निमंत्रण साझा / कॉपी',
                         visualDensity: VisualDensity.compact,
-                        onPressed: () => _copyPersonalizedInvite(event, g),
+                        onPressed: () => _shareOrCopyPersonalizedInvite(event, g),
                       ),
                       IconButton(
                         icon: Icon(Icons.edit_outlined, size: 18, color: primaryAccent),
@@ -1377,7 +1477,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                               const SizedBox(width: 5),
                               Text(
                                 isSent
-                                    ? 'निमंत्रण गया (${g.invitationStatus.labelHindi})'
+                                    ? 'निमंत्रण गया (${g.invitationStatus.labelForLocale(context.l10n.locale.languageCode)})'
                                     : 'निमंत्रण बाकी • अभी भेजें',
                                 style: TextStyle(
                                   fontSize: 11,
@@ -1411,7 +1511,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                         itemBuilder: (_) => AttendanceStatus.values
                             .map((s) => PopupMenuItem<AttendanceStatus>(
                                   value: s,
-                                  child: Text(s.labelHindi, style: TextStyle(color: textPrimary, fontSize: 13)),
+                                  child: Text(s.labelForLocale(context.l10n.locale.languageCode), style: TextStyle(color: textPrimary, fontSize: 13)),
                                 ))
                             .toList(),
                         child: Container(
@@ -1427,7 +1527,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                               Icon(Icons.how_to_reg_outlined, size: 13.5, color: semantic.info),
                               const SizedBox(width: 4),
                               Text(
-                                g.attendanceStatus.labelHindi,
+                                g.attendanceStatus.labelForLocale(context.l10n.locale.languageCode),
                                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: textPrimary),
                               ),
                               const SizedBox(width: 2),
@@ -1436,6 +1536,54 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                           ),
                         ),
                       ),
+                      if (g.phoneNumber != null && g.phoneNumber!.trim().isNotEmpty) ...[
+                        InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () => ContactsService.callPhone(g.phoneNumber!),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: semantic.milaContainer,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: semantic.milaBorder),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.call_outlined, size: 13.5, color: semantic.mila),
+                                const SizedBox(width: 4),
+                                Text(
+                                  context.l10n.call,
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: semantic.mila),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () => _sendWhatsAppInviteToGuest(event, g),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF25D366).withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFF25D366).withValues(alpha: 0.4)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.chat_outlined, size: 13.5, color: Color(0xFF128C7E)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  context.l10n.whatsapp,
+                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF128C7E)),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ],
@@ -1542,6 +1690,54 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
               style: ElevatedButton.styleFrom(backgroundColor: primaryAccent, foregroundColor: Colors.white),
             ),
           ],
+        ),
+        Builder(
+          builder: (ctx) {
+            final l10n = ctx.l10n;
+            final existingTitles = event.tasks.map((t) => t.title.trim().toLowerCase()).toSet();
+            final templates = _taskTemplatesForEventType(event.eventType)
+                .where((title) => !existingTitles.contains(title.trim().toLowerCase()))
+                .toList();
+            if (templates.isEmpty) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${l10n.quickTemplatesLabel}:',
+                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: textSecondary),
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: templates.map((title) {
+                      return ActionChip(
+                        avatar: Icon(Icons.add_rounded, size: 15, color: primaryAccent),
+                        label: Text(title, style: TextStyle(fontSize: 11.5, color: textPrimary)),
+                        backgroundColor: cardBg,
+                        side: BorderSide(color: cardBorder),
+                        onPressed: () async {
+                          await ref.read(eventsRepositoryProvider).addTask(
+                                EventTask(
+                                  id: const Uuid().v4(),
+                                  eventId: event.id,
+                                  title: title,
+                                  priority: EventPriority.normal,
+                                  status: TaskStatus.pending,
+                                  createdAt: DateTime.now(),
+                                ),
+                              );
+                          _triggerRefresh();
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
         const SizedBox(height: 10),
         if (event.tasks.isEmpty)
@@ -1828,11 +2024,38 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                 ],
               ),
               const SizedBox(height: 10),
-              if (event.budgetCategories.isEmpty)
+              if (event.budgetCategories.isEmpty) ...[
                 Text(
                   'कोई खर्च मद नहीं जुड़ी है। टेंट, हलवाई, कपड़े, बाजा, कार्ड आदि जोड़कर जानें कि किस मद में कितना खर्च और कितना शेष है।',
                   style: TextStyle(fontSize: 11.5, color: textSecondary),
-                )
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: const ['टेंट व सजावट', 'खान-पान / हलवाई', 'कपड़े व आभूषण', 'बाजा / DJ', 'फोटोग्राफी']
+                      .map((preset) => ActionChip(
+                            avatar: Icon(Icons.add_rounded, size: 14, color: primaryAccent),
+                            label: Text(preset, style: TextStyle(fontSize: 11, color: textPrimary)),
+                            backgroundColor: semantic.cardSubtleBg,
+                            side: BorderSide(color: cardBorder),
+                            onPressed: () async {
+                              await ref.read(eventsRepositoryProvider).addBudgetCategory(
+                                    EventBudgetCategory(
+                                      id: const Uuid().v4(),
+                                      eventId: event.id,
+                                      categoryName: preset,
+                                      estimatedAmountPaise: 0,
+                                      actualAmountPaise: 0,
+                                      createdAt: DateTime.now(),
+                                    ),
+                                  );
+                              _triggerRefresh();
+                            },
+                          ))
+                      .toList(),
+                ),
+              ]
               else
                 ...event.budgetCategories.map((cat) {
                   final catRemaining = cat.estimatedAmountPaise - cat.actualAmountPaise;
@@ -2213,14 +2436,31 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
         const SizedBox(height: 6),
         ...event.reminders.map((r) => Container(
               margin: const EdgeInsets.only(bottom: 6),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(color: cardBg, borderRadius: BorderRadius.circular(10), border: Border.all(color: cardBorder)),
               child: Row(
                 children: [
-                  const Icon(Icons.notifications_active, color: Color(0xFFEAB308), size: 18),
+                  Icon(
+                    r.isEnabled ? Icons.notifications_active : Icons.notifications_off_outlined,
+                    color: r.isEnabled ? const Color(0xFFEAB308) : textSecondary,
+                    size: 18,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Text(r.title, style: TextStyle(fontSize: 13, color: textPrimary, fontWeight: FontWeight.w600)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(r.title, style: TextStyle(fontSize: 13, color: textPrimary, fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 2),
+                        Text(
+                          [
+                            AppDateUtils.formatIsoDate(r.reminderDate, context.l10n.locale.languageCode),
+                            if (r.reminderTime != null && r.reminderTime!.isNotEmpty) r.reminderTime!,
+                          ].join(' • '),
+                          style: TextStyle(fontSize: 11, color: textSecondary),
+                        ),
+                      ],
+                    ),
                   ),
                   Switch(
                     value: r.isEnabled,
@@ -2346,20 +2586,123 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
     );
   }
 
-  void _copyPersonalizedInvite(Event event, EventGuest guest) {
+  String _buildPersonalizedInviteText(Event event, EventGuest guest) {
     final text = StringBuffer();
     text.writeln('सादर नमस्ते ${guest.name} जी,');
     text.writeln('आप सपरिवार हमारे कार्यक्रम "${event.title}" में सादर आमंत्रित हैं।');
-    text.writeln('दिनांक: ${event.eventDate}');
+    text.writeln('दिनांक: ${event.eventDate}${event.endDate != null && event.endDate != event.eventDate ? " - ${event.endDate}" : ""}');
     if (event.startTime != null && event.startTime!.isNotEmpty) text.writeln('समय: ${event.startTime}');
     if (event.venue != null && event.venue!.isNotEmpty) text.writeln('स्थल: ${event.venue}');
     if (event.mapLink != null && event.mapLink!.isNotEmpty) text.writeln('लोकेशन: ${event.mapLink}');
     text.writeln('कृपया समय पर पधारकर हमें अनुग्रहीत करें।');
+    return text.toString().trim();
+  }
 
-    Clipboard.setData(ClipboardData(text: text.toString()));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${guest.name} के लिए व्यक्तिगत निमंत्रण कॉपी किया गया')),
+  Future<void> _shareOrCopyPersonalizedInvite(Event event, EventGuest guest) async {
+    final inviteText = _buildPersonalizedInviteText(event, guest);
+    await Clipboard.setData(ClipboardData(text: inviteText));
+    try {
+      await Share.share(inviteText);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${guest.name} के लिए व्यक्तिगत निमंत्रण कॉपी किया गया')),
+        );
+      }
+    }
+  }
+
+  Future<void> _sendWhatsAppInviteToGuest(Event event, EventGuest guest) async {
+    final phone = guest.phoneNumber?.trim() ?? '';
+    if (phone.isEmpty) return;
+    final inviteText = _buildPersonalizedInviteText(event, guest);
+    final launched = await ContactsService.openWhatsApp(phone, message: inviteText);
+    if (!launched) {
+      await Clipboard.setData(ClipboardData(text: inviteText));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${guest.name} के लिए निमंत्रण कॉपी किया गया')),
+        );
+      }
+      return;
+    }
+    if (guest.invitationStatus == InvitationStatus.notSent) {
+      await ref.read(eventsRepositoryProvider).updateGuest(
+            guest.copyWith(
+              invitationStatus: InvitationStatus.sent,
+              invitationDate: AppDateUtils.getTodayIsoString(),
+            ),
+          );
+      _triggerRefresh();
+    }
+  }
+
+  Future<void> _confirmBulkMarkGuestsSent(Event event) async {
+    final l10n = context.l10n;
+    final pending = event.guests
+        .where((g) => g.invitationStatus == InvitationStatus.notSent)
+        .toList();
+    if (pending.isEmpty) return;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.inviteSentBulkLabel),
+        content: Text(
+          l10n.tr(
+            'Mark ${pending.length} pending guests as Invitation Sent?',
+            'क्या सभी ${pending.length} बाकी मेहमानों को "निमंत्रण गया" चिन्हित करें?',
+            'کیا تمام ${pending.length} باقی مہمانوں کو "دعوت بھیجی گئی" نشان زد کریں؟',
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+          ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.save)),
+        ],
+      ),
     );
+    if (confirm != true) return;
+    final repo = ref.read(eventsRepositoryProvider);
+    final today = AppDateUtils.getTodayIsoString();
+    for (final guest in pending) {
+      await repo.updateGuest(
+        guest.copyWith(
+          invitationStatus: InvitationStatus.sent,
+          invitationDate: today,
+        ),
+      );
+    }
+    _triggerRefresh();
+  }
+
+  List<String> _taskTemplatesForEventType(EventType type) {
+    return switch (type) {
+      EventType.shaadi || EventType.wedding => const [
+          'टेंट व पंडाल बुकिंग',
+          'हलवाई व भोजन व्यवस्था',
+          'निमंत्रण पत्र छपाई व वितरण',
+          'पंडित व पूजा सामग्री',
+          'फोटोग्राफी / वीडियोग्राफी',
+          'बैंड / घोड़ी / DJ',
+        ],
+      EventType.grihaPravesh => const [
+          'पंडित जी निमंत्रण व मुहूर्त',
+          'वास्तु पूजा व हवन सामग्री',
+          'फूल व मुख्य द्वार सजावट',
+          'प्रसादी व भोज व्यवस्था',
+        ],
+      EventType.birthday || EventType.namkaran || EventType.anniversary => const [
+          'केक व मिठाई ऑर्डर',
+          'हॉल व गुब्बारा सजावट',
+          'रिटर्न गिफ्ट तैयारी',
+          'फोटोग्राफी',
+        ],
+      _ => const [
+          'स्थान व बैठक व्यवस्था',
+          'भोजन व जलपान',
+          'निमंत्रण व अतिथि संपर्क',
+          'सजावट व ध्वनि',
+        ],
+    };
   }
 
   void _copyInvitationStatusSummary(Event event) {
@@ -2523,10 +2866,16 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
   void _showFullEditEventDialog(Event event) {
     final titleCtrl = TextEditingController(text: event.title);
     final venueCtrl = TextEditingController(text: event.venue ?? '');
+    final addressCtrl = TextEditingController(text: event.address ?? '');
     final villageCityCtrl = TextEditingController(text: event.villageCity ?? '');
+    final landmarkCtrl = TextEditingController(text: event.landmark ?? '');
+    final mapLinkCtrl = TextEditingController(text: event.mapLink ?? '');
+    final descCtrl = TextEditingController(text: event.description ?? '');
     final budgetCtrl = TextEditingController(
       text: event.budgetEstimatedPaise != null && event.budgetEstimatedPaise! > 0
-          ? (event.budgetEstimatedPaise! / 100).round().toString()
+          ? (event.budgetEstimatedPaise! % 100 == 0
+              ? (event.budgetEstimatedPaise! ~/ 100).toString()
+              : (event.budgetEstimatedPaise! / 100).toStringAsFixed(2))
           : '',
     );
     final notesCtrl = TextEditingController(text: event.notes ?? '');
@@ -2542,6 +2891,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
     }
     EventType selType = event.eventType;
     EventStatus selStatus = event.status;
+    EventPriority selPriority = event.priority;
     String selDate = event.eventDate;
     String? selEndDate = event.endDate;
     bool isAllDay = event.isAllDay;
@@ -2891,19 +3241,33 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                     const SizedBox(height: 12),
                   ],
 
-                  // Status
+                  // Status & Priority
                   DropdownButtonFormField<EventStatus>(
                     value: selStatus,
-                    items: EventStatus.values.map((s) => DropdownMenuItem(value: s, child: Text(s.labelHindi))).toList(),
+                    items: EventStatus.values
+                        .map((s) => DropdownMenuItem(value: s, child: Text(s.labelForLocale(l10n.locale.languageCode))))
+                        .toList(),
                     onChanged: (val) => setDlgState(() => selStatus = val ?? EventStatus.planned),
                     decoration: InputDecoration(
-                      labelText: 'कार्यक्रम स्थिति (Status)',
+                      labelText: l10n.tr('Event Status', 'कार्यक्रम स्थिति (Status)', 'تقریب کی حیثیت'),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<EventPriority>(
+                    value: selPriority,
+                    items: EventPriority.values
+                        .map((p) => DropdownMenuItem(value: p, child: Text(p.labelForLocale(l10n.locale.languageCode))))
+                        .toList(),
+                    onChanged: (val) => setDlgState(() => selPriority = val ?? EventPriority.normal),
+                    decoration: InputDecoration(
+                      labelText: l10n.priorityLabel,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
                   const SizedBox(height: 12),
 
-                  // Venue & Village/City
+                  // Venue, Address, Village/City, Landmark & Map Link
                   TextField(
                     controller: venueCtrl,
                     decoration: InputDecoration(
@@ -2916,8 +3280,33 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                   TextField(
                     controller: villageCityCtrl,
                     decoration: InputDecoration(
-                      labelText: 'गाँव / शहर / कस्बा',
+                      labelText: l10n.villageOrCity,
                       hintText: 'उदा. जयपुर / वाराणसी / बदायूँ',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: addressCtrl,
+                    decoration: InputDecoration(
+                      labelText: l10n.tr('Street Address (Optional)', 'पूरा पता (वैकल्पिक)', 'مکمل پتہ'),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: landmarkCtrl,
+                    decoration: InputDecoration(
+                      labelText: l10n.tr('Landmark (Optional)', 'पहचान चिन्ह (वैकल्पिक)', 'مشہور مقام'),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: mapLinkCtrl,
+                    keyboardType: TextInputType.url,
+                    decoration: InputDecoration(
+                      labelText: l10n.tr('Google Maps Link (Optional)', 'गूगल मैप लिंक (वैकल्पिक)', 'گوگل میپس لنک'),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
@@ -2926,16 +3315,25 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                   // Estimated Budget
                   TextField(
                     controller: budgetCtrl,
-                    keyboardType: TextInputType.number,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     decoration: InputDecoration(
-                      labelText: 'अनुमानित बजट राशि (Budget Estimate)',
+                      labelText: l10n.plannedShagunOrBudget,
                       prefixText: '₹ ',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
                   const SizedBox(height: 12),
 
-                  // Notes
+                  // Description & Notes
+                  TextField(
+                    controller: descCtrl,
+                    maxLines: 2,
+                    decoration: InputDecoration(
+                      labelText: l10n.eventDescription,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   TextField(
                     controller: notesCtrl,
                     maxLines: 2,
@@ -2956,28 +3354,57 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                 final title = titleCtrl.text.trim();
                 if (title.isEmpty) return;
                 final customCat = customCtrl.text.trim();
-                final budgetPaise = (int.tryParse(budgetCtrl.text.trim()) ?? 0) * 100;
-                final startTimeStr = selStartTime != null
+                final parsedBudget = budgetCtrl.text.trim().isNotEmpty
+                    ? CurrencyUtils.parseInputToPaise(budgetCtrl.text.trim())
+                    : null;
+                final startTimeStr = !isAllDay && selStartTime != null
                     ? '${selStartTime!.hour.toString().padLeft(2, '0')}:${selStartTime!.minute.toString().padLeft(2, '0')}'
                     : null;
-                final endTimeStr = selEndTime != null
+                final endTimeStr = !isAllDay && selEndTime != null
                     ? '${selEndTime!.hour.toString().padLeft(2, '0')}:${selEndTime!.minute.toString().padLeft(2, '0')}'
                     : null;
+
+                final cleanVenue = venueCtrl.text.trim();
+                final cleanAddr = addressCtrl.text.trim();
+                final cleanVillage = villageCityCtrl.text.trim();
+                final cleanLandmark = landmarkCtrl.text.trim();
+                final cleanMap = mapLinkCtrl.text.trim();
+                final cleanDesc = descCtrl.text.trim();
+                final cleanNotes = notesCtrl.text.trim();
+                final cleanEndDate = (selEndDate != null && selEndDate!.trim().isNotEmpty) ? selEndDate!.trim() : null;
+                final hasCat = selType == EventType.other && customCat.isNotEmpty;
 
                 final updated = event.copyWith(
                   title: title,
                   eventType: selType,
-                  category: selType == EventType.other && customCat.isNotEmpty ? customCat : null,
+                  category: hasCat ? customCat : null,
+                  clearCategory: !hasCat,
                   eventDate: selDate,
-                  endDate: selEndDate != null && selEndDate!.isNotEmpty ? selEndDate : null,
+                  endDate: cleanEndDate,
+                  clearEndDate: cleanEndDate == null,
                   startTime: startTimeStr,
+                  clearStartTime: startTimeStr == null,
                   endTime: endTimeStr,
+                  clearEndTime: endTimeStr == null,
                   isAllDay: isAllDay,
                   status: selStatus,
-                  venue: venueCtrl.text.trim().isNotEmpty ? venueCtrl.text.trim() : null,
-                  villageCity: villageCityCtrl.text.trim().isNotEmpty ? villageCityCtrl.text.trim() : null,
-                  budgetEstimatedPaise: budgetPaise > 0 ? budgetPaise : null,
-                  notes: notesCtrl.text.trim().isNotEmpty ? notesCtrl.text.trim() : null,
+                  priority: selPriority,
+                  venue: cleanVenue.isNotEmpty ? cleanVenue : null,
+                  clearVenue: cleanVenue.isEmpty,
+                  address: cleanAddr.isNotEmpty ? cleanAddr : null,
+                  clearAddress: cleanAddr.isEmpty,
+                  villageCity: cleanVillage.isNotEmpty ? cleanVillage : null,
+                  clearVillageCity: cleanVillage.isEmpty,
+                  landmark: cleanLandmark.isNotEmpty ? cleanLandmark : null,
+                  clearLandmark: cleanLandmark.isEmpty,
+                  mapLink: cleanMap.isNotEmpty ? cleanMap : null,
+                  clearMapLink: cleanMap.isEmpty,
+                  description: cleanDesc.isNotEmpty ? cleanDesc : null,
+                  clearDescription: cleanDesc.isEmpty,
+                  budgetEstimatedPaise: (parsedBudget != null && parsedBudget > 0) ? parsedBudget : null,
+                  clearBudgetEstimatedPaise: parsedBudget == null || parsedBudget <= 0,
+                  notes: cleanNotes.isNotEmpty ? cleanNotes : null,
+                  clearNotes: cleanNotes.isEmpty,
                   eventScope: selScope,
                   clearHostInfo: selScope == EventScope.ownFamily,
                   hostPersonId: selScope == EventScope.relative ? selHostPersonId : null,
@@ -2991,11 +3418,12 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                 );
 
                 await ref.read(eventsRepositoryProvider).updateEvent(updated);
-                if (selType == EventType.other && customCat.isNotEmpty) {
+                if (hasCat) {
                   await ref.read(settingsRepositoryProvider).addCustomEventType(customCat);
                 }
                 if (ctx.mounted) Navigator.pop(ctx);
                 _triggerRefresh();
+                ref.invalidate(dashboardSummaryProvider);
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('कार्यक्रम पूर्ण विवरण सफलतापूर्वक अपडेट हुआ')),
@@ -3011,7 +3439,11 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
       Future<void>.delayed(const Duration(milliseconds: 350), () {
         titleCtrl.dispose();
         venueCtrl.dispose();
+        addressCtrl.dispose();
         villageCityCtrl.dispose();
+        landmarkCtrl.dispose();
+        mapLinkCtrl.dispose();
+        descCtrl.dispose();
         budgetCtrl.dispose();
         notesCtrl.dispose();
         customCtrl.dispose();
@@ -3454,8 +3886,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
             ElevatedButton(
               onPressed: () async {
                 if (nameCtrl.text.trim().isEmpty) return;
-                final estPaise = (int.tryParse(estCtrl.text.trim()) ?? 0) * 100;
-                final actPaise = (int.tryParse(spentCtrl.text.trim()) ?? 0) * 100;
+                final estPaise = CurrencyUtils.parseInputToPaise(estCtrl.text.trim()) ?? 0;
+                final actPaise = CurrencyUtils.parseInputToPaise(spentCtrl.text.trim()) ?? 0;
                 await ref.read(eventsRepositoryProvider).addBudgetCategory(
                       EventBudgetCategory(
                         id: const Uuid().v4(),
@@ -3515,23 +3947,25 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('रद्द करें')),
-          ElevatedButton(
-            onPressed: () async {
-              if (nameCtrl.text.trim().isEmpty) return;
-              final estPaise = (int.tryParse(estCtrl.text.trim()) ?? 0) * 100;
-              final actPaise = (int.tryParse(actCtrl.text.trim()) ?? 0) * 100;
-              final updated = cat.copyWith(
-                categoryName: nameCtrl.text.trim(),
-                estimatedAmountPaise: estPaise,
-                actualAmountPaise: actPaise,
-                notes: notesCtrl.text.trim().isNotEmpty ? notesCtrl.text.trim() : null,
-              );
-              await ref.read(eventsRepositoryProvider).updateBudgetCategory(updated);
-              if (ctx.mounted) Navigator.pop(ctx);
-              _triggerRefresh();
-            },
-            child: const Text('सहेजें'),
-          ),
+            ElevatedButton(
+              onPressed: () async {
+                if (nameCtrl.text.trim().isEmpty) return;
+                final estPaise = CurrencyUtils.parseInputToPaise(estCtrl.text.trim()) ?? 0;
+                final actPaise = CurrencyUtils.parseInputToPaise(actCtrl.text.trim()) ?? 0;
+                final cleanNotes = notesCtrl.text.trim();
+                final updated = cat.copyWith(
+                  categoryName: nameCtrl.text.trim(),
+                  estimatedAmountPaise: estPaise,
+                  actualAmountPaise: actPaise,
+                  notes: cleanNotes.isNotEmpty ? cleanNotes : null,
+                  clearNotes: cleanNotes.isEmpty,
+                );
+                await ref.read(eventsRepositoryProvider).updateBudgetCategory(updated);
+                if (ctx.mounted) Navigator.pop(ctx);
+                _triggerRefresh();
+              },
+              child: const Text('सहेजें'),
+            ),
         ],
       ),
     ).whenComplete(() {
@@ -3624,13 +4058,13 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('रद्द करें')),
             ElevatedButton(
               onPressed: () async {
-                final rupees = int.tryParse(amountCtrl.text.trim()) ?? 0;
-                if (rupees <= 0) return;
-                final addedPaise = rupees * 100;
+                final addedPaise = CurrencyUtils.parseInputToPaise(amountCtrl.text.trim()) ?? 0;
+                if (addedPaise <= 0) return;
                 final vendor = vendorCtrl.text.trim();
+                final formattedAdded = CurrencyUtils.formatPaise(addedPaise);
                 final logLine = vendor.isNotEmpty
-                    ? '$vendor (₹$rupees)'
-                    : '₹$rupees';
+                    ? '$vendor ($formattedAdded)'
+                    : formattedAdded;
                 final nextNotes = (cat.notes != null && cat.notes!.trim().isNotEmpty)
                     ? '${cat.notes!.trim()} • $logLine'
                     : logLine;
@@ -3661,6 +4095,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                         ),
                         items: const [],
                       );
+                  ref.invalidate(entriesListProvider(null));
+                  ref.invalidate(dashboardSummaryProvider);
                 }
 
                 if (ctx.mounted) Navigator.pop(ctx);
@@ -4268,46 +4704,79 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
   }
 
   void _showAddReminderDialog(Event event) {
+    final l10n = context.l10n;
     String preset = '3_days_before';
+    final customNoteCtrl = TextEditingController();
+
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (context, setDlgState) => AlertDialog(
-          title: const Text('अनुस्मारक जोड़ें'),
-          content: DropdownButtonFormField<String>(
-            value: preset,
-            items: const [
-              DropdownMenuItem(value: '1_day_before', child: Text('1 दिन पहले (1 Day Before)')),
-              DropdownMenuItem(value: '3_days_before', child: Text('3 दिन पहले (3 Days Before)')),
-              DropdownMenuItem(value: '7_days_before', child: Text('7 दिन पहले (7 Days Before)')),
-              DropdownMenuItem(value: '15_days_before', child: Text('15 दिन पहले (15 Days Before)')),
-              DropdownMenuItem(value: '30_days_before', child: Text('30 दिन पहले (30 Days Before)')),
-            ],
-            onChanged: (val) => setDlgState(() => preset = val ?? '3_days_before'),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('रद्द करें')),
-            ElevatedButton(
-              onPressed: () async {
-                await ref.read(eventsRepositoryProvider).addReminder(
-                      EventReminder(
-                        id: const Uuid().v4(),
-                        eventId: event.id,
-                        title: '${event.title} - आगामी उत्सव',
-                        reminderDate: event.eventDate,
-                        preset: preset,
-                        createdAt: DateTime.now(),
-                      ),
-                    );
-                Navigator.pop(ctx);
-                _triggerRefresh();
-              },
-              child: const Text('जोड़ें'),
+        builder: (context, setDlgState) {
+          final computedDate = AppDateUtils.reminderDateForPreset(event.eventDate, preset);
+          return AlertDialog(
+            title: Text(l10n.tr('Add Reminder', 'अनुस्मारक जोड़ें', 'یاد دہانی شامل کریں')),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: preset,
+                    items: const [
+                      DropdownMenuItem(value: 'same_day', child: Text('कार्यक्रम के दिन (Event Day)')),
+                      DropdownMenuItem(value: '1_day_before', child: Text('1 दिन पहले (1 Day Before)')),
+                      DropdownMenuItem(value: '3_days_before', child: Text('3 दिन पहले (3 Days Before)')),
+                      DropdownMenuItem(value: '7_days_before', child: Text('7 दिन पहले (7 Days Before)')),
+                      DropdownMenuItem(value: '15_days_before', child: Text('15 दिन पहले (15 Days Before)')),
+                      DropdownMenuItem(value: '30_days_before', child: Text('30 दिन पहले (30 Days Before)')),
+                    ],
+                    onChanged: (val) => setDlgState(() => preset = val ?? '3_days_before'),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    '${l10n.eventDate}: ${AppDateUtils.formatIsoDate(computedDate, l10n.locale.languageCode)}',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: customNoteCtrl,
+                    decoration: InputDecoration(
+                      labelText: l10n.tr('Custom Note (Optional)', 'कस्टम संदेश (वैकल्पिक)', 'مختصر نوٹ (اختیاری)'),
+                      hintText: l10n.reminderPresetTitle(event.title, preset),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.cancel)),
+              ElevatedButton(
+                onPressed: () async {
+                  final customTitle = customNoteCtrl.text.trim();
+                  await ref.read(eventsRepositoryProvider).addReminder(
+                        EventReminder(
+                          id: const Uuid().v4(),
+                          eventId: event.id,
+                          title: customTitle.isNotEmpty
+                              ? customTitle
+                              : l10n.reminderPresetTitle(event.title, preset),
+                          reminderDate: computedDate,
+                          preset: preset,
+                          createdAt: DateTime.now(),
+                        ),
+                      );
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  _triggerRefresh();
+                },
+                child: Text(l10n.add),
+              ),
+            ],
+          );
+        },
       ),
-    );
+    ).whenComplete(() {
+      Future<void>.delayed(const Duration(milliseconds: 300), customNoteCtrl.dispose);
+    });
   }
 
   Color _statusColor(EventStatus status) {

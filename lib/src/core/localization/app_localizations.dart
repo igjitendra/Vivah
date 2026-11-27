@@ -924,6 +924,48 @@ class AppLocalizations {
   String get restoreReplaceWarning => isEnglish ? 'This will restore all app data, settings, and photos from the selected backup.' : (isUrdu ? 'منتخب بیک اپ سے تمام ڈیٹا اور تصاویر بحال ہو جائیں گی۔' : 'चयनित बैकअप से ऐप का सारा डेटा, सेटिंग्स और सभी फ़ोटो एक साथ रिस्टोर हो जाएंगी।');
   String get invalidBackupFileError => isEnglish ? 'Please select a valid .zip or .json Vyavahaar backup file.' : (isUrdu ? 'براہ کرم درست .zip یا .json بیک اپ فائل منتخب کریں۔' : 'कृपया वैध .zip या .json व्यवहार बैकअप फ़ाइल चुनें।');
   String get photosCountLabel => isEnglish ? 'Photos' : (isUrdu ? 'تصاویر' : 'फ़ोटो');
+
+  // Event UX & Localization Helpers
+  String tr(String en, String hi, [String? ur]) =>
+      isEnglish ? en : (isUrdu ? (ur ?? hi) : hi);
+  String get hostShortLabel => isEnglish ? 'Host' : (isUrdu ? 'میزبان' : 'मेज़बान');
+  String get functionsShortLabel => isEnglish ? 'functions' : (isUrdu ? 'رسومات' : 'रस्में');
+  String get tasksShortLabel => isEnglish ? 'tasks' : (isUrdu ? 'کام' : 'कार्य');
+  String get noShagunEntriesYet => isEnglish ? 'No shagun entries yet' : (isUrdu ? 'ابھی کوئی شگون اندراج نہیں' : 'अभी कोई शगुन प्रविष्टि नहीं');
+  String get quickAddMilaBtn => isEnglish ? '+ Received (Mila)' : (isUrdu ? '+ ملا شگون' : '+ शगुन मिला दर्ज करें');
+  String get quickAddDiyaBtn => isEnglish ? '+ Given (Diya)' : (isUrdu ? '+ دیا شگون' : '+ शगुन दिया दर्ज करें');
+  String get shagunLabel => isEnglish ? 'Shagun' : (isUrdu ? 'شگون' : 'शगुन');
+  String get eventsEmptySearchSubtitle => isEnglish ? 'No events matching your search.' : (isUrdu ? 'آپ کی تلاش کے مطابق کوئی تقریب نہیں ملی۔' : 'आपकी खोज के अनुसार कोई कार्यक्रम नहीं मिला।');
+  String get eventsEmptyFirstSubtitle => isEnglish ? 'Tap "+ New Event" to create your first celebration.' : (isUrdu ? 'نئی تقریب شامل کرنے کے لیے نیچے بٹن دبائیں۔' : 'नया कार्यक्रम जोड़ने के लिए नीचे दिए बटन पर टैप करें।');
+  String get retryCamera => isEnglish ? 'Retry Camera' : (isUrdu ? 'کیمرہ دوبارہ چلائیں' : 'कैमरा पुनः प्रयास करें');
+  String get endDateOptional => isEnglish ? 'End Date (Multi-day, Optional)' : (isUrdu ? 'اختتامی تاریخ (اختیاری)' : 'समाप्ति दिनांक (बहु-दिवसीय, ऐच्छिक)');
+  String get selectEndDate => isEnglish ? 'Set End Date' : (isUrdu ? 'اختتامی تاریخ چنیں' : 'समाप्ति तिथि चुनें');
+  String get clearLabel => isEnglish ? 'Clear' : (isUrdu ? 'صاف کریں' : 'हटाएं');
+  String get subEventTimeOptional => isEnglish ? 'Time (Optional)' : (isUrdu ? 'وقت (اختیاری)' : 'समय (ऐच्छिक)');
+  String get subEventVenueOptional => isEnglish ? 'Venue / Place (Optional)' : (isUrdu ? 'مقام (اختیاری)' : 'स्थल / स्थान (ऐच्छिक)');
+  String get addSubEventTitle => isEnglish ? 'Add Function / Ritual' : (isUrdu ? 'ذیلی تقریب / رسم شامل کریں' : 'उप-कार्यक्रम / रस्म जोड़ें');
+  String get editSubEventTitle => isEnglish ? 'Edit Function / Ritual' : (isUrdu ? 'ذیلی تقریب میں ترمیم کریں' : 'उप-कार्यक्रम / रस्म संपादित करें');
+  String get functionNameLabel => isEnglish ? 'Ritual / Function Name' : (isUrdu ? 'رسم کا نام' : 'रस्म का नाम');
+  String get functionDateLabel => isEnglish ? 'Ritual Date' : (isUrdu ? 'رسم کی تاریخ' : 'रस्म की तारीख');
+  String get eventCoreSectionTitle => isEnglish ? 'Event Details' : (isUrdu ? 'تقریب کی تفصیلات' : 'कार्यक्रम का विवरण');
+  String get inviteSentBulkLabel => isEnglish ? 'Mark All Sent' : (isUrdu ? 'سب کو بھیجا نشان زد کریں' : 'बाकी सभी को भेजा मार्क करें');
+  String get quickTemplatesLabel => isEnglish ? 'Quick Templates' : (isUrdu ? 'فوری سانچے' : 'त्वरित सुझाव जोड़ें');
+  String get copyInviteTextLabel => isEnglish ? 'Copy Text' : (isUrdu ? 'متن کاپی کریں' : 'टेक्स्ट कॉपी');
+  String get inviteTextCopied => isEnglish ? 'Invitation text copied' : (isUrdu ? 'دعوت نامہ کاپی ہو گیا' : 'निमंत्रण पत्र कॉपी कर लिया गया है।');
+  String get saveQrReminderToggle => isEnglish ? 'Add reminder 1 day before event' : (isUrdu ? 'تقریب سے 1 دن پہلے یاد دہانی شامل کریں' : 'कार्यक्रम से 1 दिन पहले अनुस्मारक जोड़ें');
+
+  String reminderPresetTitle(String eventTitle, String? preset) {
+    final suffix = switch (preset) {
+      'same_day' => isEnglish ? 'Event Day' : (isUrdu ? 'تقریب کا دن' : 'कार्यक्रम के दिन'),
+      '1_day_before' => isEnglish ? '1 Day Before' : (isUrdu ? '1 دن پہلے' : '1 दिन पहले'),
+      '3_days_before' => isEnglish ? '3 Days Before' : (isUrdu ? '3 دن پہلے' : '3 दिन पहले'),
+      '7_days_before' => isEnglish ? '7 Days Before' : (isUrdu ? '7 دن پہلے' : '7 दिन पहले'),
+      '15_days_before' => isEnglish ? '15 Days Before' : (isUrdu ? '15 دن پہلے' : '15 दिन पहले'),
+      '30_days_before' => isEnglish ? '30 Days Before' : (isUrdu ? '30 دن پہلے' : '30 दिन पहले'),
+      _ => isEnglish ? 'Reminder' : (isUrdu ? 'یاد دہانی' : 'अनुस्मारक'),
+    };
+    return '${eventTitle.trim()} — $suffix';
+  }
 }
 
 class _AppLocalizationsDelegate

@@ -302,5 +302,60 @@ void main() {
       expect(loaded.budgetCategories.single.actualAmountPaise, equals(7500000));
       expect(loaded.remainingBudgetPaise, equals(50000000 - 7500000));
     });
+
+    test('hydrates sub-functions and task progress on list queries and active stream', () async {
+      final db = AppDatabase.inMemory();
+      addTearDown(() async => db.close());
+      final repo = DriftEventsRepository(db);
+      final now = DateTime.now();
+
+      final event = Event(
+        id: 'ev-hydrate-1',
+        title: 'शादी उत्सव',
+        eventType: EventType.shaadi,
+        eventDate: '2026-12-20',
+        endDate: '2026-12-22',
+        createdAt: now,
+        updatedAt: now,
+        functions: [
+          EventFunction(
+            id: 'fn-hyd-1',
+            eventId: 'ev-hydrate-1',
+            title: 'हल्दी',
+            functionDate: '2026-12-20',
+            createdAt: now,
+            updatedAt: now,
+          ),
+        ],
+        tasks: [
+          EventTask(
+            id: 'tk-hyd-1',
+            eventId: 'ev-hydrate-1',
+            title: 'टेंट बुकिंग',
+            status: TaskStatus.completed,
+            createdAt: now,
+          ),
+          EventTask(
+            id: 'tk-hyd-2',
+            eventId: 'ev-hydrate-1',
+            title: 'कार्ड वितरण',
+            status: TaskStatus.pending,
+            createdAt: now,
+          ),
+        ],
+      );
+      await repo.createEvent(event);
+
+      final list = await repo.getAllActiveEvents();
+      expect(list.length, equals(1));
+      expect(list.single.functions.length, equals(1));
+      expect(list.single.functions.single.title, equals('हल्दी'));
+      expect(list.single.tasks.length, equals(2));
+      expect(list.single.completedTasksCount, equals(1));
+
+      final emitted = await repo.watchActiveEvents().first;
+      expect(emitted.single.functions.length, equals(1));
+      expect(emitted.single.tasks.length, equals(2));
+    });
   });
 }

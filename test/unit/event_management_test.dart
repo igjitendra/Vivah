@@ -224,5 +224,60 @@ void main() {
       expect(event.functions.first.title, equals('हल्दी रस्म'));
       expect(event.functions.last.title, equals('आशीर्वाद व रिसेप्शन'));
     });
+
+    test('5. Event copyWith clear flags erase optional fields properly and enum localization works', () {
+      final event = Event(
+        id: 'ev-clear',
+        title: 'विवाह',
+        eventType: EventType.shaadi,
+        eventDate: '2026-12-20',
+        endDate: '2026-12-22',
+        venue: 'शर्मा भवन',
+        address: 'स्टेशन रोड',
+        villageCity: 'जयपुर',
+        landmark: 'मंदिर के पास',
+        mapLink: 'https://maps.example.com',
+        description: 'मुख्य विवरण',
+        notes: 'अतिरिक्त नोट',
+        budgetEstimatedPaise: 500000,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final cleared = event.copyWith(
+        clearEndDate: true,
+        clearVenue: true,
+        clearAddress: true,
+        clearVillageCity: true,
+        clearLandmark: true,
+        clearMapLink: true,
+        clearDescription: true,
+        clearNotes: true,
+        clearBudgetEstimatedPaise: true,
+      );
+
+      expect(cleared.endDate, isNull);
+      expect(cleared.venue, isNull);
+      expect(cleared.address, isNull);
+      expect(cleared.villageCity, isNull);
+      expect(cleared.landmark, isNull);
+      expect(cleared.mapLink, isNull);
+      expect(cleared.description, isNull);
+      expect(cleared.notes, isNull);
+      expect(cleared.budgetEstimatedPaise, isNull);
+
+      final cat = EventBudgetCategory(
+        id: 'c1',
+        eventId: 'ev-clear',
+        categoryName: 'टेंट',
+        notes: 'पुराना नोट',
+        createdAt: now,
+      ).copyWith(clearNotes: true);
+      expect(cat.notes, isNull);
+
+      expect(EventStatus.confirmed.labelForLocale('en'), equals('Confirmed'));
+      expect(EventStatus.confirmed.labelForLocale('ur'), equals('طے شدہ'));
+      expect(EventStatus.confirmed.labelForLocale('hi'), equals('पुष्ट'));
+    });
   });
 }

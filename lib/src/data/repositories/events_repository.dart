@@ -64,19 +64,26 @@ class DriftEventsRepository implements EventsRepository {
   @override
   Future<List<Event>> getAllActiveEvents() async {
     final rows = await _db.eventsDao.getAllActiveEvents();
-    final list = <Event>[];
-    for (final r in rows) {
-      final ext = await _db.eventsDao.getExtendedColumns(r.id);
-      list.add(_mapToEntity(r, extended: ext));
-    }
-    return list;
+    return _hydrateEventsBatch(rows);
   }
 
   Future<List<Event>> _hydrateEventsBatch(List<EventRow> rows) async {
     if (rows.isEmpty) return const [];
+    final batchResults = await Future.wait([
+      _db.eventsDao.getAllFunctionsGroupedByEvent(),
+      _db.eventsDao.getAllTasksGroupedByEvent(),
+    ]);
+    final functionsByEvent = batchResults[0] as Map<String, List<EventFunction>>;
+    final tasksByEvent = batchResults[1] as Map<String, List<EventTask>>;
+
     return Future.wait(rows.map((r) async {
       final ext = await _db.eventsDao.getExtendedColumns(r.id);
-      return _mapToEntity(r, extended: ext);
+      return _mapToEntity(
+        r,
+        extended: ext,
+        functions: functionsByEvent[r.id] ?? const [],
+        tasks: tasksByEvent[r.id] ?? const [],
+      );
     }));
   }
 

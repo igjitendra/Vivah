@@ -183,6 +183,32 @@ class AppDateUtils {
   /// Formats date string into readable date string respecting locale
   static String formatIsoDate(dynamic dateInput, [String? localeCode]) =>
       formatLocalizedDate(dateInput, localeCode);
+
+  /// Shifts an ISO `YYYY-MM-DD` date string by [offsetDays] calendar days safely.
+  static String shiftIsoDate(String isoDate, int offsetDays) {
+    final parsed = DateTime.tryParse(isoDate.trim());
+    if (parsed == null) return isoDate;
+    final pureDate = DateTime(parsed.year, parsed.month, parsed.day);
+    return toIsoDateString(pureDate.add(Duration(days: offsetDays)));
+  }
+
+  /// Returns how many days prior to an event a reminder [preset] represents.
+  static int daysBeforeForPreset(String? preset) {
+    return switch (preset) {
+      'same_day' => 0,
+      '1_day_before' => 1,
+      '3_days_before' => 3,
+      '7_days_before' => 7,
+      '15_days_before' => 15,
+      '30_days_before' => 30,
+      _ => 1,
+    };
+  }
+
+  /// Computes the target ISO `YYYY-MM-DD` reminder date for an event date and preset.
+  static String reminderDateForPreset(String eventIsoDate, String? preset) {
+    return shiftIsoDate(eventIsoDate, -daysBeforeForPreset(preset));
+  }
 }
 
 /// Compatibility alias for screens referencing VyavahaarDateUtils

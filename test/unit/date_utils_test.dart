@@ -71,5 +71,15 @@ void main() {
       expect(AppDateUtils.formatRelativeDate(today, 'en'), equals('Today'));
       expect(AppDateUtils.formatRelativeDate(yesterday, 'en'), equals('Yesterday'));
     });
+
+    test('shiftIsoDate and reminderDateForPreset shift dates accurately across month boundaries', () {
+      expect(AppDateUtils.shiftIsoDate('2026-12-01', -1), equals('2026-11-30'));
+      expect(AppDateUtils.shiftIsoDate('2026-03-01', -1), equals('2026-02-28'));
+      expect(AppDateUtils.reminderDateForPreset('2026-12-10', 'same_day'), equals('2026-12-10'));
+      expect(AppDateUtils.reminderDateForPreset('2026-12-10', '1_day_before'), equals('2026-12-09'));
+      expect(AppDateUtils.reminderDateForPreset('2026-12-10', '3_days_before'), equals('2026-12-07'));
+      expect(AppDateUtils.reminderDateForPreset('2026-12-10', '15_days_before'), equals('2026-11-25'));
+      expect(AppDateUtils.shiftIsoDate('invalid', -3), equals('invalid'));
+    });
   });
 }

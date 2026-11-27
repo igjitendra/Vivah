@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:uuid/uuid.dart';
+import '../utils/date_utils.dart';
 import '../../domain/entities/entities.dart';
 import '../../domain/enums/transaction_enums.dart';
 
@@ -91,6 +92,7 @@ class EventQrPayload {
     EventScope scope = EventScope.relative,
     String? overrideHostName,
     String? attendingFamilyNote,
+    bool addReminder = true,
   }) {
     final now = DateTime.now();
     final newEventId = const Uuid().v4();
@@ -137,16 +139,18 @@ class EventQrPayload {
       createdAt: now,
       updatedAt: now,
       functions: mappedFunctions,
-      reminders: [
-        EventReminder(
-          id: const Uuid().v4(),
-          eventId: newEventId,
-          title: '${title.trim()} - अनुस्मारक',
-          reminderDate: eventDate,
-          preset: '1_day_before',
-          createdAt: now,
-        ),
-      ],
+      reminders: addReminder
+          ? [
+              EventReminder(
+                id: const Uuid().v4(),
+                eventId: newEventId,
+                title: '${title.trim()} — 1 दिन पहले',
+                reminderDate: AppDateUtils.reminderDateForPreset(eventDate, '1_day_before'),
+                preset: '1_day_before',
+                createdAt: now,
+              ),
+            ]
+          : const [],
     );
   }
 

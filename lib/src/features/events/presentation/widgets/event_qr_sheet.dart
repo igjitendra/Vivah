@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -65,7 +66,9 @@ class _EventQrSheetState extends State<EventQrSheet> {
       if (byteData == null) return;
 
       final tempDir = await getTemporaryDirectory();
-      final safeName = widget.event.title.replaceAll(RegExp(r'[^a-zA-Z0-9\u0900-\u097F_-]'), '_');
+      final safeName = widget.event.title
+          .replaceAll(RegExp(r'[^\p{L}\p{N}_-]+', unicode: true), '_')
+          .replaceAll(RegExp(r'^_+|_+$'), '');
       final filePath = p.join(
         tempDir.path,
         'vyavahaar_qr_${safeName.isEmpty ? 'event' : safeName}.png',
@@ -118,10 +121,21 @@ class _EventQrSheetState extends State<EventQrSheet> {
       widget.event,
       widget.familyProfile,
     );
-    final formattedDate = AppDateUtils.formatLocalizedDate(
+    final startDateLabel = AppDateUtils.formatLocalizedDate(
       widget.event.eventDate,
       l10n.locale.languageCode,
     );
+    final endDateLabel = (widget.event.endDate != null &&
+            widget.event.endDate!.trim().isNotEmpty &&
+            widget.event.endDate != widget.event.eventDate)
+        ? AppDateUtils.formatLocalizedDate(
+            widget.event.endDate!,
+            l10n.locale.languageCode,
+          )
+        : null;
+    final formattedDate = endDateLabel != null
+        ? '$startDateLabel — $endDateLabel'
+        : startDateLabel;
     final locationParts = [
       if (widget.event.venue != null && widget.event.venue!.trim().isNotEmpty)
         widget.event.venue!.trim(),
@@ -340,9 +354,21 @@ class _EventQrSheetState extends State<EventQrSheet> {
                           if (widget.event.functions.isNotEmpty) ...[
                             const SizedBox(height: 6),
                             Text(
-                              widget.event.functions.map((f) => f.title).take(4).join(' • '),
+                              [
+                                ...widget.event.functions.take(4).map((f) {
+                                  final datePart = f.functionDate.trim();
+                                  final timePart = f.startTime?.trim();
+                                  final meta = [
+                                    if (datePart.isNotEmpty) datePart,
+                                    if (timePart != null && timePart.isNotEmpty) timePart,
+                                  ].join(' ');
+                                  return meta.isNotEmpty ? '${f.title} ($meta)' : f.title;
+                                }),
+                                if (widget.event.functions.length > 4)
+                                  '+${widget.event.functions.length - 4}',
+                              ].join(' • '),
                               textAlign: TextAlign.center,
-                              maxLines: 2,
+                              maxLines: 3,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: semantic.textSecondary,
@@ -398,20 +424,47 @@ class _EventQrSheetState extends State<EventQrSheet> {
 
             const SizedBox(height: AppSpacing.md),
 
-            // Share & Close Buttons
+            // Copy Text & Share Card Buttons
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(),
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      final textBuf = StringBuffer()
+                        ..writeln(widget.event.title)
+                        ..writeln('${l10n.eventDate}: $formattedDate');
+                      if (widget.event.startTime != null &&
+                          widget.event.startTime!.trim().isNotEmpty) {
+                        textBuf.writeln('${l10n.tr('Time', 'समय', 'وقت')}: ${widget.event.startTime}');
+                      }
+                      if (locationParts.isNotEmpty) {
+                        textBuf.writeln('${l10n.eventLocation}: ${locationParts.join(', ')}');
+                      }
+                      if (widget.event.functions.isNotEmpty) {
+                        textBuf.writeln(
+                          '${l10n.eventFunctions}: ${widget.event.functions.map((f) => '${f.title} (${f.functionDate})').join(', ')}',
+                        );
+                      }
+                      if (hostDisplay != null) {
+                        textBuf.writeln('${l10n.hostShortLabel}: $hostDisplay');
+                      }
+                      Clipboard.setData(ClipboardData(text: textBuf.toString().trim()));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(l10n.inviteTextCopied),
+                          backgroundColor: semantic.mila,
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.copy_rounded, size: 17),
+                    label: Text(l10n.copyInviteTextLabel),
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
                       side: BorderSide(color: semantic.cardBorder),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    child: Text(l10n.close),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),

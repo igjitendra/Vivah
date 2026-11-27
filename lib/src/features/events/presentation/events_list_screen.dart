@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/localization/unicode_search_utils.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
@@ -14,6 +15,7 @@ import '../../../shared/widgets/empty_detail_pane.dart';
 import '../../../shared/widgets/express_squish.dart';
 import '../../../app/app_providers.dart';
 import 'event_detail_screen.dart';
+import 'widgets/event_qr_sheet.dart';
 
 enum EventViewMode { list, calendar }
 enum EventScopeFilter { all, ownFamily, relative }
@@ -194,7 +196,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                       PopupMenuItem(
                         value: EventSort.dateAsc,
                         child: Text(
-                          l10n.isEnglish ? 'Date (Upcoming First)' : 'तारीख (आगामी पहले)',
+                          l10n.tr('Date (Upcoming First)', 'तारीख (आगामी पहले)', 'تاریخ (آنے والی پہلے)'),
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: _activeSort == EventSort.dateAsc ? FontWeight.bold : FontWeight.normal,
@@ -205,7 +207,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                       PopupMenuItem(
                         value: EventSort.dateDesc,
                         child: Text(
-                          l10n.isEnglish ? 'Date (Latest First)' : 'तारीख (नवीनतम पहले)',
+                          l10n.tr('Date (Latest First)', 'तारीख (नवीनतम पहले)', 'تاریخ (تازہ ترین پہلے)'),
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: _activeSort == EventSort.dateDesc ? FontWeight.bold : FontWeight.normal,
@@ -216,7 +218,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                       PopupMenuItem(
                         value: EventSort.titleAsc,
                         child: Text(
-                          l10n.isEnglish ? 'Name (A to Z)' : 'नाम (अ से ज्ञ)',
+                          l10n.tr('Name (A to Z)', 'नाम (अ से ज्ञ)', 'نام (A سے Z)'),
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: _activeSort == EventSort.titleAsc ? FontWeight.bold : FontWeight.normal,
@@ -227,7 +229,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                       PopupMenuItem(
                         value: EventSort.priority,
                         child: Text(
-                          l10n.isEnglish ? 'Priority (Urgent First)' : 'प्राथमिकता (अति आवश्यक पहले)',
+                          l10n.tr('Priority (Urgent First)', 'प्राथमिकता (अति आवश्यक पहले)', 'ترجیح (اہم پہلے)'),
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: _activeSort == EventSort.priority ? FontWeight.bold : FontWeight.normal,
@@ -359,33 +361,45 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                 if (_scopeFilter == EventScopeFilter.ownFamily && !e.isOwnFamilyEvent) return false;
                 if (_scopeFilter == EventScopeFilter.relative && !e.isRelativeEvent) return false;
 
-                // Search filter
+                // Search filter (matches event info, ISO date, and sub-function titles)
                 if (_searchQuery.isNotEmpty) {
                   final typeLabel = l10n.eventTypeLabel(e.eventType, customCategory: e.category);
-                  final matchQuery = e.title.toLowerCase().contains(_searchQuery) ||
-                      (e.venue ?? '').toLowerCase().contains(_searchQuery) ||
-                      (e.villageCity ?? '').toLowerCase().contains(_searchQuery) ||
-                      (e.hostPersonName ?? '').toLowerCase().contains(_searchQuery) ||
-                      (e.attendingFamilyNote ?? '').toLowerCase().contains(_searchQuery) ||
-                      (e.description ?? '').toLowerCase().contains(_searchQuery) ||
-                      typeLabel.toLowerCase().contains(_searchQuery);
+                  final formattedDate = AppDateUtils.formatIsoDate(e.eventDate, l10n.locale.languageCode);
+                  final matchQuery = UnicodeSearchUtils.matchesAny([
+                    e.title,
+                    e.venue,
+                    e.villageCity,
+                    e.hostPersonName,
+                    e.attendingFamilyNote,
+                    e.description,
+                    typeLabel,
+                    e.eventDate,
+                    formattedDate,
+                    ...e.functions.map((f) => f.title),
+                  ], _searchQuery);
                   if (!matchQuery) return false;
                 }
 
-                // Status & Date filter
+                // Status & Date filter (respecting multi-day endDate so ongoing events stay Upcoming)
+                final effectiveEndDate =
+                    (e.endDate != null && e.endDate!.isNotEmpty) ? e.endDate! : e.eventDate;
                 switch (_activeFilter) {
                   case EventFilter.all:
                     return true;
                   case EventFilter.upcoming:
-                    return (e.eventDate.compareTo(todayIso) >= 0 ||
-                            (e.endDate != null && e.endDate!.compareTo(todayIso) >= 0)) &&
+                    return effectiveEndDate.compareTo(todayIso) >= 0 &&
                         e.status != EventStatus.completed &&
                         e.status != EventStatus.cancelled;
                   case EventFilter.today:
                     return e.eventDate == todayIso ||
-                        (e.endDate != null && e.eventDate.compareTo(todayIso) <= 0 && e.endDate!.compareTo(todayIso) >= 0);
+                        (e.endDate != null &&
+                            e.eventDate.compareTo(todayIso) <= 0 &&
+                            e.endDate!.compareTo(todayIso) >= 0) ||
+                        e.functions.any((f) => f.functionDate == todayIso);
                   case EventFilter.completed:
-                    return e.status == EventStatus.completed || e.eventDate.compareTo(todayIso) < 0;
+                    return e.status == EventStatus.completed ||
+                        (effectiveEndDate.compareTo(todayIso) < 0 &&
+                            e.status != EventStatus.cancelled);
                   case EventFilter.draft:
                     return e.status == EventStatus.draft;
                   case EventFilter.archived:
@@ -453,8 +467,8 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                         const SizedBox(height: 8),
                         Text(
                           _searchQuery.isNotEmpty
-                              ? (l10n.isEnglish ? 'No events matching your search.' : 'आपकी खोज के अनुसार कोई कार्यक्रम नहीं मिला।')
-                              : (l10n.isEnglish ? 'Tap "+ New Event" to create your first celebration.' : 'नया कार्यक्रम जोड़ने के लिए नीचे दिए बटन पर टैप करें।'),
+                              ? l10n.eventsEmptySearchSubtitle
+                              : l10n.eventsEmptyFirstSubtitle,
                           style: TextStyle(color: textSecondary, fontSize: 13),
                           textAlign: TextAlign.center,
                         ),
@@ -464,16 +478,39 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                 );
               }
 
+              int totalFilteredMila = 0;
+              int totalFilteredDiya = 0;
+              for (final ev in filtered) {
+                final st = eventStats[ev.id];
+                if (st != null) {
+                  totalFilteredMila += st.totalMila;
+                  totalFilteredDiya += st.totalDiya;
+                }
+              }
+
               return ListView.builder(
                 padding: EdgeInsets.only(
                   left: AppSpacing.md,
                   right: AppSpacing.md,
-                  top: AppSpacing.md,
+                  top: AppSpacing.sm,
                   bottom: wide ? AppSpacing.md : AppSpacing.floatingTabBottomPadding + 20,
                 ),
-                itemCount: filtered.length,
+                itemCount: filtered.length + 1,
                 itemBuilder: (context, index) {
-                  final ev = filtered[index];
+                  if (index == 0) {
+                    return _buildFilteredSummaryStrip(
+                      count: filtered.length,
+                      totalMila: totalFilteredMila,
+                      totalDiya: totalFilteredDiya,
+                      cardBg: cardBg,
+                      cardBorder: cardBorder,
+                      textPrimary: textPrimary,
+                      textSecondary: textSecondary,
+                      semantic: semantic,
+                      l10n: l10n,
+                    );
+                  }
+                  final ev = filtered[index - 1];
                   return _buildEventCard(
                     ev: ev,
                     wide: wide,
@@ -696,7 +733,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
     final scopeAccent = ev.isRelativeEvent ? semantic.info : semantic.primary;
     final scopeLabel = ev.isRelativeEvent
         ? (ev.hostPersonName != null && ev.hostPersonName!.isNotEmpty
-            ? '${l10n.isEnglish ? 'Host' : 'मेज़बान'}: ${ev.hostPersonName}'
+            ? '${l10n.hostShortLabel}: ${ev.hostPersonName}'
             : l10n.relativeEvent)
         : l10n.ownFamilyEvent;
 
@@ -719,77 +756,146 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Scope Badge + Countdown row
+            // Scope Badge + Countdown + Quick Action Menu row
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: scopeAccent.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: scopeAccent.withValues(alpha: 0.28)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                  Expanded(
+                    child: Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Icon(
-                          ev.isRelativeEvent ? Icons.people_alt_outlined : Icons.home_rounded,
-                          size: 12,
-                          color: scopeAccent,
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            scopeLabel,
-                            style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: scopeAccent),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: scopeAccent.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: scopeAccent.withValues(alpha: 0.28)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                ev.isRelativeEvent ? Icons.people_alt_outlined : Icons.home_rounded,
+                                size: 12,
+                                color: scopeAccent,
+                              ),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  scopeLabel,
+                                  style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: scopeAccent),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+                        if (ev.isRelativeEvent && ev.attendingFamilyNote != null && ev.attendingFamilyNote!.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: semantic.cardSubtleBg,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: semantic.cardBorder),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.groups_outlined, size: 11, color: textSecondary),
+                                const SizedBox(width: 4),
+                                Text(
+                                  ev.attendingFamilyNote!,
+                                  style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: textSecondary),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (daysLeft != null && daysLeft >= 0)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: (daysLeft <= 3 ? semantic.warning : semantic.info).withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              l10n.daysLeftLabel(daysLeft),
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                color: daysLeft <= 3 ? semantic.warning : semantic.info,
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),
-                  if (ev.isRelativeEvent && ev.attendingFamilyNote != null && ev.attendingFamilyNote!.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: semantic.cardSubtleBg,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: semantic.cardBorder),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.groups_outlined, size: 11, color: textSecondary),
-                          const SizedBox(width: 4),
-                          Text(
-                            ev.attendingFamilyNote!,
-                            style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: textSecondary),
-                          ),
-                        ],
-                      ),
-                    ),
-                  if (daysLeft != null && daysLeft >= 0)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: (daysLeft <= 3 ? semantic.warning : semantic.info).withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        l10n.daysLeftLabel(daysLeft),
-                        style: TextStyle(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w700,
-                          color: daysLeft <= 3 ? semantic.warning : semantic.info,
+                  PopupMenuButton<String>(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    icon: Icon(Icons.more_vert_rounded, size: 18, color: textSecondary),
+                    color: cardBg,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    onSelected: (action) => _handleQuickCardAction(action, ev, l10n),
+                    itemBuilder: (_) => [
+                      PopupMenuItem(
+                        value: 'open',
+                        child: Row(
+                          children: [
+                            Icon(Icons.open_in_new_rounded, size: 17, color: primaryAccent),
+                            const SizedBox(width: 8),
+                            Text(l10n.eventDetails, style: TextStyle(fontSize: 13, color: textPrimary)),
+                          ],
                         ),
                       ),
-                    ),
+                      PopupMenuItem(
+                        value: 'qr',
+                        child: Row(
+                          children: [
+                            Icon(Icons.qr_code_2_rounded, size: 17, color: primaryAccent),
+                            const SizedBox(width: 8),
+                            Text(l10n.viewEventQr, style: TextStyle(fontSize: 13, color: textPrimary)),
+                          ],
+                        ),
+                      ),
+                      if (!ev.isArchived)
+                        PopupMenuItem(
+                          value: 'archive',
+                          child: Row(
+                            children: [
+                              Icon(Icons.archive_outlined, size: 17, color: textSecondary),
+                              const SizedBox(width: 8),
+                              Text(l10n.archiveEventTitle, style: TextStyle(fontSize: 13, color: textPrimary)),
+                            ],
+                          ),
+                        )
+                      else
+                        PopupMenuItem(
+                          value: 'restore',
+                          child: Row(
+                            children: [
+                              Icon(Icons.unarchive_outlined, size: 17, color: semantic.mila),
+                              const SizedBox(width: 8),
+                              Text(l10n.restoreEventTitle, style: TextStyle(fontSize: 13, color: textPrimary)),
+                            ],
+                          ),
+                        ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete_outline_rounded, size: 17, color: semantic.diya),
+                            const SizedBox(width: 8),
+                            Text(l10n.deleteEvent, style: TextStyle(fontSize: 13, color: semantic.diya)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -913,7 +1019,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                         Icon(Icons.celebration_outlined, size: 11, color: semantic.secondary),
                         const SizedBox(width: 3),
                         Text(
-                          '${ev.functions.length} ${l10n.isEnglish ? 'functions' : 'रस्में'}',
+                          '${ev.functions.length} ${l10n.functionsShortLabel}',
                           style: TextStyle(fontSize: 10.5, color: semantic.secondary, fontWeight: FontWeight.w500),
                         ),
                       ],
@@ -934,7 +1040,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                         Icon(Icons.check_circle_outline, size: 11, color: semantic.mila),
                         const SizedBox(width: 3),
                         Text(
-                          '${ev.completedTasksCount}/${ev.tasks.length} ${l10n.isEnglish ? 'tasks' : 'कार्य'}',
+                          '${ev.completedTasksCount}/${ev.tasks.length} ${l10n.tasksShortLabel}',
                           style: TextStyle(fontSize: 10.5, color: semantic.mila, fontWeight: FontWeight.w500),
                         ),
                       ],
@@ -1013,7 +1119,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                             ],
                           )
                         : Text(
-                            l10n.isEnglish ? 'No shagun entries yet' : 'अभी कोई शगुन प्रविष्टि नहीं',
+                            l10n.noShagunEntriesYet,
                             style: TextStyle(fontSize: 11, color: textSecondary),
                           ),
                   ),
@@ -1035,7 +1141,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                             Icon(Icons.arrow_downward_rounded, color: semantic.mila, size: 18),
                             const SizedBox(width: 8),
                             Text(
-                              l10n.isEnglish ? '+ Received (Mila)' : '+ शगुन मिला दर्ज करें',
+                              l10n.quickAddMilaBtn,
                               style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary),
                             ),
                           ],
@@ -1048,7 +1154,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                             Icon(Icons.arrow_upward_rounded, color: semantic.diya, size: 18),
                             const SizedBox(width: 8),
                             Text(
-                              l10n.isEnglish ? '+ Given (Diya)' : '+ शगुन दिया दर्ज करें',
+                              l10n.quickAddDiyaBtn,
                               style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary),
                             ),
                           ],
@@ -1068,7 +1174,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
                           Icon(Icons.add_rounded, size: 14, color: primaryAccent),
                           const SizedBox(width: 3),
                           Text(
-                            l10n.isEnglish ? 'Shagun' : 'शगुन',
+                            l10n.shagunLabel,
                             style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: primaryAccent),
                           ),
                         ],
@@ -1162,8 +1268,15 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
             ? const ['پیر', 'منگل', 'بدھ', 'جمعرات', 'جمعہ', 'ہفتہ', 'اتوار']
             : const ['सोम', 'मंगल', 'बुध', 'गुरु', 'शुक्र', 'शनि', 'रवि']);
 
-    // Map events by day
+    // Map events (and individual sub-functions) by day without duplicates
     final Map<int, List<Event>> eventsByDay = {};
+    void addEventToDay(int day, Event ev) {
+      final list = eventsByDay.putIfAbsent(day, () => []);
+      if (!list.any((existing) => existing.id == ev.id)) {
+        list.add(ev);
+      }
+    }
+
     for (final ev in events) {
       try {
         final startDt = DateTime.parse(ev.eventDate);
@@ -1176,7 +1289,14 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
           final target = DateTime(year, month, day);
           if ((target.isAfter(startDt.subtract(const Duration(days: 1))) || _isSameDay(target, startDt)) &&
               (target.isBefore(endDt.add(const Duration(days: 1))) || _isSameDay(target, endDt))) {
-            eventsByDay.putIfAbsent(day, () => []).add(ev);
+            addEventToDay(day, ev);
+          }
+        }
+
+        for (final fn in ev.functions) {
+          final fnDt = DateTime.tryParse(fn.functionDate);
+          if (fnDt != null && fnDt.year == year && fnDt.month == month) {
+            addEventToDay(fnDt.day, ev);
           }
         }
       } catch (_) {}
@@ -1187,9 +1307,12 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
     final selectedDayEvents = events.where((e) {
       if (e.eventDate == selectedDayIso) return true;
       if (e.endDate != null && e.endDate!.isNotEmpty) {
-        return e.eventDate.compareTo(selectedDayIso) <= 0 && e.endDate!.compareTo(selectedDayIso) >= 0;
+        if (e.eventDate.compareTo(selectedDayIso) <= 0 &&
+            e.endDate!.compareTo(selectedDayIso) >= 0) {
+          return true;
+        }
       }
-      return false;
+      return e.functions.any((f) => f.functionDate == selectedDayIso);
     }).toList();
 
     return ListView(
@@ -1369,13 +1492,15 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              l10n.isEnglish
-                  ? 'Events on ${AppDateUtils.formatIsoDate(selectedDayIso, 'en')}'
-                  : 'निर्धारित कार्यक्रम (${AppDateUtils.formatIsoDate(selectedDayIso, 'hi')})',
+              l10n.tr(
+                'Events on ${AppDateUtils.formatIsoDate(selectedDayIso, 'en')}',
+                'निर्धारित कार्यक्रम (${AppDateUtils.formatIsoDate(selectedDayIso, 'hi')})',
+                '${AppDateUtils.formatIsoDate(selectedDayIso, 'ur')} کی تقاریب',
+              ),
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: textPrimary),
             ),
             Text(
-              '${selectedDayEvents.length} ${l10n.isEnglish ? 'events' : 'आयोजन'}',
+              '${selectedDayEvents.length} ${l10n.tr('events', 'आयोजन', 'تقاریب')}',
               style: TextStyle(fontSize: 12, color: textSecondary),
             ),
           ],
@@ -1392,9 +1517,11 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
             ),
             child: Center(
               child: Text(
-                l10n.isEnglish
-                    ? 'No events scheduled on this date.'
-                    : 'इस तारीख को कोई कार्यक्रम निर्धारित नहीं है।',
+                l10n.tr(
+                  'No events scheduled on this date.',
+                  'इस तारीख को कोई कार्यक्रम निर्धारित नहीं है।',
+                  'اس تاریخ کو کوئی تقریب طے نہیں ہے۔',
+                ),
                 style: TextStyle(fontSize: 13, color: textSecondary),
               ),
             ),
@@ -1417,6 +1544,108 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
     );
   }
 
+  Widget _buildFilteredSummaryStrip({
+    required int count,
+    required int totalMila,
+    required int totalDiya,
+    required Color cardBg,
+    required Color cardBorder,
+    required Color textPrimary,
+    required Color textSecondary,
+    required AppSemanticColors semantic,
+    required AppLocalizations l10n,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: cardBorder),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.analytics_outlined, size: 16, color: semantic.primary),
+          const SizedBox(width: 6),
+          Text(
+            '$count ${l10n.tr('events', 'कार्यक्रम', 'تقاریب')}',
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: textPrimary),
+          ),
+          const Spacer(),
+          if (totalMila > 0 || totalDiya == 0)
+            Text(
+              '+${CurrencyUtils.formatPaise(totalMila)}',
+              style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: semantic.mila),
+            ),
+          if (totalDiya > 0) ...[
+            const SizedBox(width: 10),
+            Text(
+              '-${CurrencyUtils.formatPaise(totalDiya)}',
+              style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: semantic.diya),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleQuickCardAction(String action, Event ev, AppLocalizations l10n) async {
+    final repo = ref.read(eventsRepositoryProvider);
+    switch (action) {
+      case 'open':
+        widget.onOpenEventDetail?.call(ev.id);
+        break;
+      case 'qr':
+        await EventQrSheet.show(
+          context,
+          ev,
+          familyProfile: ref.read(familyProfileProvider).value,
+        );
+        break;
+      case 'archive':
+        await repo.archiveEvent(ev.id);
+        ref.invalidate(activeEventsListProvider);
+        ref.invalidate(archivedEventsListProvider);
+        ref.invalidate(dashboardSummaryProvider);
+        break;
+      case 'restore':
+        await repo.restoreEvent(ev.id);
+        ref.invalidate(activeEventsListProvider);
+        ref.invalidate(archivedEventsListProvider);
+        ref.invalidate(dashboardSummaryProvider);
+        break;
+      case 'delete':
+        final confirm = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(l10n.confirmDeleteEventTitle),
+            content: Text(l10n.confirmDeleteEventBody),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.cancel),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(l10n.delete),
+              ),
+            ],
+          ),
+        );
+        if (confirm == true) {
+          await repo.deleteEventSafely(ev.id);
+          if (_selectedEventId == ev.id && mounted) {
+            setState(() => _selectedEventId = null);
+          }
+          ref.invalidate(activeEventsListProvider);
+          ref.invalidate(archivedEventsListProvider);
+          ref.invalidate(dashboardSummaryProvider);
+        }
+        break;
+    }
+  }
+
   bool _isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
@@ -1435,15 +1664,16 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> {
   }
 
   (String, Color) _statusStyle(EventStatus status, AppLocalizations l10n) {
+    final lang = l10n.locale.languageCode;
     switch (status) {
       case EventStatus.draft:
         return (l10n.filterDraft, Colors.amber);
       case EventStatus.planned:
-        return (l10n.isEnglish ? 'Planned' : 'योजनाबद्ध', Colors.blue);
+        return (status.labelForLocale(lang), Colors.blue);
       case EventStatus.confirmed:
-        return (l10n.isEnglish ? 'Confirmed' : 'पुष्टीकृत', Colors.teal);
+        return (status.labelForLocale(lang), Colors.teal);
       case EventStatus.inProgress:
-        return (l10n.isEnglish ? 'In Progress' : 'चल रहा है', Colors.indigo);
+        return (status.labelForLocale(lang), Colors.indigo);
       case EventStatus.completed:
         return (l10n.filterCompleted, Colors.green);
       case EventStatus.cancelled:

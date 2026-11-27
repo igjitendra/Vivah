@@ -420,12 +420,16 @@ class _CameraErrorFallback extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               Text(
                 isPermissionDenied
-                    ? (l10n.isEnglish
-                        ? 'Camera permission is required to scan QR codes.'
-                        : 'QR स्कैन करने के लिए कैमरा अनुमति आवश्यक है।')
-                    : (l10n.isEnglish
-                        ? 'Could not start camera preview.'
-                        : 'कैमरा शुरू नहीं हो सका।'),
+                    ? l10n.tr(
+                        'Camera permission is required to scan QR codes.',
+                        'QR स्कैन करने के लिए कैमरा अनुमति आवश्यक है।',
+                        'QR اسکین کرنے کے لیے کیمرے کی اجازت درکار ہے۔',
+                      )
+                    : l10n.tr(
+                        'Could not start camera preview.',
+                        'कैमरा शुरू नहीं हो सका।',
+                        'کیمرہ شروع نہیں ہو سکا۔',
+                      ),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: semantic.textPrimary,
@@ -435,9 +439,11 @@ class _CameraErrorFallback extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                l10n.isEnglish
-                    ? 'You can allow Camera in App Settings or choose a QR image from Gallery below.'
-                    : 'आप ऐप सेटिंग्स में कैमरा अनुमति दे सकते हैं या नीचे गैलरी से QR फोटो चुन सकते हैं।',
+                l10n.tr(
+                  'You can allow Camera in App Settings or choose a QR image from Gallery below.',
+                  'आप ऐप सेटिंग्स में कैमरा अनुमति दे सकते हैं या नीचे गैलरी से QR फोटो चुन सकते हैं।',
+                  'آپ ایپ کی ترتیبات میں کیمرے کی اجازت دے سکتے ہیں یا نیچے گیلری سے QR تصویر منتخب کر سکتے ہیں۔',
+                ),
                 textAlign: TextAlign.center,
                 style: TextStyle(color: semantic.textSecondary, fontSize: 13),
               ),
@@ -452,7 +458,7 @@ class _CameraErrorFallback extends StatelessWidget {
               TextButton.icon(
                 onPressed: onRetryCamera,
                 icon: const Icon(Icons.refresh_rounded),
-                label: Text(l10n.isEnglish ? 'Retry Camera' : 'कैमरा पुनः प्रयास करें'),
+                label: Text(l10n.retryCamera),
               ),
             ],
           ),
@@ -556,6 +562,7 @@ class _ScannedEventPreviewSheet extends ConsumerStatefulWidget {
 class _ScannedEventPreviewSheetState extends ConsumerState<_ScannedEventPreviewSheet> {
   late final TextEditingController _hostController;
   EventScope _scope = EventScope.relative;
+  bool _addReminder = true;
   bool _isSaving = false;
 
   @override
@@ -578,6 +585,7 @@ class _ScannedEventPreviewSheetState extends ConsumerState<_ScannedEventPreviewS
       final newEvent = widget.payload.toNewEvent(
         scope: _scope,
         overrideHostName: _hostController.text.trim(),
+        addReminder: _addReminder,
       );
       await ref.read(eventsRepositoryProvider).createEvent(newEvent);
       if (mounted) {
@@ -728,7 +736,13 @@ class _ScannedEventPreviewSheetState extends ConsumerState<_ScannedEventPreviewS
                     const SizedBox(height: 8),
                     _PreviewInfoRow(
                       icon: Icons.calendar_today_outlined,
-                      label: formattedDate,
+                      label: [
+                        if (p.endDate != null && p.endDate!.isNotEmpty && p.endDate != p.eventDate)
+                          '$formattedDate — ${AppDateUtils.formatLocalizedDate(p.endDate!, l10n.locale.languageCode)}'
+                        else
+                          formattedDate,
+                        if (p.startTime != null && p.startTime!.isNotEmpty) p.startTime!,
+                      ].join(' • '),
                       semantic: semantic,
                     ),
                     if (locationText.isNotEmpty) ...[
@@ -762,7 +776,11 @@ class _ScannedEventPreviewSheetState extends ConsumerState<_ScannedEventPreviewS
                                   border: Border.all(color: semantic.cardBorder),
                                 ),
                                 child: Text(
-                                  fn.title,
+                                  [
+                                    fn.title,
+                                    if (fn.functionDate.isNotEmpty) fn.functionDate,
+                                    if (fn.startTime != null && fn.startTime!.isNotEmpty) fn.startTime!,
+                                  ].join(' • '),
                                   style: TextStyle(
                                     color: semantic.textPrimary,
                                     fontSize: 11.5,
@@ -822,7 +840,23 @@ class _ScannedEventPreviewSheetState extends ConsumerState<_ScannedEventPreviewS
                 ),
               ],
 
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.xs),
+              SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                value: _addReminder,
+                activeColor: semantic.primary,
+                onChanged: (val) => setState(() => _addReminder = val),
+                title: Text(
+                  l10n.saveQrReminderToggle,
+                  style: TextStyle(
+                    color: semantic.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.sm),
 
               Row(
                 children: [

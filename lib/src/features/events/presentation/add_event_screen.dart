@@ -21,11 +21,14 @@ class _SubEventItem {
   String title;
   String date;
   TimeOfDay? time;
+  String? venue;
 
   _SubEventItem({
     required this.id,
     required this.title,
     required this.date,
+    this.time,
+    this.venue,
   });
 }
 
@@ -57,6 +60,7 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
   EventPriority _priority = EventPriority.normal;
   String? _selectedCustomTypeName;
   late String _eventDate;
+  String? _endDate;
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
   bool _isAllDay = false;
@@ -668,12 +672,29 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
       final newDate = AppDateUtils.toIsoDateString(picked);
       setState(() {
         _eventDate = newDate;
-        // Optionally update sub-events that had the old default date
+        if (_endDate != null && _endDate!.compareTo(newDate) < 0) {
+          _endDate = newDate;
+        }
+        // Optionally update sub-events that had no explicit date yet
         for (final sub in _subEvents) {
           if (sub.date.isEmpty) sub.date = newDate;
         }
       });
       _checkConflicts();
+    }
+  }
+
+  Future<void> _pickEndDate() async {
+    final startDt = DateTime.tryParse(_eventDate) ?? DateTime.now();
+    final initialDate = DateTime.tryParse(_endDate ?? '') ?? startDt;
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate.isBefore(startDt) ? startDt : initialDate,
+      firstDate: startDt,
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() => _endDate = AppDateUtils.toIsoDateString(picked));
     }
   }
 
@@ -709,104 +730,23 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
     });
   }
 
-  void _showAddSubEventDialog(AppLocalizations l10n) {
-    final titleController = TextEditingController();
-    String subDate = _eventDate;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) {
-          final theme = Theme.of(ctx);
-          final textPrimary = theme.colorScheme.onSurface;
-          final primaryAccent = theme.colorScheme.primary;
-
-          return AlertDialog(
-            title: const Text('उप-कार्यक्रम / रस्म जोड़ें', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('रस्म का नाम', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary)),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: titleController,
-                  textCapitalization: TextCapitalization.words,
-                  decoration: InputDecoration(
-                    hintText: 'उदा. महिला संगीत, भात / मायरा',
-                    filled: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Text('रस्म की तारीख', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary)),
-                const SizedBox(height: 6),
-                InkWell(
-                  onTap: () async {
-                    final initialDate = DateTime.tryParse(subDate) ?? DateTime.now();
-                    final picked = await showDatePicker(
-                      context: ctx,
-                      initialDate: initialDate,
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime(2100),
-                    );
-                    if (picked != null) {
-                      setDialogState(() {
-                        subDate = AppDateUtils.toIsoDateString(picked);
-                      });
-                    }
-                  },
-                  borderRadius: BorderRadius.circular(10),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Theme.of(ctx).brightness == Brightness.dark ? const Color(0xFF161A24) : const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          AppDateUtils.formatIsoDate(subDate, l10n.locale.languageCode),
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary),
-                        ),
-                        Icon(Icons.calendar_month_outlined, size: 18, color: primaryAccent),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.cancel)),
-              ElevatedButton(
-                onPressed: () {
-                  final text = titleController.text.trim();
-                  if (text.isEmpty) return;
-                  setState(() {
-                    _subEvents.add(_SubEventItem(
-                      id: const Uuid().v4(),
-                      title: text,
-                      date: subDate,
-                    ));
-                  });
-                  Navigator.pop(ctx);
-                },
-                child: Text(l10n.add, style: const TextStyle(color: Colors.white)),
-              ),
-            ],
-          );
-        },
-      ),
-    ).whenComplete(titleController.dispose);
-  }
+  void _showAddSubEventDialog(AppLocalizations l10n) => _showSubEventDialog(l10n: l10n);
 
   void _showEditSubEventDialog(int idx, AppLocalizations l10n) {
     if (idx < 0 || idx >= _subEvents.length) return;
-    final item = _subEvents[idx];
-    final titleController = TextEditingController(text: item.title);
-    String subDate = item.date;
+    _showSubEventDialog(l10n: l10n, existing: _subEvents[idx]);
+  }
+
+  /// Shared dialog for adding or editing a sub-event (title, date, time, venue).
+  void _showSubEventDialog({
+    required AppLocalizations l10n,
+    _SubEventItem? existing,
+  }) {
+    final isEdit = existing != null;
+    final titleController = TextEditingController(text: existing?.title ?? '');
+    final venueController = TextEditingController(text: existing?.venue ?? '');
+    String subDate = existing?.date ?? _eventDate;
+    TimeOfDay? subTime = existing?.time;
 
     showDialog(
       context: context,
@@ -814,64 +754,147 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
         builder: (ctx, setDialogState) {
           final theme = Theme.of(ctx);
           final textPrimary = theme.colorScheme.onSurface;
+          final textSecondary = theme.colorScheme.onSurfaceVariant;
           final primaryAccent = theme.colorScheme.primary;
+          final fieldBg = theme.brightness == Brightness.dark
+              ? const Color(0xFF161A24)
+              : const Color(0xFFF1F5F9);
 
           return AlertDialog(
-            title: const Text('उप-कार्यक्रम / रस्म संपादित करें', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('रस्म का नाम', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary)),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: titleController,
-                  textCapitalization: TextCapitalization.words,
-                  decoration: InputDecoration(
-                    hintText: 'उदा. महिला संगीत, भात / मायरा',
-                    filled: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+            title: Text(
+              isEdit ? l10n.editSubEventTitle : l10n.addSubEventTitle,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.functionNameLabel,
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary),
                   ),
-                ),
-                const SizedBox(height: 14),
-                Text('रस्म की तारीख', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary)),
-                const SizedBox(height: 6),
-                InkWell(
-                  onTap: () async {
-                    final initialDate = DateTime.tryParse(subDate) ?? DateTime.now();
-                    final picked = await showDatePicker(
-                      context: ctx,
-                      initialDate: initialDate,
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime(2100),
-                    );
-                    if (picked != null) {
-                      setDialogState(() {
-                        subDate = AppDateUtils.toIsoDateString(picked);
-                      });
-                    }
-                  },
-                  borderRadius: BorderRadius.circular(10),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Theme.of(ctx).brightness == Brightness.dark ? const Color(0xFF161A24) : const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          AppDateUtils.formatIsoDate(subDate, l10n.locale.languageCode),
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary),
-                        ),
-                        Icon(Icons.calendar_month_outlined, size: 18, color: primaryAccent),
-                      ],
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: titleController,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: InputDecoration(
+                      hintText: l10n.tr('e.g. Sangeet, Haldi, Bhat', 'उदा. महिला संगीत, भात / मायरा', 'مثال: مہندی، سنگیت'),
+                      filled: true,
+                      fillColor: fieldBg,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.functionDateLabel,
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary),
+                  ),
+                  const SizedBox(height: 6),
+                  InkWell(
+                    onTap: () async {
+                      final initialDate = DateTime.tryParse(subDate) ?? DateTime.now();
+                      final picked = await showDatePicker(
+                        context: ctx,
+                        initialDate: initialDate,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2100),
+                      );
+                      if (picked != null) {
+                        setDialogState(() {
+                          subDate = AppDateUtils.toIsoDateString(picked);
+                        });
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: fieldBg,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            AppDateUtils.formatIsoDate(subDate, l10n.locale.languageCode),
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary),
+                          ),
+                          Icon(Icons.calendar_month_outlined, size: 18, color: primaryAccent),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.subEventTimeOptional,
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary),
+                  ),
+                  const SizedBox(height: 6),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showTimePicker(
+                        context: ctx,
+                        initialTime: subTime ?? const TimeOfDay(hour: 11, minute: 0),
+                      );
+                      if (picked != null) {
+                        setDialogState(() => subTime = picked);
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: fieldBg,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.access_time_rounded, size: 17, color: primaryAccent),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              subTime != null
+                                  ? subTime!.format(ctx)
+                                  : l10n.tr('Pick Time', 'समय चुनें', 'وقت چنیں'),
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: subTime != null ? textPrimary : textSecondary,
+                              ),
+                            ),
+                          ),
+                          if (subTime != null)
+                            InkWell(
+                              onTap: () => setDialogState(() => subTime = null),
+                              child: Icon(Icons.close, size: 16, color: textSecondary),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.subEventVenueOptional,
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: venueController,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: InputDecoration(
+                      hintText: _venueController.text.trim().isNotEmpty
+                          ? _venueController.text.trim()
+                          : l10n.eventLocationHint,
+                      filled: true,
+                      fillColor: fieldBg,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    ),
+                  ),
+                ],
+              ),
             ),
             actions: [
               TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.cancel)),
@@ -879,19 +902,40 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
                 onPressed: () {
                   final text = titleController.text.trim();
                   if (text.isEmpty) return;
+                  final cleanVenue = venueController.text.trim();
                   setState(() {
-                    item.title = text;
-                    item.date = subDate;
+                    if (isEdit) {
+                      existing.title = text;
+                      existing.date = subDate;
+                      existing.time = subTime;
+                      existing.venue = cleanVenue.isNotEmpty ? cleanVenue : null;
+                    } else {
+                      _subEvents.add(_SubEventItem(
+                        id: const Uuid().v4(),
+                        title: text,
+                        date: subDate,
+                        time: subTime,
+                        venue: cleanVenue.isNotEmpty ? cleanVenue : null,
+                      ));
+                    }
                   });
                   Navigator.pop(ctx);
                 },
-                child: const Text('सहेजें', style: TextStyle(color: Colors.white)),
+                child: Text(
+                  isEdit ? l10n.save : l10n.add,
+                  style: const TextStyle(color: Colors.white),
+                ),
               ),
             ],
           );
         },
       ),
-    ).whenComplete(titleController.dispose);
+    ).whenComplete(() {
+      Future<void>.delayed(const Duration(milliseconds: 300), () {
+        titleController.dispose();
+        venueController.dispose();
+      });
+    });
   }
 
   Future<void> _handleSave() async {
@@ -930,6 +974,7 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
         eventType: _selectedType,
         category: customName,
         eventDate: _eventDate,
+        endDate: (_endDate != null && _endDate!.isNotEmpty) ? _endDate : null,
         startTime: !_isAllDay && _startTime != null
             ? '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')}'
             : null,
@@ -953,27 +998,31 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
             : null,
         createdAt: now,
         updatedAt: now,
-        functions: _subEvents.map((s) => EventFunction(
-          id: s.id,
-          eventId: eventId,
-          title: s.title,
-          functionDate: s.date,
-          startTime: s.time != null
-              ? '${s.time!.hour.toString().padLeft(2, '0')}:${s.time!.minute.toString().padLeft(2, '0')}'
-              : null,
-          venue: _venueController.text.trim().isNotEmpty ? _venueController.text.trim() : null,
-          status: EventStatus.planned,
-          createdAt: now,
-          updatedAt: now,
-        )).toList(),
+        functions: _subEvents.map((s) {
+          final fallbackVenue = _venueController.text.trim().isNotEmpty ? _venueController.text.trim() : null;
+          final subVenue = (s.venue != null && s.venue!.trim().isNotEmpty) ? s.venue!.trim() : fallbackVenue;
+          return EventFunction(
+            id: s.id,
+            eventId: eventId,
+            title: s.title,
+            functionDate: s.date,
+            startTime: s.time != null
+                ? '${s.time!.hour.toString().padLeft(2, '0')}:${s.time!.minute.toString().padLeft(2, '0')}'
+                : null,
+            venue: subVenue,
+            status: EventStatus.planned,
+            createdAt: now,
+            updatedAt: now,
+          );
+        }).toList(),
         participants: const [],
         tasks: const [],
         reminders: [
           EventReminder(
             id: const Uuid().v4(),
             eventId: eventId,
-            title: '${_titleController.text.trim()} - 1 दिन पहले अनुस्मारक',
-            reminderDate: _eventDate,
+            title: l10n.reminderPresetTitle(_titleController.text.trim(), '1_day_before'),
+            reminderDate: AppDateUtils.reminderDateForPreset(_eventDate, '1_day_before'),
             preset: '1_day_before',
             createdAt: now,
           ),
@@ -995,11 +1044,13 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.eventSavedSuccess), backgroundColor: AppColors.milaGreen),
         );
-        await EventQrSheet.show(
-          context,
-          event,
-          familyProfile: ref.read(familyProfileProvider).value,
-        );
+        if (_eventScope == EventScope.ownFamily) {
+          await EventQrSheet.show(
+            context,
+            event,
+            familyProfile: ref.read(familyProfileProvider).value,
+          );
+        }
         if (mounted) {
           Navigator.pop(context, event);
         }
@@ -1348,7 +1399,7 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
 
                   // 1. Core Event Details Card
                   _buildSectionCard(
-                    title: 'कार्यक्रम का विवरण',
+                    title: l10n.eventCoreSectionTitle,
                     icon: Icons.celebration_outlined,
                     cardBg: cardBg,
                     cardBorder: cardBorder,
@@ -1551,35 +1602,95 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
 
                   // 2. Date & Time Card
                   _buildSectionCard(
-                    title: 'दिनांक व समय',
+                    title: l10n.tr('Date & Time', 'दिनांक व समय', 'تاریخ اور وقت'),
                     icon: Icons.calendar_today_outlined,
                     cardBg: cardBg,
                     cardBorder: cardBorder,
                     textPrimary: textPrimary,
                     primaryAccent: primaryAccent,
                     children: [
-                      Text(l10n.eventDate, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: textPrimary)),
-                      const SizedBox(height: 6),
-                      InkWell(
-                        onTap: _pickDate,
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: inputBg,
-                            borderRadius: BorderRadius.circular(12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(l10n.eventDate, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: textPrimary)),
+                                const SizedBox(height: 6),
+                                InkWell(
+                                  onTap: _pickDate,
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                    decoration: BoxDecoration(
+                                      color: inputBg,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            AppDateUtils.formatIsoDate(_eventDate, l10n.locale.languageCode),
+                                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        Icon(Icons.calendar_month_outlined, size: 18, color: primaryAccent),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                _eventDate,
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textPrimary),
-                              ),
-                              Icon(Icons.calendar_month_outlined, size: 20, color: primaryAccent),
-                            ],
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(l10n.endDateOptional, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12.5, color: textPrimary), overflow: TextOverflow.ellipsis),
+                                const SizedBox(height: 6),
+                                InkWell(
+                                  onTap: _pickEndDate,
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                    decoration: BoxDecoration(
+                                      color: inputBg,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            _endDate != null
+                                                ? AppDateUtils.formatIsoDate(_endDate!, l10n.locale.languageCode)
+                                                : l10n.selectEndDate,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: _endDate != null ? FontWeight.w600 : FontWeight.w500,
+                                              color: _endDate != null ? textPrimary : textSecondary,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        if (_endDate != null)
+                                          InkWell(
+                                            onTap: () => setState(() => _endDate = null),
+                                            child: Icon(Icons.close, size: 16, color: textSecondary),
+                                          )
+                                        else
+                                          Icon(Icons.event_repeat_outlined, size: 18, color: primaryAccent),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                       const SizedBox(height: 14),
 
@@ -1598,7 +1709,7 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
                                 Icon(Icons.wb_sunny_outlined, size: 18, color: primaryAccent),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'पूरा दिन (All Day)',
+                                  l10n.tr('All Day', 'पूरा दिन (All Day)', 'پورا دن'),
                                   style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: textPrimary),
                                 ),
                               ],
@@ -1775,15 +1886,30 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
                                   child: InkWell(
                                     onTap: () => _showEditSubEventDialog(idx, l10n),
                                     borderRadius: BorderRadius.circular(6),
-                                    child: Text(
-                                      sub.title,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13.5,
-                                        color: textPrimary,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          sub.title,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13.5,
+                                            color: textPrimary,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        if (sub.time != null || (sub.venue != null && sub.venue!.isNotEmpty))
+                                          Text(
+                                            [
+                                              if (sub.time != null) sub.time!.format(context),
+                                              if (sub.venue != null && sub.venue!.isNotEmpty) sub.venue!,
+                                            ].join(' • '),
+                                            style: TextStyle(fontSize: 11, color: textSecondary),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -1928,7 +2054,7 @@ class _AddEventScreenState extends ConsumerState<AddEventScreen> {
                           final isSelected = _priority == p;
                           return ChoiceChip(
                             label: Text(
-                              l10n.isEnglish ? p.labelEnglish : p.labelHindi,
+                              p.labelForLocale(l10n.locale.languageCode),
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,

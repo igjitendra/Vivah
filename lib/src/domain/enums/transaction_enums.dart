@@ -130,6 +130,22 @@ enum EventStatus {
   final String labelEnglish;
   const EventStatus(this.labelHindi, this.labelEnglish);
 
+  String labelForLocale(String languageCode) {
+    if (languageCode == 'en') return labelEnglish;
+    if (languageCode == 'ur') {
+      return switch (this) {
+        EventStatus.draft => 'ڈرافٹ',
+        EventStatus.planned => 'منصوبہ بند',
+        EventStatus.confirmed => 'طے شدہ',
+        EventStatus.inProgress => 'جاری ہے',
+        EventStatus.completed => 'مکمل',
+        EventStatus.cancelled => 'منسوخ',
+        EventStatus.archived => 'محفوظ شدہ',
+      };
+    }
+    return labelHindi;
+  }
+
   static EventStatus fromString(String? val) {
     if (val == null) return EventStatus.planned;
     for (final s in EventStatus.values) {
@@ -176,6 +192,19 @@ enum EventPriority {
   final String labelEnglish;
   const EventPriority(this.labelHindi, this.labelEnglish);
 
+  String labelForLocale(String languageCode) {
+    if (languageCode == 'en') return labelEnglish;
+    if (languageCode == 'ur') {
+      return switch (this) {
+        EventPriority.low => 'کم',
+        EventPriority.normal => 'عام',
+        EventPriority.high => 'اہم',
+        EventPriority.urgent => 'انتہائی ضروری',
+      };
+    }
+    return labelHindi;
+  }
+
   static EventPriority fromString(String? val) {
     if (val == null) return EventPriority.normal;
     for (final p in EventPriority.values) {
@@ -203,6 +232,22 @@ enum ParticipantRole {
   final String labelEnglish;
   const ParticipantRole(this.labelHindi, this.labelEnglish);
 
+  String labelForLocale(String languageCode) {
+    if (languageCode == 'en') return labelEnglish;
+    if (languageCode == 'ur') {
+      return switch (this) {
+        ParticipantRole.host => 'میزبان',
+        ParticipantRole.organizer => 'منتظم',
+        ParticipantRole.bride => 'دلہن',
+        ParticipantRole.groom => 'دولہا',
+        ParticipantRole.guestOfHonour => 'مہمانِ خصوصی',
+        ParticipantRole.familyMember => 'خاندان کا فرد',
+        ParticipantRole.other => 'دیگر',
+      };
+    }
+    return labelHindi;
+  }
+
   static ParticipantRole fromString(String? val) {
     if (val == null) return ParticipantRole.other;
     for (final r in ParticipantRole.values) {
@@ -228,6 +273,20 @@ enum InvitationStatus {
   final String labelEnglish;
   const InvitationStatus(this.labelHindi, this.labelEnglish);
 
+  String labelForLocale(String languageCode) {
+    if (languageCode == 'en') return labelEnglish;
+    if (languageCode == 'ur') {
+      return switch (this) {
+        InvitationStatus.notSent => 'نہیں بھیجا گیا',
+        InvitationStatus.sent => 'بھیج دیا گیا',
+        InvitationStatus.accepted => 'قبول کیا',
+        InvitationStatus.declined => 'معذرت',
+        InvitationStatus.maybe => 'ممکنہ',
+      };
+    }
+    return labelHindi;
+  }
+
   static InvitationStatus fromString(String? val) {
     if (val == null) return InvitationStatus.notSent;
     for (final s in InvitationStatus.values) {
@@ -251,6 +310,19 @@ enum AttendanceStatus {
   final String labelHindi;
   final String labelEnglish;
   const AttendanceStatus(this.labelHindi, this.labelEnglish);
+
+  String labelForLocale(String languageCode) {
+    if (languageCode == 'en') return labelEnglish;
+    if (languageCode == 'ur') {
+      return switch (this) {
+        AttendanceStatus.notConfirmed => 'غیر مصدقہ',
+        AttendanceStatus.attending => 'شریک ہوں گے',
+        AttendanceStatus.notAttending => 'شریک نہیں ہوں گے',
+        AttendanceStatus.attended => 'شریک رہے',
+      };
+    }
+    return labelHindi;
+  }
 
   static AttendanceStatus fromString(String? val) {
     if (val == null) return AttendanceStatus.notConfirmed;

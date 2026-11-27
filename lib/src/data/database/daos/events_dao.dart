@@ -251,30 +251,48 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
   // =========================================================================
 
   // 1. Functions
+  EventFunction _mapFunctionRow(Map<String, dynamic> d) {
+    return EventFunction(
+      id: d['id'] as String,
+      eventId: d['event_id'] as String,
+      title: d['title'] as String,
+      functionDate: d['function_date'] as String,
+      startTime: d['start_time'] as String?,
+      endTime: d['end_time'] as String?,
+      venue: d['venue'] as String?,
+      description: d['description'] as String?,
+      status: EventStatus.fromString(d['status'] as String?),
+      createdAt: DateTime.tryParse(d['created_at']?.toString() ?? '') ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(d['updated_at']?.toString() ?? '') ?? DateTime.now(),
+    );
+  }
+
   Future<List<EventFunction>> getFunctionsForEvent(String eventId) async {
     try {
       final rows = await customSelect(
         'SELECT * FROM event_functions WHERE event_id = ? ORDER BY function_date ASC, start_time ASC',
         variables: [Variable.withString(eventId)],
       ).get();
-      return rows.map((r) {
-        final d = r.data;
-        return EventFunction(
-          id: d['id'] as String,
-          eventId: d['event_id'] as String,
-          title: d['title'] as String,
-          functionDate: d['function_date'] as String,
-          startTime: d['start_time'] as String?,
-          endTime: d['end_time'] as String?,
-          venue: d['venue'] as String?,
-          description: d['description'] as String?,
-          status: EventStatus.fromString(d['status'] as String?),
-          createdAt: DateTime.tryParse(d['created_at']?.toString() ?? '') ?? DateTime.now(),
-          updatedAt: DateTime.tryParse(d['updated_at']?.toString() ?? '') ?? DateTime.now(),
-        );
-      }).toList();
+      return rows.map((r) => _mapFunctionRow(r.data)).toList();
     } catch (_) {
       return [];
+    }
+  }
+
+  /// Batch loads all sub-functions grouped by event ID for list & calendar hydration.
+  Future<Map<String, List<EventFunction>>> getAllFunctionsGroupedByEvent() async {
+    try {
+      final rows = await customSelect(
+        'SELECT * FROM event_functions ORDER BY function_date ASC, start_time ASC',
+      ).get();
+      final grouped = <String, List<EventFunction>>{};
+      for (final r in rows) {
+        final fn = _mapFunctionRow(r.data);
+        (grouped[fn.eventId] ??= []).add(fn);
+      }
+      return grouped;
+    } catch (_) {
+      return {};
     }
   }
 
@@ -430,29 +448,47 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
   }
 
   // 4. Tasks & Checklist
+  EventTask _mapTaskRow(Map<String, dynamic> d) {
+    return EventTask(
+      id: d['id'] as String,
+      eventId: d['event_id'] as String,
+      title: d['title'] as String,
+      description: d['description'] as String?,
+      assignedPersonName: d['assigned_person_name'] as String?,
+      dueDate: d['due_date'] as String?,
+      priority: EventPriority.fromString(d['priority'] as String?),
+      status: TaskStatus.fromString(d['status'] as String?),
+      completedAt: d['completed_at'] != null ? DateTime.tryParse(d['completed_at'].toString()) : null,
+      createdAt: DateTime.tryParse(d['created_at']?.toString() ?? '') ?? DateTime.now(),
+    );
+  }
+
   Future<List<EventTask>> getTasksForEvent(String eventId) async {
     try {
       final rows = await customSelect(
         'SELECT * FROM event_tasks WHERE event_id = ? ORDER BY status ASC, due_date ASC',
         variables: [Variable.withString(eventId)],
       ).get();
-      return rows.map((r) {
-        final d = r.data;
-        return EventTask(
-          id: d['id'] as String,
-          eventId: d['event_id'] as String,
-          title: d['title'] as String,
-          description: d['description'] as String?,
-          assignedPersonName: d['assigned_person_name'] as String?,
-          dueDate: d['due_date'] as String?,
-          priority: EventPriority.fromString(d['priority'] as String?),
-          status: TaskStatus.fromString(d['status'] as String?),
-          completedAt: d['completed_at'] != null ? DateTime.tryParse(d['completed_at'].toString()) : null,
-          createdAt: DateTime.tryParse(d['created_at']?.toString() ?? '') ?? DateTime.now(),
-        );
-      }).toList();
+      return rows.map((r) => _mapTaskRow(r.data)).toList();
     } catch (_) {
       return [];
+    }
+  }
+
+  /// Batch loads all checklist tasks grouped by event ID for list progress badges.
+  Future<Map<String, List<EventTask>>> getAllTasksGroupedByEvent() async {
+    try {
+      final rows = await customSelect(
+        'SELECT * FROM event_tasks ORDER BY status ASC, due_date ASC',
+      ).get();
+      final grouped = <String, List<EventTask>>{};
+      for (final r in rows) {
+        final task = _mapTaskRow(r.data);
+        (grouped[task.eventId] ??= []).add(task);
+      }
+      return grouped;
+    } catch (_) {
+      return {};
     }
   }
 
@@ -754,6 +790,7 @@ class EventsDao extends DatabaseAccessor<AppDatabase> with _$EventsDaoMixin {
           Variable.withString(log.details ?? ''),
           Variable.withString(log.timestamp.toIso8601String()),
         ],
+        updates: {events},
       );
     } catch (_) {}
   }

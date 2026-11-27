@@ -67,6 +67,10 @@ void main() {
       expect(imported.functions.length, 2);
       expect(imported.functions.first.eventId, imported.id);
       expect(imported.reminders.length, 1);
+      expect(imported.reminders.single.reminderDate, '2026-12-14');
+
+      final withoutReminder = decoded.toNewEvent(addReminder: false);
+      expect(withoutReminder.reminders, isEmpty);
     });
 
     test('supports override host name and ownFamily scope on import', () {

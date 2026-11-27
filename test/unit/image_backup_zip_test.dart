@@ -33,6 +33,19 @@ void _configureLinuxSqlite() {
   });
 }
 
+Uint8List _createPhotographicSampleJpg({int width = 2000, int height = 1500}) {
+  final image = img.Image(width: width, height: height);
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+      final r = (x * 13 + y * 7 + ((x ^ y) >> 1)) & 0xFF;
+      final g = (y * 11 + ((x * 3) ^ y)) & 0xFF;
+      final b = ((x * 5 + y * 17) ^ (x >> 2)) & 0xFF;
+      image.setPixelRgb(x, y, r, g, b);
+    }
+  }
+  return Uint8List.fromList(img.encodeJpg(image, quality: 98));
+}
+
 Uint8List _createSamplePngBytes({int width = 1800, int height = 1400}) {
   final image = img.Image(width: width, height: height);
   img.fill(image, color: img.ColorRgb8(210, 140, 70));
@@ -51,13 +64,13 @@ void main() {
   setUpAll(_configureLinuxSqlite);
 
   group('Image Compression & Gift Item Photo Persistence', () {
-    test('compresses large PNG down to <= 1280px JPEG', () async {
+    test('compresses large camera photo down to <= 1280px JPEG', () async {
       final tempDir = await Directory.systemTemp.createTemp('vyavahaar_img_test_');
       addTearDown(() async => tempDir.delete(recursive: true));
 
-      final rawPng = _createSamplePngBytes(width: 2000, height: 1500);
+      final rawPhoto = _createPhotographicSampleJpg(width: 2000, height: 1500);
       final saved = await ImageStorageService.compressAndSaveBytes(
-        rawBytes: rawPng,
+        rawBytes: rawPhoto,
         subFolder: 'attachments',
         prefix: 'gift_test',
         maxDimension: 1280,

@@ -30,6 +30,7 @@ abstract class EntriesRepository {
   Future<void> cancelPlannedEntry(String id);
   Future<void> markPlannedEntryRecorded(String id);
   Future<void> archiveEntry(String id);
+  Future<void> updateEntryItemPhoto(String itemId, String? photoPath);
   Future<Map<String, int>> getPersonHistoryStats(String personId);
   Stream<Map<String, int>> watchPersonHistoryStats(String personId);
   Future<Map<String, int>> getEventHistoryStats(String eventId);
@@ -143,6 +144,7 @@ class DriftEntriesRepository implements EntriesRepository {
                 ? (_db.select(_db.events)..where((t) => t.id.isIn(eventIds))).get()
                 : Future.value(<EventRow>[]),
             (_db.select(_db.entryItems)..where((t) => t.entryId.isIn(entryIds))).get(),
+            _db.entryItemsDao.getPhotoPathsForEntries(entryIds),
           ]);
 
           final peopleMap = {for (final p in (futures[0] as List<PersonRow>)) p.id: p};
@@ -151,6 +153,7 @@ class DriftEntriesRepository implements EntriesRepository {
           for (final item in (futures[2] as List<EntryItemRow>)) {
             itemsMap.putIfAbsent(item.entryId, () => []).add(item);
           }
+          final itemPhotoMap = futures[3] as Map<String, String>;
 
           final results = <TransactionEntry>[];
           for (final row in rows) {
@@ -158,7 +161,7 @@ class DriftEntriesRepository implements EntriesRepository {
             final person = peopleMap[row.personId];
             final event = row.eventId != null ? eventsMap[row.eventId] : null;
 
-            results.add(_mapToEntity(row, items, person, event));
+            results.add(_mapToEntity(row, items, person, event, itemPhotoMap));
           }
           return results;
         });
@@ -170,12 +173,41 @@ class DriftEntriesRepository implements EntriesRepository {
     if (row == null) return null;
 
     final items = await _db.entryItemsDao.getItemsForEntry(id);
+    final itemPhotoMap = await _db.entryItemsDao.getPhotoPathsForEntry(id);
     final person = await _db.peopleDao.getPersonById(row.personId);
     final event = row.eventId != null
         ? await _db.eventsDao.getEventById(row.eventId!)
         : null;
 
-    return _mapToEntity(row, items, person, event);
+    return _mapToEntity(row, items, person, event, itemPhotoMap);
+  }
+
+  Future<void> _insertEntryItemsAndPhotos(String entryId, List<EntryItem> items) async {
+    if (items.isEmpty) return;
+    final nowIso = DateTime.now().toIso8601String();
+    final companions = items.map((item) {
+      return EntryItemsCompanion.insert(
+        id: item.id,
+        entryId: entryId,
+        itemName: item.itemName,
+        quantity: Value(item.quantity),
+        unit: Value(item.unit),
+        estimatedValuePaise: Value(item.estimatedValuePaise != null
+            ? BigInt.from(item.estimatedValuePaise!)
+            : null),
+        notes: Value(item.notes),
+        createdAt: Value(item.createdAt.toIso8601String()),
+        updatedAt: Value(nowIso),
+      );
+    }).toList();
+
+    await _db.entryItemsDao.insertMultipleItems(companions);
+
+    for (final item in items) {
+      if (item.photoPath != null && item.photoPath!.isNotEmpty) {
+        await _db.entryItemsDao.updateItemPhotoPath(item.id, item.photoPath);
+      }
+    }
   }
 
   @override
@@ -212,25 +244,7 @@ class DriftEntriesRepository implements EntriesRepository {
         ),
       );
 
-      if (items.isNotEmpty) {
-        final companions = items.map((item) {
-          return EntryItemsCompanion.insert(
-            id: item.id,
-            entryId: entry.id,
-            itemName: item.itemName,
-            quantity: Value(item.quantity),
-            unit: Value(item.unit),
-            estimatedValuePaise: Value(item.estimatedValuePaise != null
-                ? BigInt.from(item.estimatedValuePaise!)
-                : null),
-            notes: Value(item.notes),
-            createdAt: Value(item.createdAt.toIso8601String()),
-            updatedAt: Value(item.updatedAt.toIso8601String()),
-          );
-        }).toList();
-
-        await _db.entryItemsDao.insertMultipleItems(companions);
-      }
+      await _insertEntryItemsAndPhotos(entry.id, items);
     });
   }
 
@@ -268,25 +282,7 @@ class DriftEntriesRepository implements EntriesRepository {
 
       // Replace items atomically
       await _db.entryItemsDao.deleteItemsForEntry(entry.id);
-      if (items.isNotEmpty) {
-        final companions = items.map((item) {
-          return EntryItemsCompanion.insert(
-            id: item.id,
-            entryId: entry.id,
-            itemName: item.itemName,
-            quantity: Value(item.quantity),
-            unit: Value(item.unit),
-            estimatedValuePaise: Value(item.estimatedValuePaise != null
-                ? BigInt.from(item.estimatedValuePaise!)
-                : null),
-            notes: Value(item.notes),
-            createdAt: Value(item.createdAt.toIso8601String()),
-            updatedAt: Value(DateTime.now().toIso8601String()),
-          );
-        }).toList();
-
-        await _db.entryItemsDao.insertMultipleItems(companions);
-      }
+      await _insertEntryItemsAndPhotos(entry.id, items);
     });
   }
 
@@ -303,6 +299,11 @@ class DriftEntriesRepository implements EntriesRepository {
   @override
   Future<void> archiveEntry(String id) async {
     await _db.entriesDao.archiveEntry(id);
+  }
+
+  @override
+  Future<void> updateEntryItemPhoto(String itemId, String? photoPath) async {
+    await _db.entryItemsDao.updateItemPhotoPath(itemId, photoPath);
   }
 
   @override
@@ -367,8 +368,9 @@ class DriftEntriesRepository implements EntriesRepository {
     EntryRow r,
     List<EntryItemRow> itemRows,
     PersonRow? person,
-    EventRow? event,
-  ) {
+    EventRow? event, [
+    Map<String, String> itemPhotoMap = const {},
+  ]) {
     final domainItems = itemRows.map((it) {
       return EntryItem(
         id: it.id,
@@ -378,6 +380,7 @@ class DriftEntriesRepository implements EntriesRepository {
         unit: it.unit,
         estimatedValuePaise: it.estimatedValuePaise?.toInt(),
         notes: it.notes,
+        photoPath: itemPhotoMap[it.id],
         createdAt: DateTime.tryParse(it.createdAt) ?? DateTime.now(),
         updatedAt: DateTime.tryParse(it.updatedAt) ?? DateTime.now(),
       );

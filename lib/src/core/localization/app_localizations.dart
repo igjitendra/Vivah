@@ -904,6 +904,26 @@ class AppLocalizations {
   String get qrScanInstruction => isEnglish ? 'Point the camera at any Vyavahaar Event QR code to add it instantly.' : (isUrdu ? 'فوری شامل کرنے کے لیے کیمرہ ویوہار ایونٹ QR پر رکھیں۔' : 'तुरंत जोड़ने के लिए कैमरा किसी व्यवहार कार्यक्रम QR कोड पर रखें।');
   String get qrShareHint => isEnglish ? 'Relatives can scan this QR with Vyavahaar Scanner to save the event automatically.' : (isUrdu ? 'رشتہ دار ویوہار اسکینر سے یہ QR اسکین کر کے تقریب خودکار محفوظ کر سکتے ہیں۔' : 'रिश्तेदार व्यवहार ऐप के स्कैनर से यह QR स्कैन करके कार्यक्रम तुरंत जोड़ सकते हैं।');
   String get eventAddedFromQrSuccess => isEnglish ? 'Event added to your list from QR.' : (isUrdu ? 'QR سے تقریب آپ کی فہرست میں شامل ہو گئی۔' : 'QR से कार्यक्रम आपकी सूची में जुड़ गया है।');
+
+  // Gift Item Photo & Compression
+  String get giftPhotoTitle => isEnglish ? 'Gift Photo (Optional)' : (isUrdu ? 'تحفے کی تصویر (اختیاری)' : 'उपहार / भेंट की फ़ोटो (ऐच्छिक)');
+  String get addGiftPhoto => isEnglish ? 'Capture / Add Photo' : (isUrdu ? 'تصویر کھینچیں / شامل کریں' : 'फ़ोटो लें / जोड़ें');
+  String get changePhotoLabel => isEnglish ? 'Change Photo' : (isUrdu ? 'تصویر بدلیں' : 'फ़ोटो बदलें');
+  String get removePhotoLabel => isEnglish ? 'Remove' : (isUrdu ? 'ہٹائیں' : 'हटाएं');
+  String get proofPhotoOptionalTitle => isEnglish ? 'Receipt / Shagun Photo (Optional)' : (isUrdu ? 'رسید / شگون فوٹو (اختیاری)' : 'रसीद / शगुन या उपहार फ़ोटो (ऐच्छिक)');
+  String get cameraPermissionDenied => isEnglish ? 'Camera permission is required to take photos. Please enable it in App Settings.' : (isUrdu ? 'فوٹو لینے کے لیے کیمرہ کی اجازت درکار ہے۔' : 'फ़ोटो लेने के लिए कैमरा की अनुमति आवश्यक है। कृपया ऐप सेटिंग्स में अनुमति दें।');
+  String get imageCompressedSaved => isEnglish ? 'Photo compressed & attached' : (isUrdu ? 'تصویر کمپریس کر کے شامل ہو گئی' : 'फ़ोटो कंप्रेस होकर जुड़ गई');
+
+  // Complete ZIP Backup & One-Shot Restore
+  String get backupZipTitle => isEnglish ? 'Complete ZIP Backup (Data + Photos)' : (isUrdu ? 'مکمل زپ بیک اپ (ڈیٹا + تصاویر)' : 'पूर्ण ZIP बैकअप (सारा डेटा + फ़ोटो)');
+  String get backupPasswordOptionalHint => isEnglish ? 'Optional Password (leave blank for standard ZIP)' : (isUrdu ? 'اختیاری پاس ورڈ (عام زپ کے لیے خالی چھوڑیں)' : 'पासवर्ड (ऐच्छिक — सामान्य ZIP के लिए खाली छोड़ें)');
+  String get createZipBackupBtn => isEnglish ? 'Create ZIP Backup' : (isUrdu ? 'زپ بیک اپ بنائیں' : 'ZIP बैकअप बनाएं');
+  String get shareSaveZipBackup => isEnglish ? 'Share / Save ZIP File' : (isUrdu ? 'زپ فائل شیئر / محفوظ کریں' : 'ZIP फ़ाइल सेव / साझा करें');
+  String get restoreZipTitle => isEnglish ? 'Restore from ZIP / JSON' : (isUrdu ? 'زپ / جیسن سے بحال کریں' : 'ZIP / JSON बैकअप से रिस्टोर');
+  String get restoreConfirmTitle => isEnglish ? 'Restore Complete Backup?' : (isUrdu ? 'مکمل بیک اپ بحال کریں؟' : 'पूरा बैकअप रिस्टोर करें?');
+  String get restoreReplaceWarning => isEnglish ? 'This will restore all app data, settings, and photos from the selected backup.' : (isUrdu ? 'منتخب بیک اپ سے تمام ڈیٹا اور تصاویر بحال ہو جائیں گی۔' : 'चयनित बैकअप से ऐप का सारा डेटा, सेटिंग्स और सभी फ़ोटो एक साथ रिस्टोर हो जाएंगी।');
+  String get invalidBackupFileError => isEnglish ? 'Please select a valid .zip or .json Vyavahaar backup file.' : (isUrdu ? 'براہ کرم درست .zip یا .json بیک اپ فائل منتخب کریں۔' : 'कृपया वैध .zip या .json व्यवहार बैकअप फ़ाइल चुनें।');
+  String get photosCountLabel => isEnglish ? 'Photos' : (isUrdu ? 'تصاویر' : 'फ़ोटो');
 }
 
 class _AppLocalizationsDelegate

@@ -5,7 +5,7 @@ import 'package:drift/drift.dart';
 class SchemaMigrations {
   SchemaMigrations._();
 
-  static const int currentSchemaVersion = 9;
+  static const int currentSchemaVersion = 10;
 
   /// Executes all required migrations sequentially from `from` to `to`.
   static Future<void> migrate(
@@ -54,6 +54,11 @@ class SchemaMigrations {
       await _migrateToV9(m, db);
     }
 
+    // Migration v9 -> v10: Per-Gift-Item photo_path support in entry_items
+    if (from < 10) {
+      await _migrateToV10(m, db);
+    }
+
     // Ensure foreign key integrity verification after migration
     await db.customStatement('PRAGMA foreign_key_check;');
   }
@@ -69,6 +74,7 @@ class SchemaMigrations {
     await _migrateToV6(migrator, db);
     await _migrateToV7(migrator, db);
     await _migrateToV9(migrator, db);
+    await _migrateToV10(migrator, db);
     await createAllIndexes(db);
     try {
       await db.customStatement('PRAGMA foreign_key_check;');
@@ -510,6 +516,13 @@ class SchemaMigrations {
       await db.customStatement("UPDATE entries SET archived_at = NULL WHERE archived_at = '';");
       await db.customStatement('CREATE INDEX IF NOT EXISTS idx_events_scope ON events(event_scope);');
       await db.customStatement('CREATE INDEX IF NOT EXISTS idx_events_host ON events(host_person_id);');
+    } catch (_) {}
+  }
+
+  /// Migration v9 -> v10: Support compressed local photo_path per physical gift item
+  static Future<void> _migrateToV10(Migrator m, GeneratedDatabase db) async {
+    try {
+      await db.customStatement('ALTER TABLE entry_items ADD COLUMN photo_path TEXT;');
     } catch (_) {}
   }
 }

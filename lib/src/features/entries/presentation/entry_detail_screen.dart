@@ -1,15 +1,18 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/services/image_storage_service.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/enums/transaction_enums.dart';
 import '../../../app/app_providers.dart';
 import '../../../shared/widgets/direction_badge.dart';
+import '../../../shared/widgets/full_screen_image_viewer.dart';
 import 'widgets/proof_image_section.dart';
 
 /// Transaction Detail & Actions Screen
@@ -32,6 +35,27 @@ class EntryDetailScreen extends ConsumerStatefulWidget {
 
 class _EntryDetailScreenState extends ConsumerState<EntryDetailScreen> {
   int _refreshKey = 0;
+
+  Future<void> _attachPhotoToGiftItem(EntryItem item, AppLocalizations l10n) async {
+    final saved = await ImageStorageService.pickAndSaveCompressedImage(
+      context: context,
+      l10n: l10n,
+      subFolder: 'attachments',
+      prefix: 'gift_${item.id}',
+    );
+    if (saved == null || !mounted) return;
+    await ref.read(entriesRepositoryProvider).updateEntryItemPhoto(item.id, saved.path);
+    ref.invalidate(entriesListProvider);
+    setState(() => _refreshKey++);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${l10n.imageCompressedSaved} (${saved.readableSize})'),
+          backgroundColor: AppColors.milaGreen,
+        ),
+      );
+    }
+  }
 
   void _showEditTransactionDialog(BuildContext context, TransactionEntry entry, AppLocalizations l10n) {
     final amountRupees = entry.amountPaise != null ? (entry.amountPaise! / 100).round().toString() : '';
@@ -471,23 +495,75 @@ class _EntryDetailScreenState extends ConsumerState<EntryDetailScreen> {
                           ],
                         ),
                         const Divider(height: 16),
-                        ...entry.items.map((it) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    '${it.itemName} (${it.quantity} ${it.unit ?? ""})',
-                                    style: TextStyle(fontSize: 14, color: textPrimary),
-                                  ),
-                                  if (it.estimatedValuePaise != null)
-                                    Text(
-                                      '${l10n.estimated}: ${CurrencyUtils.formatPaiseToRupees(it.estimatedValuePaise!)}',
-                                      style: TextStyle(color: textSecondary, fontSize: 12),
+                        ...entry.items.map((it) {
+                          final hasPhoto = it.photoPath != null &&
+                              it.photoPath!.isNotEmpty &&
+                              File(it.photoPath!).existsSync();
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: Row(
+                              children: [
+                                GestureDetector(
+                                  onTap: hasPhoto
+                                      ? () => FullScreenImageViewer.show(
+                                            context,
+                                            it.photoPath!,
+                                            title: it.itemName,
+                                          )
+                                      : () => _attachPhotoToGiftItem(it, l10n),
+                                  child: Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: primaryAccent.withValues(alpha: 0.10),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: hasPhoto ? primaryAccent.withValues(alpha: 0.5) : cardBorder,
+                                      ),
                                     ),
-                                ],
-                              ),
-                            )),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: hasPhoto
+                                        ? Image.file(
+                                            File(it.photoPath!),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Icon(
+                                            Icons.add_a_photo_outlined,
+                                            size: 20,
+                                            color: primaryAccent,
+                                          ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${it.itemName} (${it.quantity % 1 == 0 ? it.quantity.toInt() : it.quantity} ${it.unit ?? ""})',
+                                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textPrimary),
+                                      ),
+                                      if (it.estimatedValuePaise != null)
+                                        Text(
+                                          '${l10n.estimated}: ${CurrencyUtils.formatPaiseToRupees(it.estimatedValuePaise!)}',
+                                          style: TextStyle(color: textSecondary, fontSize: 12),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    hasPhoto ? Icons.camera_alt_outlined : Icons.add_a_photo_outlined,
+                                    size: 19,
+                                    color: primaryAccent,
+                                  ),
+                                  tooltip: hasPhoto ? l10n.changePhotoLabel : l10n.addGiftPhoto,
+                                  onPressed: () => _attachPhotoToGiftItem(it, l10n),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
                       ],
                     ),
                   ),

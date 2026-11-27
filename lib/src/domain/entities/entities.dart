@@ -942,6 +942,7 @@ class EntryItem {
   final String? unit;
   final int? estimatedValuePaise; // Strictly separate from cash totals!
   final String? notes;
+  final String? photoPath;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -953,9 +954,37 @@ class EntryItem {
     this.unit = 'संख्या',
     this.estimatedValuePaise,
     this.notes,
+    this.photoPath,
     required this.createdAt,
     required this.updatedAt,
   });
+
+  EntryItem copyWith({
+    String? id,
+    String? entryId,
+    String? itemName,
+    double? quantity,
+    String? unit,
+    int? estimatedValuePaise,
+    String? notes,
+    String? photoPath,
+    bool clearPhoto = false,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return EntryItem(
+      id: id ?? this.id,
+      entryId: entryId ?? this.entryId,
+      itemName: itemName ?? this.itemName,
+      quantity: quantity ?? this.quantity,
+      unit: unit ?? this.unit,
+      estimatedValuePaise: estimatedValuePaise ?? this.estimatedValuePaise,
+      notes: notes ?? this.notes,
+      photoPath: clearPhoto ? null : (photoPath ?? this.photoPath),
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 
   // Backward compatibility alias
   String? get condition => notes;

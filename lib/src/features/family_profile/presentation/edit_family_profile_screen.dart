@@ -1,12 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/services/image_storage_service.dart';
 import '../../../domain/entities/family_profile.dart';
 import '../../../app/app_providers.dart';
 
@@ -89,31 +87,19 @@ class _EditFamilyProfileScreenState
   }
 
   Future<void> _pickFamilyPhoto() async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.image,
-        allowMultiple: false,
-      );
-      if (result != null && result.files.isNotEmpty) {
-        final pickedPath = result.files.first.path;
-        if (pickedPath != null) {
-          final appDir = await getApplicationDocumentsDirectory();
-          final familyDir = Directory(p.join(appDir.path, 'family_profile'));
-          if (!familyDir.existsSync()) {
-            familyDir.createSync(recursive: true);
-          }
-          final ext = p.extension(pickedPath);
-          final dest = p.join(
-            familyDir.path,
-            'family_avatar_${DateTime.now().millisecondsSinceEpoch}$ext',
-          );
-          await File(pickedPath).copy(dest);
-          setState(() {
-            _photoPath = dest;
-          });
-        }
-      }
-    } catch (_) {}
+    final saved = await ImageStorageService.pickAndSaveCompressedImage(
+      context: context,
+      l10n: context.l10n,
+      subFolder: 'family_profile',
+      prefix: 'family_avatar',
+      maxDimension: 1024,
+      quality: 78,
+    );
+    if (saved != null && mounted) {
+      setState(() {
+        _photoPath = saved.path;
+      });
+    }
   }
 
   Future<void> _save(FamilyProfile existing) async {

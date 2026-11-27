@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path/path.dart' as p;
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/localization/locale_notifier.dart';
+import '../../../core/services/image_storage_service.dart';
 import '../../../core/theme/theme_notifier.dart';
 import '../../../domain/entities/family_profile.dart';
 import '../../../shared/widgets/app_logo.dart';
@@ -242,18 +245,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   cardBorder: cardBorder,
                   children: [
                     _StreakRow(
-                      icon: Icons.lock_outline,
+                      icon: Icons.folder_zip_outlined,
                       tint: const Color(0xFF059669),
                       title: l10n.backup,
-                      value: 'AES-256',
+                      value: '.zip',
                       onTap: () => _handleEncryptedBackup(backupService, cardBg, textPrimary, primaryAccent),
                     ),
                     _StreakDivider(cardBorder: cardBorder),
                     _StreakRow(
-                      icon: Icons.file_download_outlined,
+                      icon: Icons.restore_page_outlined,
                       tint: const Color(0xFF2563EB),
                       title: l10n.restore,
-                      value: '.json',
+                      value: '.zip / .json',
                       onTap: () => _handleRestoreBackup(backupService, cardBg, textPrimary, primaryAccent),
                     ),
                   ],
@@ -431,6 +434,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  void _invalidateAllAfterRestore() {
+    ref.invalidate(dashboardSummaryProvider);
+    ref.invalidate(entriesListProvider);
+    ref.invalidate(activePeopleListProvider);
+    ref.invalidate(archivedPeopleListProvider);
+    ref.invalidate(activeEventsListProvider);
+    ref.invalidate(archivedEventsListProvider);
+    ref.invalidate(activeFamiliesListProvider);
+    ref.invalidate(familyProfileProvider);
+    ref.invalidate(customEventTypesProvider);
+    ref.invalidate(entryProofProvider);
+    ref.invalidate(eventDetailProvider);
+    ref.invalidate(personHistoryStatsProvider);
+    ref.invalidate(themeProvider);
+    ref.invalidate(localeProvider);
+  }
+
   Future<void> _handleEncryptedBackup(
     BackupService service,
     Color cardBg,
@@ -444,49 +464,100 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: cardBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(l10n.enterBackupPassword, style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold)),
+        title: Text(
+          l10n.backupZipTitle,
+          style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold, fontSize: 16),
+        ),
         content: TextField(
           controller: passwordController,
           obscureText: true,
           style: TextStyle(color: textPrimary),
           decoration: InputDecoration(
-            hintText: l10n.backupPasswordHint,
-            prefixIcon: const Icon(Icons.lock),
+            hintText: l10n.backupPasswordOptionalHint,
+            hintMaxLines: 2,
+            prefixIcon: const Icon(Icons.lock_outline),
           ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
-          ElevatedButton(
+          ElevatedButton.icon(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(backgroundColor: primaryAccent),
-            child: Text(l10n.save, style: const TextStyle(color: Colors.white)),
+            icon: const Icon(Icons.folder_zip_outlined, size: 17, color: Colors.white),
+            label: Text(l10n.createZipBackupBtn, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
 
-    if (confirmed == true && passwordController.text.trim().isNotEmpty) {
-      setState(() => _isLoading = true);
-      try {
-        final backupFile = await service.createBackup(password: passwordController.text.trim());
-        final path = backupFile.path;
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${l10n.backupSuccess}: $path'),
-              backgroundColor: AppColors.milaGreen,
+    if (confirmed != true) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final pwd = passwordController.text.trim();
+      final result = await service.createZipBackup(
+        password: pwd.isNotEmpty ? pwd : null,
+      );
+      if (!mounted) return;
+
+      final sizeText = ImageStorageService.formatFileSize(result.fileSizeBytes);
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: cardBg,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              const Icon(Icons.check_circle, color: AppColors.milaGreen),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  l10n.backupSuccess,
+                  style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${p.basename(result.file.path)} ($sizeText)',
+                style: TextStyle(color: textPrimary, fontWeight: FontWeight.w700, fontSize: 13),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${l10n.tabBahi}: ${result.metadata.entriesCount} • '
+                '${l10n.tabEvents}: ${result.metadata.eventsCount} • '
+                '${l10n.tabPeople}: ${result.metadata.peopleCount} • '
+                '${l10n.photosCountLabel}: ${result.metadata.imagesCount}',
+                style: TextStyle(color: textPrimary.withValues(alpha: 0.78), fontSize: 12.5),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.close)),
+            ElevatedButton.icon(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                await BackupService.shareBackup(result.file);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: primaryAccent),
+              icon: const Icon(Icons.share, size: 17, color: Colors.white),
+              label: Text(l10n.shareSaveZipBackup, style: const TextStyle(color: Colors.white)),
             ),
-          );
-        }
-      } catch (err) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${l10n.errorGeneric}: $err')),
-          );
-        }
-      } finally {
-        if (mounted) setState(() => _isLoading = false);
+          ],
+        ),
+      );
+    } catch (err) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.errorGeneric}: $err')),
+        );
       }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -497,64 +568,123 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     Color primaryAccent,
   ) async {
     final l10n = context.l10n;
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['json'],
-    );
+    // Use FileType.any because many Android SAF pickers hide .zip files with FileType.custom
+    final result = await FilePicker.platform.pickFiles(type: FileType.any);
 
-    if (result != null && result.files.single.path != null) {
-      final file = File(result.files.single.path!);
-      if (!mounted) return;
+    if (result == null || result.files.single.path == null) return;
+    final file = File(result.files.single.path!);
+    final ext = p.extension(file.path).toLowerCase();
+    if (ext != '.zip' && ext != '.json') {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.invalidBackupFileError), backgroundColor: Colors.red),
+        );
+      }
+      return;
+    }
 
-      final passwordController = TextEditingController();
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: cardBg,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text(l10n.enterRestorePassword, style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold)),
-          content: TextField(
-            controller: passwordController,
-            obscureText: true,
-            style: TextStyle(color: textPrimary),
-            decoration: InputDecoration(
-              hintText: l10n.restorePasswordHint,
-              prefixIcon: const Icon(Icons.lock),
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+    BackupInspection inspection;
+    try {
+      inspection = await service.inspectBackup(file);
+    } catch (err) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.errorGeneric}: $err')),
+        );
+      }
+      return;
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+
+    if (!mounted) return;
+    final passwordController = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cardBg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          inspection.isEncrypted ? l10n.enterRestorePassword : l10n.restoreConfirmTitle,
+          style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.restoreReplaceWarning,
+              style: TextStyle(color: textPrimary.withValues(alpha: 0.8), fontSize: 12.5),
             ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              style: ElevatedButton.styleFrom(backgroundColor: primaryAccent),
-              child: Text(l10n.restore, style: const TextStyle(color: Colors.white)),
-            ),
+            if (inspection.entriesCount > 0 ||
+                inspection.eventsCount > 0 ||
+                inspection.peopleCount > 0 ||
+                inspection.imagesCount > 0) ...[
+              const SizedBox(height: 8),
+              Text(
+                '${l10n.tabBahi}: ${inspection.entriesCount} • '
+                '${l10n.tabEvents}: ${inspection.eventsCount} • '
+                '${l10n.tabPeople}: ${inspection.peopleCount} • '
+                '${l10n.photosCountLabel}: ${inspection.imagesCount}',
+                style: TextStyle(color: primaryAccent, fontWeight: FontWeight.w700, fontSize: 12),
+              ),
+            ],
+            if (inspection.isEncrypted) ...[
+              const SizedBox(height: 12),
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                style: TextStyle(color: textPrimary),
+                decoration: InputDecoration(
+                  hintText: l10n.restorePasswordHint,
+                  prefixIcon: const Icon(Icons.lock),
+                ),
+              ),
+            ],
           ],
         ),
-      );
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: primaryAccent),
+            child: Text(l10n.restore, style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
 
-      if (confirmed == true && passwordController.text.trim().isNotEmpty) {
-        setState(() => _isLoading = true);
-        try {
-          await service.restoreBackup(file, password: passwordController.text.trim());
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(l10n.restoreSuccess),
-                backgroundColor: AppColors.milaGreen,
-              ),
-            );
-          }
-        } catch (err) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('${l10n.errorGeneric}: $err')),
-            );
-          }
-        } finally {
-          if (mounted) setState(() => _isLoading = false);
-        }
+    if (confirmed != true) return;
+    if (inspection.isEncrypted && passwordController.text.trim().isEmpty) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final restored = await service.restoreBackup(
+        file,
+        password: inspection.isEncrypted ? passwordController.text.trim() : null,
+      );
+      _invalidateAllAfterRestore();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${l10n.restoreSuccess} (${l10n.tabBahi}: ${restored.entriesRestored}, ${l10n.photosCountLabel}: ${restored.imagesRestored})',
+            ),
+            backgroundColor: AppColors.milaGreen,
+          ),
+        );
       }
+    } catch (err) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.errorGeneric}: $err')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 }

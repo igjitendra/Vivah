@@ -1,16 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
-import '../../../../data/database/database_module.dart';
+import '../../../../core/services/image_storage_service.dart';
+import '../../../../shared/widgets/full_screen_image_viewer.dart';
 import '../../../../app/app_providers.dart';
 
 /// Proof image section widget for EntryDetailScreen.
-/// Shows proof photo + caption; allows add/replace/delete.
+/// Shows compressed proof photo + caption; supports real Camera capture,
+/// Gallery picking, compression, replace, and delete.
 class ProofImageSection extends ConsumerStatefulWidget {
   final String entryId;
 
@@ -24,56 +23,42 @@ class _ProofImageSectionState extends ConsumerState<ProofImageSection> {
   bool _isLoading = false;
 
   Future<void> _pickImage(BuildContext context, AppLocalizations l10n) async {
-    // Show source picker bottom sheet
-    final source = await _showSourcePicker(context, l10n);
-    if (source == null) return;
-
     setState(() => _isLoading = true);
     try {
-      final FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.image,
-        allowMultiple: false,
+      final saved = await ImageStorageService.pickAndSaveCompressedImage(
+        context: context,
+        l10n: l10n,
+        subFolder: 'attachments',
+        prefix: 'proof_${widget.entryId}',
       );
 
-      if (result == null || result.files.isEmpty) {
-        setState(() => _isLoading = false);
+      if (saved == null) {
+        if (mounted) setState(() => _isLoading = false);
         return;
       }
 
-      final sourcePath = result.files.first.path;
-      if (sourcePath == null) {
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      // Show caption dialog
+      if (!context.mounted) return;
       final caption = await _showCaptionDialog(context, l10n);
 
-      // Copy to permanent local storage
-      final appDir = await getApplicationDocumentsDirectory();
-      final attachmentsDir = Directory(p.join(appDir.path, 'attachments'));
-      if (!attachmentsDir.existsSync()) {
-        attachmentsDir.createSync(recursive: true);
-      }
-
-      final ext = p.extension(sourcePath);
-      final fileName =
-          'proof_${widget.entryId}_${DateTime.now().millisecondsSinceEpoch}$ext';
-      final destPath = p.join(attachmentsDir.path, fileName);
-      await File(sourcePath).copy(destPath);
-
-      // Save to database
       final attachmentsDao = ref.read(databaseProvider).attachmentsDao;
       await attachmentsDao.setProof(
         id: 'att_${DateTime.now().millisecondsSinceEpoch}',
         entryId: widget.entryId,
-        localPath: destPath,
+        localPath: saved.path,
         note: caption != null && caption.isNotEmpty ? caption : null,
       );
 
-      // Refresh
       ref.invalidate(entryProofProvider(widget.entryId));
-    } catch (e) {
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${l10n.imageCompressedSaved} (${saved.readableSize})'),
+            backgroundColor: AppColors.milaGreen,
+          ),
+        );
+      }
+    } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.proofImageError)),
@@ -82,35 +67,6 @@ class _ProofImageSectionState extends ConsumerState<ProofImageSection> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  Future<String?> _showSourcePicker(
-      BuildContext context, AppLocalizations l10n) {
-    return showModalBottomSheet<String>(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
-              title: Text(l10n.chooseFromGallery),
-              onTap: () => Navigator.pop(ctx, 'gallery'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.camera_alt_outlined),
-              title: Text(l10n.takePhoto),
-              onTap: () => Navigator.pop(ctx, 'camera'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.close),
-              title: Text(l10n.cancel),
-              onTap: () => Navigator.pop(ctx),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Future<String?> _showCaptionDialog(
@@ -174,12 +130,7 @@ class _ProofImageSectionState extends ConsumerState<ProofImageSection> {
   }
 
   void _openFullScreen(BuildContext context, String localPath) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => _FullScreenImageViewer(imagePath: localPath),
-      ),
-    );
+    FullScreenImageViewer.show(context, localPath);
   }
 
   @override
@@ -331,34 +282,6 @@ class _ProofImageSectionState extends ConsumerState<ProofImageSection> {
               error: (_, __) => const SizedBox.shrink(),
             ),
         ],
-      ),
-    );
-  }
-}
-
-/// Full-screen image viewer with pinch-to-zoom
-class _FullScreenImageViewer extends StatelessWidget {
-  final String imagePath;
-
-  const _FullScreenImageViewer({required this.imagePath});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: Center(
-        child: InteractiveViewer(
-          minScale: 0.5,
-          maxScale: 5.0,
-          child: Image.file(
-            File(imagePath),
-            fit: BoxFit.contain,
-          ),
-        ),
       ),
     );
   }

@@ -1,16 +1,20 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Family;
+import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/services/image_storage_service.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/enums/transaction_enums.dart';
 import '../../../shared/widgets/express_squish.dart';
 import '../../../shared/widgets/express_button.dart';
+import '../../../shared/widgets/full_screen_image_viewer.dart';
 import '../../../app/app_providers.dart';
 import '../../people/presentation/add_person_screen.dart';
 import '../../events/presentation/add_event_screen.dart';
@@ -50,9 +54,13 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
   final TextEditingController _notesController = TextEditingController();
   final TextEditingController _receivedByController = TextEditingController();
   final TextEditingController _handedOverByController = TextEditingController();
+  final TextEditingController _proofCaptionController = TextEditingController();
 
   String _paymentMode = 'cash'; // 'cash' | 'online' | 'gift'
   final List<EntryItem> _items = [];
+  String? _proofPhotoPath;
+  String? _proofPhotoSizeLabel;
+  bool _isPickingProof = false;
   bool _isSaving = false;
 
   // Traditional cultural shagun denominations
@@ -76,6 +84,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
     _notesController.dispose();
     _receivedByController.dispose();
     _handedOverByController.dispose();
+    _proofCaptionController.dispose();
     super.dispose();
   }
 
@@ -127,141 +136,340 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
     });
   }
 
-  void _showAddItemDialog(ThemeData theme, Color inputBg, Color cardBg) {
+  Future<void> _capturePhotoForGiftItem(int index, {ImageSource? directSource}) async {
+    if (index < 0 || index >= _items.length) return;
     final l10n = context.l10n;
-    final nameController = TextEditingController();
-    final qtyController = TextEditingController(text: '1');
-    final estValueController = TextEditingController();
+    final currentItem = _items[index];
+    final saved = await ImageStorageService.pickAndSaveCompressedImage(
+      context: context,
+      l10n: l10n,
+      subFolder: 'attachments',
+      prefix: 'gift_${currentItem.id}',
+      directSource: directSource,
+    );
+    if (saved == null || !mounted) return;
+    setState(() {
+      _items[index] = _items[index].copyWith(
+        photoPath: saved.path,
+        updatedAt: DateTime.now(),
+      );
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${l10n.imageCompressedSaved} (${saved.readableSize})'),
+        backgroundColor: AppColors.milaGreen,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Future<void> _pickProofPhoto({ImageSource? directSource}) async {
+    final l10n = context.l10n;
+    setState(() => _isPickingProof = true);
+    try {
+      final saved = await ImageStorageService.pickAndSaveCompressedImage(
+        context: context,
+        l10n: l10n,
+        subFolder: 'attachments',
+        prefix: 'proof_draft',
+        directSource: directSource,
+      );
+      if (saved != null && mounted) {
+        setState(() {
+          _proofPhotoPath = saved.path;
+          _proofPhotoSizeLabel = saved.readableSize;
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _isPickingProof = false);
+    }
+  }
+
+  void _showAddItemDialog(
+    ThemeData theme,
+    Color inputBg,
+    Color cardBg, {
+    int? editIndex,
+  }) {
+    final l10n = context.l10n;
+    final existing = (editIndex != null && editIndex >= 0 && editIndex < _items.length)
+        ? _items[editIndex]
+        : null;
+
+    final nameController = TextEditingController(text: existing?.itemName ?? '');
+    final qtyController = TextEditingController(
+      text: existing != null
+          ? (existing.quantity % 1 == 0
+              ? existing.quantity.toInt().toString()
+              : existing.quantity.toString())
+          : '1',
+    );
+    final estValueController = TextEditingController(
+      text: existing?.estimatedValuePaise != null
+          ? CurrencyUtils.paiseToRupees(existing!.estimatedValuePaise!).toString()
+          : '',
+    );
 
     final unitOptions = l10n.unitOptions;
-    String selectedUnit = unitOptions.first;
+    String selectedUnit =
+        (existing?.unit != null && unitOptions.contains(existing!.unit))
+            ? existing.unit!
+            : unitOptions.first;
+    final String itemId = existing?.id ?? const Uuid().v4();
+    String? itemPhotoPath = existing?.photoPath;
+    String? itemPhotoSizeLabel;
+    bool isPickingPhoto = false;
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: cardBg,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text(l10n.addItem, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l10n.itemName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    hintText: l10n.itemNameHint,
-                    filled: true,
-                    fillColor: inputBg,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(l10n.quantity, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                          const SizedBox(height: 6),
-                          TextField(
-                            controller: qtyController,
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: inputBg,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      flex: 3,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(l10n.unit, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                          const SizedBox(height: 6),
-                          DropdownButtonFormField<String>(
-                            value: selectedUnit,
-                            dropdownColor: cardBg,
-                            items: unitOptions.map((u) => DropdownMenuItem(value: u, child: Text(u, style: const TextStyle(fontSize: 13)))).toList(),
-                            onChanged: (val) {
-                              if (val != null) setDialogState(() => selectedUnit = val);
-                            },
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: inputBg,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text('${l10n.estimated} (₹)', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: estValueController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    prefixText: '₹ ',
-                    hintText: l10n.hintAmountEstimate,
-                    filled: true,
-                    fillColor: inputBg,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.cancel),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: theme.colorScheme.primary),
-              onPressed: () {
-                final name = nameController.text.trim();
-                if (name.isEmpty) return;
-
-                final qty = double.tryParse(qtyController.text.trim()) ?? 1.0;
-                final estRupees = int.tryParse(estValueController.text.trim());
-                final estPaise = estRupees != null && estRupees > 0 ? CurrencyUtils.rupeesToPaise(estRupees) : null;
-
-                final now = DateTime.now();
-                final newItem = EntryItem(
-                  id: const Uuid().v4(),
-                  entryId: '',
-                  itemName: name,
-                  quantity: qty,
-                  unit: selectedUnit,
-                  estimatedValuePaise: estPaise,
-                  createdAt: now,
-                  updatedAt: now,
-                );
-
-                setState(() {
-                  _items.add(newItem);
+        builder: (context, setDialogState) {
+          Future<void> captureItemPhoto(ImageSource source) async {
+            setDialogState(() => isPickingPhoto = true);
+            try {
+              final saved = await ImageStorageService.pickAndSaveCompressedImage(
+                context: context,
+                l10n: l10n,
+                subFolder: 'attachments',
+                prefix: 'gift_$itemId',
+                directSource: source,
+              );
+              if (saved != null && context.mounted) {
+                setDialogState(() {
+                  itemPhotoPath = saved.path;
+                  itemPhotoSizeLabel = saved.readableSize;
                 });
+              }
+            } finally {
+              if (context.mounted) setDialogState(() => isPickingPhoto = false);
+            }
+          }
 
-                Navigator.pop(ctx);
-              },
-              child: Text(l10n.save, style: const TextStyle(color: Colors.white)),
+          return AlertDialog(
+            backgroundColor: cardBg,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text(
+              existing == null ? l10n.addItem : l10n.edit,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-          ],
-        ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l10n.itemName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      hintText: l10n.itemNameHint,
+                      filled: true,
+                      fillColor: inputBg,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(l10n.quantity, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: qtyController,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: inputBg,
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 3,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(l10n.unit, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                            const SizedBox(height: 6),
+                            DropdownButtonFormField<String>(
+                              value: selectedUnit,
+                              dropdownColor: cardBg,
+                              items: unitOptions.map((u) => DropdownMenuItem(value: u, child: Text(u, style: const TextStyle(fontSize: 13)))).toList(),
+                              onChanged: (val) {
+                                if (val != null) setDialogState(() => selectedUnit = val);
+                              },
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: inputBg,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text('${l10n.estimated} (₹)', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: estValueController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      prefixText: '₹ ',
+                      hintText: l10n.hintAmountEstimate,
+                      filled: true,
+                      fillColor: inputBg,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(l10n.giftPhotoTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  const SizedBox(height: 8),
+                  if (isPickingPhoto)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(12),
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  else if (itemPhotoPath != null && File(itemPhotoPath!).existsSync()) ...[
+                    Stack(
+                      children: [
+                        GestureDetector(
+                          onTap: () => FullScreenImageViewer.show(context, itemPhotoPath!),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.file(
+                              File(itemPhotoPath!),
+                              height: 130,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        if (itemPhotoSizeLabel != null)
+                          Positioned(
+                            left: 8,
+                            bottom: 8,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: Colors.black54,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                itemPhotoSizeLabel!,
+                                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        Positioned(
+                          right: 6,
+                          top: 6,
+                          child: CircleAvatar(
+                            radius: 14,
+                            backgroundColor: Colors.black54,
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              iconSize: 16,
+                              color: Colors.white,
+                              icon: const Icon(Icons.close),
+                              onPressed: () => setDialogState(() {
+                                itemPhotoPath = null;
+                                itemPhotoSizeLabel = null;
+                              }),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  Row(
+                    children: [
+                      if (ImageStorageService.supportsMobileCamera) ...[
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: isPickingPhoto ? null : () => captureItemPhoto(ImageSource.camera),
+                            icon: const Icon(Icons.camera_alt_outlined, size: 16),
+                            label: Text(l10n.takePhoto, style: const TextStyle(fontSize: 12)),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: isPickingPhoto ? null : () => captureItemPhoto(ImageSource.gallery),
+                          icon: const Icon(Icons.photo_library_outlined, size: 16),
+                          label: Text(l10n.chooseFromGallery, style: const TextStyle(fontSize: 12)),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.cancel),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: theme.colorScheme.primary),
+                onPressed: () {
+                  final name = nameController.text.trim();
+                  if (name.isEmpty) return;
+
+                  final qty = double.tryParse(qtyController.text.trim()) ?? 1.0;
+                  final estRupees = int.tryParse(estValueController.text.trim());
+                  final estPaise = estRupees != null && estRupees > 0 ? CurrencyUtils.rupeesToPaise(estRupees) : null;
+
+                  final now = DateTime.now();
+                  final updatedItem = EntryItem(
+                    id: itemId,
+                    entryId: existing?.entryId ?? '',
+                    itemName: name,
+                    quantity: qty,
+                    unit: selectedUnit,
+                    estimatedValuePaise: estPaise,
+                    notes: existing?.notes,
+                    photoPath: itemPhotoPath,
+                    createdAt: existing?.createdAt ?? now,
+                    updatedAt: now,
+                  );
+
+                  setState(() {
+                    if (editIndex != null && editIndex >= 0 && editIndex < _items.length) {
+                      _items[editIndex] = updatedItem;
+                    } else {
+                      _items.add(updatedItem);
+                    }
+                  });
+
+                  Navigator.pop(ctx);
+                },
+                child: Text(l10n.save, style: const TextStyle(color: Colors.white)),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -726,6 +934,7 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                 unit: item.unit,
                 estimatedValuePaise: item.estimatedValuePaise,
                 notes: item.notes,
+                photoPath: item.photoPath,
                 createdAt: now,
                 updatedAt: now,
               ))
@@ -764,6 +973,18 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
       );
 
       await repo.saveEntryWithItemsAtomic(entry: entry, items: preparedItems);
+
+      if (_proofPhotoPath != null && _proofPhotoPath!.isNotEmpty) {
+        final attachmentsDao = ref.read(databaseProvider).attachmentsDao;
+        final caption = _proofCaptionController.text.trim();
+        await attachmentsDao.setProof(
+          id: 'att_${DateTime.now().millisecondsSinceEpoch}',
+          entryId: entryId,
+          localPath: _proofPhotoPath!,
+          note: caption.isNotEmpty ? caption : null,
+        );
+        ref.invalidate(entryProofProvider(entryId));
+      }
 
       // Reactive invalidation for instant cross-app live numbers update
       ref.invalidate(dashboardSummaryProvider);
@@ -817,6 +1038,9 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
         _selectedPersonId = null;
         _amountController.clear();
         _notesController.clear();
+        _proofCaptionController.clear();
+        _proofPhotoPath = null;
+        _proofPhotoSizeLabel = null;
         _items.clear();
       });
     }
@@ -1520,14 +1744,95 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                               separatorBuilder: (_, __) => Divider(color: cardBorder, height: 8),
                               itemBuilder: (ctx, i) {
                                 final it = _items[i];
+                                final hasPhoto = it.photoPath != null &&
+                                    it.photoPath!.isNotEmpty &&
+                                    File(it.photoPath!).existsSync();
                                 return Row(
                                   children: [
-                                    Icon(Icons.card_giftcard, size: 16, color: primaryAccent),
-                                    const SizedBox(width: 8),
+                                    GestureDetector(
+                                      onTap: hasPhoto
+                                          ? () => FullScreenImageViewer.show(
+                                                context,
+                                                it.photoPath!,
+                                                title: it.itemName,
+                                              )
+                                          : () => _capturePhotoForGiftItem(i),
+                                      child: Container(
+                                        width: 42,
+                                        height: 42,
+                                        decoration: BoxDecoration(
+                                          color: primaryAccent.withValues(alpha: 0.12),
+                                          borderRadius: BorderRadius.circular(10),
+                                          border: Border.all(
+                                            color: hasPhoto
+                                                ? primaryAccent.withValues(alpha: 0.5)
+                                                : cardBorder,
+                                          ),
+                                        ),
+                                        clipBehavior: Clip.antiAlias,
+                                        child: hasPhoto
+                                            ? Image.file(
+                                                File(it.photoPath!),
+                                                fit: BoxFit.cover,
+                                              )
+                                            : Icon(
+                                                Icons.add_a_photo_outlined,
+                                                size: 18,
+                                                color: primaryAccent,
+                                              ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
                                     Expanded(
-                                      child: Text(
-                                        '${it.itemName} (${it.quantity} ${it.unit ?? ''})${it.estimatedValuePaise != null ? ' • ₹${CurrencyUtils.paiseToRupees(it.estimatedValuePaise!)}' : ''}',
-                                        style: TextStyle(fontSize: 13, color: textPrimary, fontWeight: FontWeight.w600),
+                                      child: InkWell(
+                                        onTap: () => _showAddItemDialog(
+                                          theme,
+                                          inputBg,
+                                          cardBg,
+                                          editIndex: i,
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              '${it.itemName} (${it.quantity % 1 == 0 ? it.quantity.toInt() : it.quantity} ${it.unit ?? ''})',
+                                              style: TextStyle(fontSize: 13, color: textPrimary, fontWeight: FontWeight.w600),
+                                            ),
+                                            Row(
+                                              children: [
+                                                if (it.estimatedValuePaise != null)
+                                                  Text(
+                                                    '₹${CurrencyUtils.paiseToRupees(it.estimatedValuePaise!)}',
+                                                    style: TextStyle(fontSize: 11, color: textSecondary),
+                                                  ),
+                                                if (it.estimatedValuePaise != null) const SizedBox(width: 6),
+                                                Text(
+                                                  hasPhoto ? '• ${l10n.changePhotoLabel}' : '• ${l10n.addGiftPhoto}',
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    color: primaryAccent,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        hasPhoto ? Icons.camera_alt_outlined : Icons.add_a_photo_outlined,
+                                        size: 18,
+                                        color: primaryAccent,
+                                      ),
+                                      tooltip: l10n.takePhoto,
+                                      onPressed: () => _capturePhotoForGiftItem(
+                                        i,
+                                        directSource: ImageStorageService.supportsMobileCamera
+                                            ? ImageSource.camera
+                                            : null,
                                       ),
                                     ),
                                     IconButton(
@@ -1766,6 +2071,141 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
                     ),
                   ),
 
+                  const SizedBox(height: 12),
+
+                  // 8B. OPTIONAL PROOF / SHAGUN PHOTO (CAMERA / GALLERY + COMPRESSION)
+                  ExpressCard(
+                    radius: 18,
+                    color: cardBg,
+                    borderColor: cardBorder,
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.photo_camera_back_outlined, size: 18, color: primaryAccent),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                l10n.proofPhotoOptionalTitle,
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary),
+                              ),
+                            ),
+                            if (_proofPhotoSizeLabel != null)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.milaGreen.withValues(alpha: 0.14),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  _proofPhotoSizeLabel!,
+                                  style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: AppColors.milaGreen),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        if (_isPickingProof)
+                          const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(12),
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        else if (_proofPhotoPath != null && File(_proofPhotoPath!).existsSync()) ...[
+                          Stack(
+                            children: [
+                              GestureDetector(
+                                onTap: () => FullScreenImageViewer.show(context, _proofPhotoPath!),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.file(
+                                    File(_proofPhotoPath!),
+                                    height: 150,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                right: 8,
+                                top: 8,
+                                child: CircleAvatar(
+                                  radius: 15,
+                                  backgroundColor: Colors.black54,
+                                  child: IconButton(
+                                    padding: EdgeInsets.zero,
+                                    iconSize: 16,
+                                    color: Colors.white,
+                                    icon: const Icon(Icons.close),
+                                    onPressed: () => setState(() {
+                                      _proofPhotoPath = null;
+                                      _proofPhotoSizeLabel = null;
+                                      _proofCaptionController.clear();
+                                    }),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            controller: _proofCaptionController,
+                            style: TextStyle(color: textPrimary, fontSize: 13),
+                            decoration: InputDecoration(
+                              hintText: l10n.proofImageCaptionHint,
+                              hintStyle: TextStyle(color: textSecondary, fontSize: 12),
+                              filled: true,
+                              fillColor: inputBg,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                        Row(
+                          children: [
+                            if (ImageStorageService.supportsMobileCamera) ...[
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: _isPickingProof
+                                      ? null
+                                      : () => _pickProofPhoto(directSource: ImageSource.camera),
+                                  icon: const Icon(Icons.camera_alt_outlined, size: 17),
+                                  label: Text(l10n.takePhoto, style: const TextStyle(fontSize: 12.5)),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: primaryAccent,
+                                    side: BorderSide(color: cardBorder),
+                                    padding: const EdgeInsets.symmetric(vertical: 10),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                            ],
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _isPickingProof
+                                    ? null
+                                    : () => _pickProofPhoto(directSource: ImageSource.gallery),
+                                icon: const Icon(Icons.photo_library_outlined, size: 17),
+                                label: Text(l10n.chooseFromGallery, style: const TextStyle(fontSize: 12.5)),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: primaryAccent,
+                                  side: BorderSide(color: cardBorder),
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
                   const SizedBox(height: AppSpacing.lg),
 
                   // 9. DEDICATED ACTION BUTTONS
@@ -1911,7 +2351,12 @@ class _AddEntryScreenState extends ConsumerState<AddEntryScreen> {
     return Expanded(
       child: ExpressSquish(
         scale: 0.95,
-        onTap: () => setState(() => _paymentMode = mode),
+        onTap: () => setState(() {
+          _paymentMode = mode;
+          if (mode == 'gift' && _transactionType == TransactionType.cash) {
+            _transactionType = TransactionType.item;
+          }
+        }),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 9),
           decoration: BoxDecoration(

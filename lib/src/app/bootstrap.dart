@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/database/sqlite_loader.dart';
 import 'app.dart';
@@ -12,6 +13,7 @@ Future<void> bootstrap() async {
   runZonedGuarded<Future<void>>(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
       // Ensure SQLite native library is loaded correctly across all Android versions
       await initSqlitePlatform();

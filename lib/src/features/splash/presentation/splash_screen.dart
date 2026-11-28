@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../app/theme/app_theme.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
@@ -82,8 +84,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   Widget build(BuildContext context) {
     final l10n = context.l10n;
 
-    return Scaffold(
-      backgroundColor: AppColors.deepNavy,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: AppTheme.overlayStyleFor(
+        topBackground: AppColors.deepNavy,
+        bottomBackground: AppColors.deepNavy,
+      ),
+      child: Scaffold(
+        backgroundColor: AppColors.deepNavy,
       body: Stack(
         children: [
           // Subtle ambient radial glow behind logo
@@ -183,6 +190,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           ),
         ],
       ),
+    ),
     );
   }
 }

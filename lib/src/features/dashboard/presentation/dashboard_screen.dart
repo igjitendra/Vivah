@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/app_providers.dart';
+import '../../../app/theme/app_theme.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/shortcuts/shortcuts_sheet.dart';
@@ -75,8 +77,13 @@ class DashboardScreen extends ConsumerWidget {
     // Single-pass breakdown for Cash vs Estimated Gift Value from recorded entries.
     final _SplitTotals splitTotals = _computeSplitTotals(entriesAsync.value ?? const []);
 
-    return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: AppTheme.overlayStyleFor(
+        topBackground: semantic.heroStart,
+        bottomBackground: theme.scaffoldBackgroundColor,
+      ),
+      child: Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
       body: StreamBuilder<List<ReminderRow>>(
         stream: db.remindersDao.watchAllReminders(),
         builder: (context, reminderSnapshot) {
@@ -334,6 +341,7 @@ class DashboardScreen extends ConsumerWidget {
           );
         },
       ),
+    ),
     );
   }
 

@@ -1,9 +1,11 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Family;
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../app/app_providers.dart';
+import '../../../app/theme/app_theme.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/services/event_qr_service.dart';
@@ -244,8 +246,13 @@ class _EventQrScannerScreenState extends ConsumerState<EventQrScannerScreen> {
     final semantic = AppSemanticColors.of(context);
     final l10n = context.l10n;
 
-    return Scaffold(
-      backgroundColor: Colors.black,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: AppTheme.overlayStyleFor(
+        topBackground: Colors.black,
+        bottomBackground: Colors.black,
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.black,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -410,6 +417,7 @@ class _EventQrScannerScreenState extends ConsumerState<EventQrScannerScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 }

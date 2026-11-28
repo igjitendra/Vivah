@@ -5,6 +5,15 @@
 
 ---
 
+## [1.4.20] — 2026-11-28
+
+### Fixed
+- **System Status Bar Icon Contrast Across Hero & AppBar Screens (`AppTheme`, `DashboardScreen`, `SplashScreen`, `EventQrScannerScreen`)**:
+  - Enabled `SystemUiMode.edgeToEdge` in `lib/src/app/bootstrap.dart` and added dynamic `AppTheme.overlayStyleFor(topBackground, bottomBackground)` in `lib/src/app/theme/app_theme.dart` using `ThemeData.estimateBrightnessForColor`.
+  - Applied dynamic `systemOverlayStyle` inside `AppTheme.appBarTheme`, baseline `AnnotatedRegion<SystemUiOverlayStyle>` in `lib/src/app/app.dart`, and dark-hero-aware `AnnotatedRegion` in `DashboardScreen`, `SplashScreen`, and `EventQrScannerScreen` so status bar clock/battery/network icons automatically render crisp white over dark hero headers and dark over light AppBars across all 25 palettes.
+
+---
+
 ## [1.4.19] — 2026-11-28
 
 ### Added

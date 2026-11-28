@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vyavahaar/src/app/theme/app_theme.dart';
 import 'package:vyavahaar/src/core/theme/app_semantic_colors.dart';
 import 'package:vyavahaar/src/core/theme/theme_palette.dart';
 
@@ -45,6 +46,29 @@ void main() {
 
       final overridden = light.copyWith(cardBg: light.heroStart);
       expect(overridden.cardBg, equals(light.heroStart));
+    });
+
+    test('AppTheme.overlayStyleFor derives contrasting status bar icons for hero & AppBars across all 25 palettes', () {
+      for (final palette in [...ThemePalette.lightPalettes, ...ThemePalette.darkPalettes]) {
+        final semantic = AppSemanticColors.fromPalette(palette);
+        final theme = AppTheme.fromPalette(palette);
+
+        // Hero headers across all palettes are dark, so status bar icons must be light (white)
+        final heroOverlay = AppTheme.overlayStyleFor(
+          topBackground: semantic.heroStart,
+          bottomBackground: palette.background,
+        );
+        expect(heroOverlay.statusBarColor, Colors.transparent);
+        expect(heroOverlay.statusBarIconBrightness, Brightness.light);
+
+        // AppBar systemOverlayStyle must contrast surface brightness
+        final surfaceIsDark =
+            ThemeData.estimateBrightnessForColor(palette.surface) == Brightness.dark;
+        expect(
+          theme.appBarTheme.systemOverlayStyle?.statusBarIconBrightness,
+          surfaceIsDark ? Brightness.light : Brightness.dark,
+        );
+      }
     });
   });
 }

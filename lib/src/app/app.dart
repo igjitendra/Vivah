@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'router/app_router.dart';
@@ -87,11 +88,18 @@ class _VyavahaarAppState extends ConsumerState<VyavahaarApp> {
       darkTheme: AppTheme.fromPalette(themeState.darkPalette, locale: activeLocale),
       builder: (context, child) {
         final mq = MediaQuery.of(context);
-        return MediaQuery(
-          data: mq.copyWith(
-            disableAnimations: mq.disableAnimations || !uiPrefs.animationsEnabled,
+        final activeTheme = Theme.of(context);
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: AppTheme.overlayStyleFor(
+            topBackground: activeTheme.scaffoldBackgroundColor,
+            bottomBackground: activeTheme.scaffoldBackgroundColor,
           ),
-          child: child ?? const SizedBox.shrink(),
+          child: MediaQuery(
+            data: mq.copyWith(
+              disableAnimations: mq.disableAnimations || !uiPrefs.animationsEnabled,
+            ),
+            child: child ?? const SizedBox.shrink(),
+          ),
         );
       },
       routerConfig: appRouter,

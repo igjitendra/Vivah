@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
 import '../../core/theme/theme_palette.dart';
@@ -11,6 +12,29 @@ class AppTheme {
 
   static ThemeData get lightTheme => fromPalette(ThemePalette.porcelain);
   static ThemeData get darkTheme => fromPalette(ThemePalette.midnightAurora);
+
+  /// Computes a high-contrast transparent system bar overlay style from the
+  /// actual [topBackground] (status bar) and [bottomBackground] (navigation bar).
+  static SystemUiOverlayStyle overlayStyleFor({
+    required Color topBackground,
+    required Color bottomBackground,
+  }) {
+    final bool topIsDark =
+        ThemeData.estimateBrightnessForColor(topBackground) == Brightness.dark;
+    final bool bottomIsDark =
+        ThemeData.estimateBrightnessForColor(bottomBackground) == Brightness.dark;
+
+    return SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: topIsDark ? Brightness.light : Brightness.dark,
+      statusBarBrightness: topIsDark ? Brightness.dark : Brightness.light,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness:
+          bottomIsDark ? Brightness.light : Brightness.dark,
+      systemNavigationBarContrastEnforced: false,
+      systemStatusBarContrastEnforced: false,
+    );
+  }
 
   static const List<String> fontFallbacks = [
     'Poppins',
@@ -47,6 +71,10 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         backgroundColor: palette.surface,
         foregroundColor: palette.textPrimary,
+        systemOverlayStyle: overlayStyleFor(
+          topBackground: palette.surface,
+          bottomBackground: palette.background,
+        ),
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,

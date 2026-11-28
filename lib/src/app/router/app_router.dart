@@ -225,12 +225,9 @@ final GoRouter appRouter = GoRouter(
               onOpenSettings: () => context.push('/settings'),
               onOpenReports: () => context.push('/reports'),
               onOpenReminders: () => context.push('/reminders'),
-              onOpenLanguageSelector: () => context.push('/language'),
-              onOpenThemeGallery: () => context.push('/theme'),
               onOpenFamilyProfile: (isEmpty) => context.push(
                 isEmpty ? '/family-profile/edit' : '/family-profile',
               ),
-              onOpenOnboarding: () => context.push('/onboarding?fromSettings=true'),
               onOpenBudgetPlanner: () => context.push('/budget'),
             ),
           ),

@@ -1153,6 +1153,14 @@ class AppLocalizations {
   String get createEventBeforeExpenseHint => isEnglish ? 'Create an Event first to track event expenses, or record a temporary borrowed fund.' : (isUrdu ? 'تقریب کے اخراجات کے لیے پہلے ایک تقریب بنائیں۔' : 'इवेंट खर्च लिखने हेतु पहले एक कार्यक्रम चुनें या बनाएं।');
   String get budgetAllEventsFilter => isEnglish ? 'All Events' : (isUrdu ? 'تمام تقریبات' : 'सभी कार्यक्रम');
   String get editBudgetCategoryLabel => isEnglish ? 'Edit Category Budget' : (isUrdu ? 'مد کا بجٹ بدلیں' : 'मद का तय बजट बदलें');
+
+  // Clean More Hub labels
+  String get moreToolsSection => isEnglish
+      ? 'Planners & Tools'
+      : (isUrdu ? 'پلانر اور ٹولز' : 'प्लानर व मुख्य टूल्स');
+  String get moreHubSubtitle => isEnglish
+      ? 'Family profile, budget planner, reports & reminders'
+      : (isUrdu ? 'خاندانی پروفائل، بجٹ پلانر، رپورٹس اور یاد دہانیاں' : 'परिवार प्रोफ़ाइल, बजट प्लानर, रिपोर्ट व अनुस्मारक');
 }
 
 class _AppLocalizationsDelegate

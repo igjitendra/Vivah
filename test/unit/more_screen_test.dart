@@ -8,7 +8,6 @@ import 'package:vyavahaar/src/core/localization/app_localizations.dart';
 import 'package:vyavahaar/src/core/theme/ui_preferences_notifier.dart';
 import 'package:vyavahaar/src/data/repositories/settings_repository.dart';
 import 'package:vyavahaar/src/domain/entities/entities.dart';
-import 'package:vyavahaar/src/domain/entities/family_profile.dart';
 import 'package:vyavahaar/src/features/budget/domain/budget_models.dart';
 import 'package:vyavahaar/src/features/budget/presentation/budget_providers.dart';
 import 'package:vyavahaar/src/features/more/presentation/more_screen.dart';

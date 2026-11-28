@@ -1010,6 +1010,66 @@ class AppLocalizations {
       ? 'Family profile saved to your directory.'
       : (isUrdu ? 'QR سے خاندانی پروفائل محفوظ ہو گیا۔' : 'QR से परिवार व संबंधित सदस्य जुड़ गए।');
   String get upiOnlinePaymentBadge => isEnglish ? 'Online / UPI Payment' : (isUrdu ? 'آن لائن / UPI ادائیگی' : 'ऑनलाइन / UPI भुगतान');
+
+  // Streak-Style Organized Settings Hub & Sub-pages
+  String get settingsHubSubtitle => isEnglish
+      ? 'Customize your ledger, preferences, backups and privacy.'
+      : (isUrdu ? 'اپنی تھیم، ترجیحات، بیک اپ اور رازداری کا انتظام کریں۔' : 'अपना रूप-रंग, भाषा, बैकअप व गोपनीयता व्यवस्थित करें।');
+  String get appStyleTitle => isEnglish ? 'App Style' : (isUrdu ? 'ایپ اسٹائل' : 'ऐप स्टाइल');
+  String get appStyleSubtitle => isEnglish
+      ? 'Choose how Settings and cards are presented.'
+      : (isUrdu ? 'ترتیبات اور کارڈز کا انداز منتخب کریں۔' : 'सेटिंग्स व कार्ड का लेआउट चुनें।');
+  String get styleExpressTitle => isEnglish ? 'Express' : (isUrdu ? 'ایکسپریس' : 'एक्सप्रेस');
+  String get styleExpressDesc => isEnglish
+      ? 'Segmented tactile cards, organic icons and smooth spring motion.'
+      : (isUrdu ? 'جدید تقسیم شدہ کارڈز اور ہموار حرکت۔' : 'सेगमेंटेड कार्ड्स, सॉफ्ट आइकन बैज व स्मूथ स्प्रिंग एनीमेशन।');
+  String get styleClassicTitle => isEnglish ? 'Classic' : (isUrdu ? 'کلاسک' : 'क्लासिक');
+  String get styleClassicDesc => isEnglish
+      ? 'Calm grouped cards with crisp hairline dividers.'
+      : (isUrdu ? 'سادہ کارڈز اور صاف لکیریں۔' : 'साफ़ बॉर्डर और पतली डिवाइडर लाइनों वाला शांत लेआउट।');
+  String get appearanceSubtitle => isEnglish
+      ? 'Theme mode, 25 palettes, style & motion'
+      : (isUrdu ? 'تھیم موڈ، 25 رنگ پیلیٹس اور حرکت' : 'थीम मोड, 25 कलर पैलेट्स, स्टाइल व गति');
+  String get preferencesSubtitle => isEnglish
+      ? 'Language, currency, reports & reminders'
+      : (isUrdu ? 'زبان، کرنسی، رپورٹس اور یاد دہانیاں' : 'भाषा, मुद्रा, रिपोर्ट्स, अनुस्मारक व QR');
+  String get dataBackupSubtitle => isEnglish
+      ? 'ZIP backup, full restore & live storage'
+      : (isUrdu ? 'زپ بیک اپ، بحالی اور اسٹوریج' : 'ZIP + फ़ोटो बैकअप, रीस्टोर व लाइव स्टोरेज');
+  String get aboutAppTitle => isEnglish ? 'About Vyavahaar' : (isUrdu ? 'ویوہار کے بارے میں' : 'व्यवहार के बारे में');
+  String get aboutAppSubtitle => isEnglish
+      ? 'Offline philosophy, tour & build info'
+      : (isUrdu ? 'آف لائن فلسفہ اور ورژن کی تفصیل' : 'ऑफ़लाइन दर्शन, ऐप टूर व संस्करण विवरण');
+  String get displayAndMotionSection => isEnglish ? 'Display & Motion' : (isUrdu ? 'ڈسپلے اور حرکت' : 'डिस्प्ले व गति');
+  String get animationsLabel => isEnglish ? 'Animations & Spring Motion' : (isUrdu ? 'اینیمیشن اور حرکت' : 'एनीमेशन व स्प्रिंग गति');
+  String get animationsSubtitle => isEnglish
+      ? 'Smooth transitions, spring tactile press and staggered reveals.'
+      : (isUrdu ? 'صفحات اور بٹنوں پر ہموار حرکت۔' : 'पेज बदलने, टैप करने और कार्ड खुलने पर स्मूथ स्प्रिंग प्रभाव।');
+  String get compactModeLabel => isEnglish ? 'Compact View' : (isUrdu ? 'مختصر منظر' : 'कॉम्पैक्ट व्यू');
+  String get compactModeSubtitle => isEnglish
+      ? 'Hide inline subtitles and tighten spacing so more fits cleanly.'
+      : (isUrdu ? 'صفحہ پر کم جگہ میں زیادہ آپشنز صاف دکھائیں۔' : 'पंक्तियों की ऊँचाई कम कर कम जगह में ज़्यादा विकल्प साफ़ दिखाएं।');
+  String get ledgerAndFeaturesSection => isEnglish ? 'Ledger & Tools' : (isUrdu ? 'کھاتہ اور ٹولز' : 'बही-खाता व सुविधाएं');
+  String get currencyInfoSubtitle => isEnglish
+      ? 'Amounts are stored in exact integer paise with Indian numbering (₹ 1,00,000) and zero floating-point rounding drift.'
+      : (isUrdu ? 'رقوم درست ہندوستانی نظامِ عدد (₹ 1,00,000) میں محفوظ ہوتی ہیں۔' : 'सभी राशियाँ सटीक भारतीय संख्या प्रणाली (₹ 1,00,000) और पूर्णांक पैसे में सुरक्षित रहती हैं।');
+  String get storageOverviewTitle => isEnglish ? 'Device Storage Overview' : (isUrdu ? 'ڈیوائس اسٹوریج کا جائزہ' : 'लाइव स्टोरेज व रिकॉर्ड आँकड़े');
+  String get storagePhotosSizeLabel => isEnglish ? 'Compressed Media on Device' : (isUrdu ? 'آلے پر محفوظ تصاویر' : 'डिवाइस में संपीड़ित फ़ोटो');
+  String get backupZipHint => isEnglish
+      ? 'Packages all records, settings, bill proofs and photos into one portable archive (optional AES-256 lock).'
+      : (isUrdu ? 'تمام ریکارڈ، سیٹنگز اور تصاویر کو ایک محفوظ زپ فائل میں محفوظ کرتا ہے۔' : 'सारा बही-खाता, सेटिंग्स, बिल व गिफ्ट फ़ोटो एक ही सुरक्षित ZIP फ़ाइल में पैक करता है।');
+  String get restoreZipHint => isEnglish
+      ? 'Restores database, preferences and every photo in one shot from any .zip or legacy .json backup.'
+      : (isUrdu ? 'کسی بھی .zip یا .json بیک اپ سے سب کچھ ایک ساتھ بحال کریں۔' : 'किसी भी .zip या पुराने .json बैकअप से डेटा, सेटिंग्स व सभी फ़ोटो एक साथ वापस लाएं।');
+  String get aboutPhilosophyTitle => isEnglish ? 'Our Offline Promise' : (isUrdu ? 'ہمارا آف لائن وعدہ' : 'हमारा ऑफ़लाइन संकल्प');
+  String get aboutPhilosophyBody => isEnglish
+      ? 'Vyavahaar preserves family shagun, gifts and ceremonial traditions without accounts, cloud servers, ads or commercial finance jargon — keeping Received (Mila) and Given (Diya) forever distinct and respectful.'
+      : (isUrdu ? 'ویوہار خاندانی شگون اور رسومات کو بغیر کسی اکاؤنٹ یا انٹرنیٹ کے مکمل رازداری کے ساتھ محفوظ رکھتا ہے۔' : 'व्यवहार परिवार के शगुन, भेंट और मांगलिक परंपराओं को बिना किसी इंटरनेट, विज्ञापन या सर्वर के पूर्ण सम्मान के साथ सहेजता है — जहाँ मिला और दिया हमेशा स्पष्ट व अलग रहते हैं।');
+  String get qrSharePillLabel => isEnglish ? 'QR / Share' : (isUrdu ? 'QR / شیئر' : 'QR / शेयर');
+  String get setupFamilyFirstHint => isEnglish
+      ? 'Add your family details first to generate a shareable Family Profile QR card.'
+      : (isUrdu ? 'QR کارڈ بنانے کے لیے پہلے اپنے خاندان کی تفصیلات شامل کریں۔' : 'शेयर करने योग्य पारिवारिक QR कार्ड बनाने के लिए पहले परिवार का नाम व विवरण जोड़ें।');
+  String get activePalettesValueLabel => isEnglish ? 'Palettes' : (isUrdu ? 'پیلیٹس' : 'पैलेट्स');
 }
 
 class _AppLocalizationsDelegate

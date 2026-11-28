@@ -5,6 +5,7 @@ import 'router/app_router.dart';
 import 'theme/app_theme.dart';
 import '../core/constants/app_strings.dart';
 import '../core/theme/theme_notifier.dart';
+import '../core/theme/ui_preferences_notifier.dart';
 import '../core/localization/locale_notifier.dart';
 import '../core/localization/language_registry.dart';
 import '../core/localization/app_localizations.dart';
@@ -73,6 +74,7 @@ class _VyavahaarAppState extends ConsumerState<VyavahaarApp> {
   @override
   Widget build(BuildContext context) {
     final themeState = ref.watch(themeProvider);
+    final uiPrefs = ref.watch(uiPreferencesProvider);
     final activeLocale = ref.watch(localeProvider);
     final allLanguages = LanguageRegistry.instance.getAllLanguages();
     final supportedLocales = allLanguages.map((lang) => lang.locale).toSet().toList();
@@ -83,6 +85,15 @@ class _VyavahaarAppState extends ConsumerState<VyavahaarApp> {
       themeMode: themeState.themeMode,
       theme: AppTheme.fromPalette(themeState.lightPalette, locale: activeLocale),
       darkTheme: AppTheme.fromPalette(themeState.darkPalette, locale: activeLocale),
+      builder: (context, child) {
+        final mq = MediaQuery.of(context);
+        return MediaQuery(
+          data: mq.copyWith(
+            disableAnimations: mq.disableAnimations || !uiPrefs.animationsEnabled,
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       routerConfig: appRouter,
       localizationsDelegates: const [
         AppLocalizations.delegate,

@@ -103,6 +103,25 @@ class BackupRestoreResult {
   });
 }
 
+/// Live local storage & ledger record statistics for Settings -> Data & Backup.
+class StorageOverviewStats {
+  final int entriesCount;
+  final int eventsCount;
+  final int peopleCount;
+  final int itemsCount;
+  final int photosCount;
+  final int photosTotalBytes;
+
+  const StorageOverviewStats({
+    this.entriesCount = 0,
+    this.eventsCount = 0,
+    this.peopleCount = 0,
+    this.itemsCount = 0,
+    this.photosCount = 0,
+    this.photosTotalBytes = 0,
+  });
+}
+
 /// Offline Complete ZIP Backup & One-Shot Restore Service.
 /// Packages ALL SQLite tables + ALL local images (gift item photos, proof photos,
 /// family avatars, people photos, event attachments) into a single portable .zip file,
@@ -138,6 +157,69 @@ class BackupService {
   final AppDatabase _db;
 
   BackupService(this._db);
+
+  /// Computes live SQLite record counts and compressed local image storage usage.
+  Future<StorageOverviewStats> getStorageOverview({
+    Directory? overrideBaseDir,
+  }) async {
+    await SchemaMigrations.ensureAllTablesAndColumns(_db);
+
+    Future<int> safeCount(String sql) async {
+      try {
+        final rows = await _db.customSelect(sql).get();
+        if (rows.isEmpty) return 0;
+        final raw = rows.first.data.values.first;
+        if (raw is int) return raw;
+        if (raw is BigInt) return raw.toInt();
+        return int.tryParse(raw?.toString() ?? '') ?? 0;
+      } catch (_) {
+        return 0;
+      }
+    }
+
+    final entriesCount = await safeCount(
+      "SELECT COUNT(*) FROM entries WHERE archived_at IS NULL OR archived_at = ''",
+    );
+    final eventsCount = await safeCount(
+      "SELECT COUNT(*) FROM events WHERE archived_at IS NULL OR archived_at = ''",
+    );
+    final peopleCount = await safeCount(
+      "SELECT COUNT(*) FROM people WHERE archived_at IS NULL OR archived_at = ''",
+    );
+    final itemsCount = await safeCount('SELECT COUNT(*) FROM entry_items');
+
+    var photosCount = 0;
+    var photosTotalBytes = 0;
+    try {
+      final baseDir = overrideBaseDir ?? await getApplicationDocumentsDirectory();
+      const imageDirs = [
+        'attachments',
+        'people_photos',
+        'event_attachments',
+        'family_profile',
+      ];
+      final seenPaths = <String>{};
+      for (final subdir in imageDirs) {
+        final dir = Directory(p.join(baseDir.path, subdir));
+        if (!dir.existsSync()) continue;
+        await for (final entity in dir.list(followLinks: false)) {
+          if (entity is File && seenPaths.add(entity.path)) {
+            photosCount++;
+            photosTotalBytes += await entity.length();
+          }
+        }
+      }
+    } catch (_) {}
+
+    return StorageOverviewStats(
+      entriesCount: entriesCount,
+      eventsCount: eventsCount,
+      peopleCount: peopleCount,
+      itemsCount: itemsCount,
+      photosCount: photosCount,
+      photosTotalBytes: photosTotalBytes,
+    );
+  }
 
   /// Creates a portable ZIP backup containing all app data + compressed images.
   Future<File> createBackup({

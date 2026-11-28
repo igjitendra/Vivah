@@ -1011,6 +1011,39 @@ class AppLocalizations {
       : (isUrdu ? 'QR سے خاندانی پروفائل محفوظ ہو گیا۔' : 'QR से परिवार व संबंधित सदस्य जुड़ गए।');
   String get upiOnlinePaymentBadge => isEnglish ? 'Online / UPI Payment' : (isUrdu ? 'آن لائن / UPI ادائیگی' : 'ऑनलाइन / UPI भुगतान');
 
+  // Streak-Style Advanced Reports & Analytics Hub
+  String get reportTabOverview => isEnglish ? 'Overview' : (isUrdu ? 'جائزہ' : 'सारांश');
+  String get reportTabAnalytics => isEnglish ? 'Analytics' : (isUrdu ? 'تجزیات' : 'चार्ट व गतिविधि');
+  String get reportTabExports => isEnglish ? 'Exports' : (isUrdu ? 'ایکسپورٹ' : 'निर्यात व कार्ड');
+  String get allYearsLabel => isEnglish ? 'All Years' : (isUrdu ? 'تمام سال' : 'सभी वर्ष');
+  String get allEventsLabel => isEnglish ? 'All Events' : (isUrdu ? 'تمام تقریبات' : 'सभी कार्यक्रम');
+  String get cashOnlyFilter => isEnglish ? 'Cash Only' : (isUrdu ? 'صرف نقد' : 'केवल नकद');
+  String get giftsOnlyFilter => isEnglish ? 'Gifts Only' : (isUrdu ? 'صرف تحائف' : 'केवल उपहार');
+  String get heroPeriodMonth => isEnglish ? 'This Month' : (isUrdu ? 'اس ماہ' : 'इस माह');
+  String get heroPeriodQuarter => isEnglish ? 'This Quarter' : (isUrdu ? 'اس سہ ماہی' : 'इस तिमाही');
+  String get heroPeriodYear => isEnglish ? 'Selected Year' : (isUrdu ? 'منتخب سال' : 'चयनित वर्ष');
+  String get heroPeriodAll => isEnglish ? 'All Time' : (isUrdu ? 'اب تک' : 'अब तक');
+  String get tapToSwitchMode => isEnglish ? 'Tap ring to switch metric' : (isUrdu ? 'تبدیل کرنے کے لیے ٹیپ کریں' : 'बदलने के लिए टैप करें');
+  String get milaShareLabel => isEnglish ? 'Mila Share' : (isUrdu ? 'وصولی کا حصہ' : 'मिला का हिस्सा');
+  String get cashShareLabel => isEnglish ? 'Cash Share' : (isUrdu ? 'نقد کا حصہ' : 'नकद हिस्सा');
+  String get keyHighlightsLabel => isEnglish ? 'Key Highlights' : (isUrdu ? 'اہم جھلکیاں' : 'मुख्य आंकड़े');
+  String get activeDaysCountLabel => isEnglish ? 'Active Days' : (isUrdu ? 'فعال دن' : 'सक्रिय दिन');
+  String get avgPerEntryLabel => isEnglish ? 'Avg per Entry' : (isUrdu ? 'اوسط فی اندراج' : 'औसत प्रति प्रविष्टि');
+  String get bestMonthStatLabel => isEnglish ? 'Peak Month' : (isUrdu ? 'مصروف ترین مہینہ' : 'सबसे सक्रिय माह');
+  String get pendingExpectedLabel => isEnglish ? 'Pending / Planned' : (isUrdu ? 'زیر التوا / متوقع' : 'अपेक्षित / लंबित');
+  String get topPeopleReceivedTitle => isEnglish ? 'Top Relatives (Received)' : (isUrdu ? 'اہم رشتہ دار (وصولی)' : 'शीर्ष रिश्तेदार (मिला)');
+  String get topPeopleGivenTitle => isEnglish ? 'Top Relatives (Given)' : (isUrdu ? 'اہم رشتہ دار (ادائیگی)' : 'शीर्ष रिश्तेदार (दिया)');
+  String get topEventsTitle => isEnglish ? 'Top Events Breakdown' : (isUrdu ? 'اہم تقریبات' : 'शीर्ष कार्यक्रम');
+  String get yearlyActivityTitle => isEnglish ? 'Yearly Activity Heatmap' : (isUrdu ? 'سالانہ سرگرمی' : 'वार्षिक गतिविधि हीटमैप');
+  String get monthlyTrendTitle => isEnglish ? 'Monthly Mila vs Diya Trend' : (isUrdu ? 'ماہانہ رجحان' : 'मासिक मिला बनाम दिया ट्रेंड');
+  String get categoryDonutTitle => isEnglish ? 'Distribution Breakdown' : (isUrdu ? 'تقسیم کا چارٹ' : 'वितरण चार्ट (डोनट)');
+  String get weekdayActivityTitle => isEnglish ? 'Activity by Day of Week' : (isUrdu ? 'ہفتہ وار سرگرمی' : 'सप्ताह के दिनों का विश्लेषण');
+  String get shareReportCardTitle => isEnglish ? 'Shareable Summary Card' : (isUrdu ? 'شیئر ایبل خلاصہ کارڈ' : 'शेयर करने योग्य सारांश कार्ड');
+  String get shareCardImageBtn => isEnglish ? 'Share Card as Image' : (isUrdu ? 'کارڈ تصویر شیئر کریں' : 'कार्ड इमेज शेयर करें');
+  String get eventWisePdfLabel => isEnglish ? 'Event-wise Summary PDF' : (isUrdu ? 'تقریب وار خلاصہ پی ڈی ایف' : 'कार्यक्रम-वार सारांश PDF');
+  String get filteredExportsSubtitle => isEnglish ? 'Exports respect your active year, scope, and event filter' : (isUrdu ? 'ایکسپورٹ آپ کے منتخب فلٹر کے مطابق ہوں گے' : 'सभी निर्यात आपके चुने गए वर्ष और फ़िल्टर के अनुसार बनेंगे');
+  String get noDataForFilter => isEnglish ? 'No recorded transactions match this filter.' : (isUrdu ? 'اس فلٹر کے لیے کوئی اندراج نہیں ملا۔' : 'इस फ़िल्टर के लिए कोई दर्ज व्यवहार नहीं मिला।');
+
   // Streak-Style Organized Settings Hub & Sub-pages
   String get settingsHubSubtitle => isEnglish
       ? 'Customize your ledger, preferences, backups and privacy.'

@@ -13,6 +13,23 @@ import '../../../domain/entities/entities.dart';
 class PdfService {
   PdfService._();
 
+  static Future<({pw.Font regular, pw.Font bold})> _loadFonts() async {
+    try {
+      final fontData = await rootBundle.load('assets/fonts/NotoSansDevanagari-Regular.ttf');
+      final boldFontData = await rootBundle.load('assets/fonts/NotoSansDevanagari-Bold.ttf');
+      return (regular: pw.Font.ttf(fontData), bold: pw.Font.ttf(boldFontData));
+    } catch (_) {
+      try {
+        return (
+          regular: await PdfGoogleFonts.notoSansDevanagariRegular(),
+          bold: await PdfGoogleFonts.notoSansDevanagariBold(),
+        );
+      } catch (_) {
+        return (regular: pw.Font.helvetica(), bold: pw.Font.helveticaBold());
+      }
+    }
+  }
+
   /// Generates and shares a complete Ledger PDF report
   static Future<File> generateLedgerPdf({
     required List<TransactionEntry> entries,
@@ -21,24 +38,9 @@ class PdfService {
     AppLocalizations? l10n,
   }) async {
     final pdf = pw.Document();
-
-    // Load fonts locally from assets for 100% offline functionality
-    pw.Font font;
-    pw.Font boldFont;
-    try {
-      final fontData = await rootBundle.load('assets/fonts/NotoSansDevanagari-Regular.ttf');
-      font = pw.Font.ttf(fontData);
-      final boldFontData = await rootBundle.load('assets/fonts/NotoSansDevanagari-Bold.ttf');
-      boldFont = pw.Font.ttf(boldFontData);
-    } catch (_) {
-      try {
-        font = await PdfGoogleFonts.notoSansDevanagariRegular();
-        boldFont = await PdfGoogleFonts.notoSansDevanagariBold();
-      } catch (_) {
-        font = pw.Font.helvetica();
-        boldFont = pw.Font.helveticaBold();
-      }
-    }
+    final fonts = await _loadFonts();
+    final font = fonts.regular;
+    final boldFont = fonts.bold;
 
     final totalReceived = entries
         .where((e) => e.direction.value == 'received' && e.status.value == 'recorded' && e.archivedAt == null)
@@ -164,6 +166,94 @@ class PdfService {
 
     final outputDir = await getApplicationDocumentsDirectory();
     final file = File('${outputDir.path}/vyavahaar_report_${DateTime.now().millisecondsSinceEpoch}.pdf');
+    await file.writeAsBytes(await pdf.save());
+    return file;
+  }
+
+  /// Generates an Event-wise summary PDF report from grouped transaction rows.
+  static Future<File> generateEventSummaryPdf({
+    required List<({String title, int count, int receivedPaise, int givenPaise})> rows,
+    required String title,
+    String? subtitle,
+    AppLocalizations? l10n,
+  }) async {
+    final pdf = pw.Document();
+    final fonts = await _loadFonts();
+    final font = fonts.regular;
+    final boldFont = fonts.bold;
+
+    final appName = l10n?.appName ?? 'Vyavahaar';
+    final headers = [
+      l10n?.eventName ?? 'Event',
+      l10n?.items ?? 'Entries',
+      l10n?.totalReceived ?? 'Received',
+      l10n?.totalGiven ?? 'Given',
+    ];
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(24),
+        header: (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text(
+                  appName,
+                  style: pw.TextStyle(font: boldFont, fontSize: 18, color: PdfColor.fromHex('#1F3352')),
+                ),
+                pw.Text(
+                  AppDateUtils.getTodayIsoString(),
+                  style: pw.TextStyle(font: font, fontSize: 10, color: PdfColor.fromHex('#6B7280')),
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 6),
+            pw.Text(
+              title,
+              style: pw.TextStyle(font: boldFont, fontSize: 14, color: PdfColor.fromHex('#111827')),
+            ),
+            if (subtitle != null)
+              pw.Text(
+                subtitle,
+                style: pw.TextStyle(font: font, fontSize: 10, color: PdfColor.fromHex('#4B5563')),
+              ),
+            pw.SizedBox(height: 12),
+          ],
+        ),
+        build: (context) => [
+          pw.TableHelper.fromTextArray(
+            headers: headers,
+            data: rows
+                .map((r) => [
+                      r.title,
+                      '${r.count}',
+                      CurrencyUtils.formatPaise(r.receivedPaise),
+                      CurrencyUtils.formatPaise(r.givenPaise),
+                    ])
+                .toList(),
+            headerStyle: pw.TextStyle(font: boldFont, fontSize: 9, color: PdfColor.fromHex('#FFFFFF')),
+            headerDecoration: pw.BoxDecoration(color: PdfColor.fromHex('#1F3352')),
+            cellStyle: pw.TextStyle(font: font, fontSize: 8.5),
+            cellAlignment: pw.Alignment.centerLeft,
+            cellPadding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+          ),
+        ],
+        footer: (context) => pw.Container(
+          alignment: pw.Alignment.center,
+          margin: const pw.EdgeInsets.only(top: 10),
+          child: pw.Text(
+            '$appName • ${context.pageNumber} / ${context.pagesCount}',
+            style: pw.TextStyle(font: font, fontSize: 8, color: PdfColor.fromHex('#9CA3AF')),
+          ),
+        ),
+      ),
+    );
+
+    final outputDir = await getApplicationDocumentsDirectory();
+    final file = File('${outputDir.path}/vyavahaar_events_${DateTime.now().millisecondsSinceEpoch}.pdf');
     await file.writeAsBytes(await pdf.save());
     return file;
   }

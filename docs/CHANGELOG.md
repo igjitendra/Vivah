@@ -5,6 +5,20 @@
 
 ---
 
+## [1.4.19] — 2026-11-28
+
+### Added
+- **Streak-Style Advanced Reports & Visual Analytics Hub (`ReportsScreen`, `/reports` via `More`)**:
+  - Added `VyavahaarStats` analytics computation engine (`lib/src/features/reports/data/vyavahaar_stats.dart`) with single-pass isolated Mila/Diya aggregation, scope filters (`All`, `Mila`, `Diya`, `Cash`, `Gifts`), event selector filter, year / all-time switcher, hero period ratios (`This Month`, `Quarter`, `Selected Year`, `All Time`), top relatives & top events rankings, monthly/weekday series, and 52-week heatmap counts.
+  - Added Streak-inspired Express stat primitives (`lib/src/features/reports/presentation/widgets/express_stat_widgets.dart`): `ExpressPillTabs` (spring wobbling pill tab switcher), `ExpressWaveRing` (animated sinusoidal hero ring), `ExpressYearNavigator`, `ExpressBlobShape` / `ExpressBlob`, `ExpressStatTile`, `ExpressStatRow`, `ExpressStatPanel`, `ExpressLevelBar`, and `ExpressRankingList`.
+  - Added interactive data visualization widgets (`lib/src/features/reports/presentation/widgets/report_charts.dart`): `VyavahaarYearHeatmap` (52-week calendar activity grid with day-tap totals), `VyavahaarMonthlyTrendChart` (`fl_chart` dual-line Mila vs Diya curves with gradient area fill and touch tooltips), `VyavahaarInteractiveDonut` (animated tap-to-explode donut breakdown for Event Types and Payment Modes), and `VyavahaarWeekdayBars` (`fl_chart` weekday activity bars).
+  - Added `ShareReportSummaryCard` (`lib/src/features/reports/presentation/widgets/share_report_card.dart`) rendering a high-DPI shareable summary PNG card via `RepaintBoundary` and `share_plus`.
+  - Extended `PdfService` (`lib/src/features/reports/services/pdf_service.dart`) with `generateEventSummaryPdf` and shared `_loadFonts()` helper; wired filtered PDF & CSV exports in `ReportsScreen` (`lib/src/features/reports/presentation/reports_screen.dart`).
+  - Updated `MoreScreen` (`lib/src/features/more/presentation/more_screen.dart`), `app_localizations.dart`, and added comprehensive unit tests in `test/unit/vyavahaar_stats_test.dart`.
+  - Eliminated all legacy hardcoded color literals in `reports_screen.dart` in favor of `AppSemanticColors`.
+
+---
+
 ## [1.4.18] — 2026-11-26
 
 ### Added

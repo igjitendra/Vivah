@@ -100,9 +100,9 @@ class MoreScreen extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: _MoreGridTile(
-                      icon: Icons.picture_as_pdf_rounded,
+                      icon: Icons.insights_rounded,
                       title: l10n.reportsAndExports,
-                      subtitle: 'PDF / CSV',
+                      subtitle: l10n.isEnglish ? 'Charts • PDF • CSV' : 'चार्ट • PDF • CSV',
                       accentColor: semantic.warning,
                       containerColor: semantic.warningContainer,
                       semantic: semantic,

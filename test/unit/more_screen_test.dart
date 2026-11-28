@@ -1,47 +1,55 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sqlite3/open.dart';
 import 'package:vyavahaar/src/app/app_providers.dart';
 import 'package:vyavahaar/src/app/theme/app_theme.dart';
 import 'package:vyavahaar/src/core/localization/app_localizations.dart';
 import 'package:vyavahaar/src/core/theme/ui_preferences_notifier.dart';
-import 'package:vyavahaar/src/data/database/app_database.dart';
-import 'package:vyavahaar/src/data/database/database_module.dart';
+import 'package:vyavahaar/src/data/repositories/settings_repository.dart';
 import 'package:vyavahaar/src/domain/entities/entities.dart';
 import 'package:vyavahaar/src/domain/entities/family_profile.dart';
 import 'package:vyavahaar/src/features/budget/domain/budget_models.dart';
 import 'package:vyavahaar/src/features/budget/presentation/budget_providers.dart';
 import 'package:vyavahaar/src/features/more/presentation/more_screen.dart';
 
-void _configureLinuxSqlite() {
-  open.overrideFor(OperatingSystem.linux, () {
-    for (final path in [
-      '/usr/lib/aarch64-linux-gnu/libsqlite3.so.0',
-      '/usr/lib/x86_64-linux-gnu/libsqlite3.so.0',
-      'libsqlite3.so.0',
-      'libsqlite3.so',
-    ]) {
-      try {
-        return DynamicLibrary.open(path);
-      } catch (_) {}
-    }
-    return DynamicLibrary.open('libsqlite3.so');
-  });
+class _InMemorySettingsRepository implements SettingsRepository {
+  final Map<String, String> _values = {};
+
+  @override
+  Future<void> addCustomEventType(String newType) async {}
+
+  @override
+  Future<Map<String, String>> getAllSettings() async => Map.of(_values);
+
+  @override
+  Future<List<String>> getCustomEventTypes() async => const [];
+
+  @override
+  Future<String?> getSetting(String key) async => _values[key];
+
+  @override
+  Future<void> removeCustomEventType(String typeToDelete) async {}
+
+  @override
+  Future<void> setSetting(String key, String value) async {
+    _values[key] = value;
+  }
+
+  @override
+  Stream<List<String>> watchCustomEventTypes() => Stream.value(const []);
+
+  @override
+  Stream<String?> watchSetting(String key) => Stream.value(_values[key]);
 }
 
 void main() {
-  setUpAll(_configureLinuxSqlite);
-
   Widget wrapMoreScreen({
-    required AppDatabase db,
     FamilyProfile profile = const FamilyProfile(
       familyName: 'Jitendra Pal',
       headOfFamily: 'Jitendra Pal',
     ),
+    int pendingReminders = 1,
     BudgetDashboardSnapshot budgetSnapshot = const BudgetDashboardSnapshot(),
     VoidCallback? onOpenSettings,
     VoidCallback? onOpenReports,
@@ -51,7 +59,10 @@ void main() {
   }) {
     return ProviderScope(
       overrides: [
-        appDatabaseProvider.overrideWithValue(db),
+        settingsRepositoryProvider.overrideWithValue(_InMemorySettingsRepository()),
+        pendingRemindersCountProvider.overrideWith(
+          (_) => Stream.value(pendingReminders),
+        ),
         familyProfileProvider.overrideWith((_) => Stream.value(profile)),
         budgetDashboardProvider.overrideWith(
           (_) => Stream.value(budgetSnapshot),
@@ -82,9 +93,6 @@ void main() {
     testWidgets(
       'renders only core More tools and hides duplicate Settings items',
       (tester) async {
-        final db = AppDatabase.inMemory();
-        addTearDown(() async => db.close());
-
         var settingsTapped = 0;
         var budgetTapped = 0;
         var reportsTapped = 0;
@@ -93,7 +101,6 @@ void main() {
 
         await tester.pumpWidget(
           wrapMoreScreen(
-            db: db,
             onOpenSettings: () => settingsTapped++,
             onOpenBudgetPlanner: () => budgetTapped++,
             onOpenReports: () => reportsTapped++,
@@ -109,6 +116,7 @@ void main() {
         expect(find.text('बजट व खर्च प्लानर'), findsOneWidget);
         expect(find.text('रिपोर्ट व एक्सपोर्ट'), findsOneWidget);
         expect(find.text('अनुस्मारक'), findsOneWidget);
+        expect(find.text('1 लंबित'), findsOneWidget);
         expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
 
         // Duplicate Settings / clutter sections are strictly removed
@@ -144,9 +152,6 @@ void main() {
     testWidgets(
       'shows compact Budget stats strip only when financial metrics exist and supports Classic mode',
       (tester) async {
-        final db = AppDatabase.inMemory();
-        addTearDown(() async => db.close());
-
         final now = DateTime.utc(2026, 11, 28);
         final snapshot = BudgetDashboardSnapshot(
           categories: [
@@ -187,7 +192,7 @@ void main() {
         );
 
         await tester.pumpWidget(
-          wrapMoreScreen(db: db, budgetSnapshot: snapshot),
+          wrapMoreScreen(pendingReminders: 0, budgetSnapshot: snapshot),
         );
         await tester.pumpAndSettle();
 

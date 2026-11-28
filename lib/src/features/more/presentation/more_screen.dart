@@ -8,7 +8,6 @@ import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/express_type.dart';
 import '../../../core/theme/ui_preferences_notifier.dart';
 import '../../../core/utils/currency_utils.dart';
-import '../../../data/database/app_database.dart';
 import '../../../domain/entities/family_profile.dart';
 import '../../../shared/widgets/express_settings_kit.dart';
 import '../../../shared/widgets/express_shapes.dart';
@@ -42,11 +41,11 @@ class MoreScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final semantic = AppSemanticColors.of(context);
     final l10n = context.l10n;
-    final db = ref.watch(databaseProvider);
     final uiPrefs = ref.watch(uiPreferencesProvider);
     final isExpress = uiPrefs.isExpressStyle;
     final familyProfile =
         ref.watch(familyProfileProvider).value ?? const FamilyProfile();
+    final pendingCount = ref.watch(pendingRemindersCountProvider).value ?? 0;
     final budgetSnapshot = ref.watch(budgetDashboardProvider).asData?.value;
     final budgetStats = budgetSnapshot == null
         ? const BudgetOverviewStats()
@@ -93,117 +92,108 @@ class MoreScreen extends ConsumerWidget {
             ),
           ],
         ),
-        body: StreamBuilder<List<ReminderRow>>(
-          stream: db.remindersDao.watchAllReminders(),
-          builder: (context, reminderSnapshot) {
-            final pendingCount = (reminderSnapshot.data ?? const <ReminderRow>[])
-                .where((r) => !r.isCompleted)
-                .length;
-
-            return Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 760),
-                child: ListView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: EdgeInsets.fromLTRB(
-                    18,
-                    isExpress ? 2 : 10,
-                    18,
-                    AppSpacing.floatingTabBottomPadding + 24,
-                  ),
-                  children: [
-                    if (isExpress) ...[
-                      ExpressReveal(
-                        index: 0,
-                        child: ExpressHeadline(
-                          title: l10n.moreTitle,
-                          subtitle: l10n.moreHubSubtitle,
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                    ],
-
-                    // 1. Family Profile Identity Banner
-                    ExpressReveal(
-                      index: 1,
-                      child: _FamilyBannerCard(
-                        semantic: semantic,
-                        l10n: l10n,
-                        profile: familyProfile,
-                        isExpress: isExpress,
-                        onTap: () => onOpenFamilyProfile(familyProfile.isEmpty),
-                        onTapQrShare: familyProfile.isEmpty
-                            ? null
-                            : () => ProfileShareActions.showFamilyProfileShareSheet(
-                                  context,
-                                  familyProfile,
-                                ),
-                      ),
-                    ),
-
-                    ExpressSectionLabel(l10n.moreToolsSection),
-
-                    // 2. Primary Utility: Budget & Returnable Funds Planner
-                    ExpressReveal(
-                      index: 2,
-                      child: _FeaturedBudgetCard(
-                        semantic: semantic,
-                        l10n: l10n,
-                        stats: budgetStats,
-                        isExpress: isExpress,
-                        compact: uiPrefs.compactMode,
-                        onTap: onOpenBudgetPlanner ?? () => context.push('/budget'),
-                      ),
-                    ),
-
-                    SizedBox(height: uiPrefs.compactMode ? 10 : 12),
-
-                    // 3. Analytics & Reminders Equal-Height Bento Row
-                    ExpressReveal(
-                      index: 3,
-                      child: IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(
-                              child: _MoreToolCard(
-                                icon: Icons.insights_rounded,
-                                title: l10n.reportsAndExports,
-                                subtitle: l10n.isEnglish
-                                    ? 'Charts • PDF • CSV'
-                                    : 'चार्ट • PDF • CSV',
-                                accentColor: semantic.warning,
-                                containerColor: semantic.warningContainer,
-                                semantic: semantic,
-                                isExpress: isExpress,
-                                onTap: onOpenReports,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: _MoreToolCard(
-                                icon: Icons.notifications_active_rounded,
-                                title: l10n.reminders,
-                                subtitle: pendingCount > 0
-                                    ? '$pendingCount ${l10n.pending}'
-                                    : l10n.noPendingReminders,
-                                badgeText: pendingCount > 0 ? '$pendingCount' : null,
-                                accentColor: semantic.diya,
-                                containerColor: semantic.diyaContainer,
-                                semantic: semantic,
-                                isExpress: isExpress,
-                                onTap: onOpenReminders,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 760),
+            child: ListView(
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.fromLTRB(
+                18,
+                isExpress ? 2 : 10,
+                18,
+                AppSpacing.floatingTabBottomPadding + 24,
               ),
-            );
-          },
+              children: [
+                if (isExpress) ...[
+                  ExpressReveal(
+                    index: 0,
+                    child: ExpressHeadline(
+                      title: l10n.moreTitle,
+                      subtitle: l10n.moreHubSubtitle,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                ],
+
+                // 1. Family Profile Identity Banner
+                ExpressReveal(
+                  index: 1,
+                  child: _FamilyBannerCard(
+                    semantic: semantic,
+                    l10n: l10n,
+                    profile: familyProfile,
+                    isExpress: isExpress,
+                    onTap: () => onOpenFamilyProfile(familyProfile.isEmpty),
+                    onTapQrShare: familyProfile.isEmpty
+                        ? null
+                        : () => ProfileShareActions.showFamilyProfileShareSheet(
+                              context,
+                              familyProfile,
+                            ),
+                  ),
+                ),
+
+                ExpressSectionLabel(l10n.moreToolsSection),
+
+                // 2. Primary Utility: Budget & Returnable Funds Planner
+                ExpressReveal(
+                  index: 2,
+                  child: _FeaturedBudgetCard(
+                    semantic: semantic,
+                    l10n: l10n,
+                    stats: budgetStats,
+                    isExpress: isExpress,
+                    compact: uiPrefs.compactMode,
+                    onTap: onOpenBudgetPlanner ?? () => context.push('/budget'),
+                  ),
+                ),
+
+                SizedBox(height: uiPrefs.compactMode ? 10 : 12),
+
+                // 3. Analytics & Reminders Equal-Height Bento Row
+                ExpressReveal(
+                  index: 3,
+                  child: IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: _MoreToolCard(
+                            icon: Icons.insights_rounded,
+                            title: l10n.reportsAndExports,
+                            subtitle: l10n.isEnglish
+                                ? 'Charts • PDF • CSV'
+                                : 'चार्ट • PDF • CSV',
+                            accentColor: semantic.warning,
+                            containerColor: semantic.warningContainer,
+                            semantic: semantic,
+                            isExpress: isExpress,
+                            onTap: onOpenReports,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _MoreToolCard(
+                            icon: Icons.notifications_active_rounded,
+                            title: l10n.reminders,
+                            subtitle: pendingCount > 0
+                                ? '$pendingCount ${l10n.pending}'
+                                : l10n.noPendingReminders,
+                            badgeText: pendingCount > 0 ? '$pendingCount' : null,
+                            accentColor: semantic.diya,
+                            containerColor: semantic.diyaContainer,
+                            semantic: semantic,
+                            isExpress: isExpress,
+                            onTap: onOpenReminders,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -650,6 +640,7 @@ class _MoreToolCard extends StatelessWidget {
           ],
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -688,27 +679,31 @@ class _MoreToolCard extends StatelessWidget {
                   ),
               ],
             ),
-            const Spacer(),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: ExpressType.titleMedium(
-                color: semantic.textPrimary,
-                weight: FontWeight.w800,
-              ).copyWith(fontSize: 14.5, height: 1.2),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 3),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w600,
-                color: semantic.textSecondary,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            const SizedBox(height: 14),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: ExpressType.titleMedium(
+                    color: semantic.textPrimary,
+                    weight: FontWeight.w800,
+                  ).copyWith(fontSize: 14.5, height: 1.2),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: semantic.textSecondary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ],
         ),

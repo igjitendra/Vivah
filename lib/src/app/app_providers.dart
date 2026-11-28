@@ -128,3 +128,11 @@ final entryProofProvider =
   return db.attachmentsDao.watchProofForEntry(entryId);
 });
 
+/// Reactive count of incomplete reminders for Dashboard and More hub badges.
+final pendingRemindersCountProvider = StreamProvider<int>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return db.remindersDao
+      .watchAllReminders()
+      .map((rows) => rows.where((r) => !r.isCompleted).length);
+});
+

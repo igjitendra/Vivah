@@ -231,7 +231,7 @@ void main() {
       expect(snap.arrangements.first.effectiveIsSettled, isTrue);
 
       // Verify Shagun ledger figures remain 100% isolated from Budget & Borrowed Funds
-      final allEntries = await entriesRepo.getEntries();
+      final allEntries = await entriesRepo.watchEntries().first;
       expect(FinancialRules.calculateTotalReceivedPaise(allEntries), 110000);
       expect(FinancialRules.calculateTotalGivenPaise(allEntries), 0);
     });

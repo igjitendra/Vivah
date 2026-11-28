@@ -17,6 +17,7 @@ import '../../features/people/presentation/person_detail_screen.dart';
 import '../../features/entries/presentation/add_entry_screen.dart';
 import '../../features/entries/presentation/entry_detail_screen.dart';
 import '../../features/reports/presentation/reports_screen.dart';
+import '../../features/budget/presentation/budget_hub_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/more/presentation/more_screen.dart';
 import '../../features/family_profile/presentation/family_profile_screen.dart';
@@ -230,6 +231,7 @@ final GoRouter appRouter = GoRouter(
                 isEmpty ? '/family-profile/edit' : '/family-profile',
               ),
               onOpenOnboarding: () => context.push('/onboarding?fromSettings=true'),
+              onOpenBudgetPlanner: () => context.push('/budget'),
             ),
           ),
         ),
@@ -299,6 +301,16 @@ final GoRouter appRouter = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       path: '/reports',
       builder: (context, state) => const ReportsScreen(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: '/budget',
+      builder: (context, state) {
+        final eventId = state.uri.queryParameters['eventId'];
+        final tabIdx =
+            int.tryParse(state.uri.queryParameters['tab'] ?? '') ?? 0;
+        return BudgetHubScreen(initialEventId: eventId, initialTab: tabIdx);
+      },
     ),
     GoRoute(
       parentNavigatorKey: _rootNavigatorKey,

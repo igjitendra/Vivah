@@ -1982,6 +1982,35 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
                   ],
                 ),
               ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => context.push('/budget?eventId=${event.id}'),
+                  icon: Icon(Icons.account_balance_wallet_outlined,
+                      size: 16, color: primaryAccent),
+                  label: Text(
+                    context.l10n.openFullBudgetPlannerBtn,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: primaryAccent,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(
+                      color: primaryAccent.withValues(alpha: 0.4),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(11),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

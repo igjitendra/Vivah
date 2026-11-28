@@ -5,7 +5,7 @@ import 'package:drift/drift.dart';
 class SchemaMigrations {
   SchemaMigrations._();
 
-  static const int currentSchemaVersion = 10;
+  static const int currentSchemaVersion = 11;
 
   /// Executes all required migrations sequentially from `from` to `to`.
   static Future<void> migrate(
@@ -59,6 +59,11 @@ class SchemaMigrations {
       await _migrateToV10(m, db);
     }
 
+    // Migration v10 -> v11: Event Budget Expenses, Installment Payments & Fund Arrangements
+    if (from < 11) {
+      await _migrateToV11(m, db);
+    }
+
     // Ensure foreign key integrity verification after migration
     await db.customStatement('PRAGMA foreign_key_check;');
   }
@@ -75,6 +80,7 @@ class SchemaMigrations {
     await _migrateToV7(migrator, db);
     await _migrateToV9(migrator, db);
     await _migrateToV10(migrator, db);
+    await _migrateToV11(migrator, db);
     await createAllIndexes(db);
     try {
       await db.customStatement('PRAGMA foreign_key_check;');
@@ -400,6 +406,22 @@ class SchemaMigrations {
         'CREATE INDEX IF NOT EXISTS idx_reminders_date ON reminders(reminder_date);');
     await db.customStatement(
         'CREATE INDEX IF NOT EXISTS idx_reminders_completed ON reminders(is_completed);');
+
+    // Event Budget Expenses & Fund Arrangements indexes
+    try {
+      await db.customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_budget_expenses_event ON event_budget_expenses(event_id);');
+      await db.customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_budget_expenses_category ON event_budget_expenses(category_id);');
+      await db.customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_budget_expenses_vendor ON event_budget_expenses(vendor_name);');
+      await db.customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_expense_payments_expense ON event_expense_payments(expense_id);');
+      await db.customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_fund_arrangements_event ON event_fund_arrangements(event_id);');
+      await db.customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_fund_repayments_arr ON event_fund_repayments(arrangement_id);');
+    } catch (_) {}
   }
 
   /// Migration v5 -> v6: Advanced People, Relatives & Phone Contacts Import System
@@ -524,5 +546,92 @@ class SchemaMigrations {
     try {
       await db.customStatement('ALTER TABLE entry_items ADD COLUMN photo_path TEXT;');
     } catch (_) {}
+  }
+
+  /// Migration v10 -> v11: Event Budget Expenses, Installment Payments & Returnable Fund Arrangements
+  static Future<void> _migrateToV11(Migrator m, GeneratedDatabase db) async {
+    await db.customStatement('''
+      CREATE TABLE IF NOT EXISTS event_budget_expenses (
+        id TEXT PRIMARY KEY NOT NULL,
+        event_id TEXT NOT NULL,
+        category_id TEXT,
+        category_name TEXT NOT NULL DEFAULT '',
+        vendor_name TEXT NOT NULL,
+        vendor_phone TEXT,
+        person_id TEXT,
+        title TEXT NOT NULL,
+        agreed_amount_paise INTEGER NOT NULL DEFAULT 0,
+        paid_amount_paise INTEGER NOT NULL DEFAULT 0,
+        payment_mode TEXT NOT NULL DEFAULT 'cash',
+        upi_app TEXT,
+        upi_ref TEXT,
+        expense_date TEXT NOT NULL,
+        target_pay_date TEXT,
+        bill_photo_path TEXT,
+        notes TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+        FOREIGN KEY (category_id) REFERENCES event_budget_categories(id) ON DELETE SET NULL,
+        FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE SET NULL
+      );
+    ''');
+
+    await db.customStatement('''
+      CREATE TABLE IF NOT EXISTS event_expense_payments (
+        id TEXT PRIMARY KEY NOT NULL,
+        expense_id TEXT NOT NULL,
+        event_id TEXT NOT NULL,
+        amount_paise INTEGER NOT NULL,
+        payment_mode TEXT NOT NULL DEFAULT 'cash',
+        upi_app TEXT,
+        upi_ref TEXT,
+        payment_date TEXT NOT NULL,
+        receipt_photo_path TEXT,
+        note TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (expense_id) REFERENCES event_budget_expenses(id) ON DELETE CASCADE,
+        FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
+      );
+    ''');
+
+    await db.customStatement('''
+      CREATE TABLE IF NOT EXISTS event_fund_arrangements (
+        id TEXT PRIMARY KEY NOT NULL,
+        event_id TEXT,
+        lender_name TEXT NOT NULL,
+        lender_phone TEXT,
+        person_id TEXT,
+        principal_paise INTEGER NOT NULL DEFAULT 0,
+        extra_agreed_paise INTEGER NOT NULL DEFAULT 0,
+        returned_paise INTEGER NOT NULL DEFAULT 0,
+        payment_mode TEXT NOT NULL DEFAULT 'cash',
+        upi_app TEXT,
+        upi_ref TEXT,
+        taken_date TEXT NOT NULL,
+        return_target_date TEXT,
+        notes TEXT,
+        is_settled INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE SET NULL,
+        FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE SET NULL
+      );
+    ''');
+
+    await db.customStatement('''
+      CREATE TABLE IF NOT EXISTS event_fund_repayments (
+        id TEXT PRIMARY KEY NOT NULL,
+        arrangement_id TEXT NOT NULL,
+        amount_paise INTEGER NOT NULL,
+        payment_mode TEXT NOT NULL DEFAULT 'cash',
+        upi_app TEXT,
+        upi_ref TEXT,
+        repayment_date TEXT NOT NULL,
+        note TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (arrangement_id) REFERENCES event_fund_arrangements(id) ON DELETE CASCADE
+      );
+    ''');
   }
 }

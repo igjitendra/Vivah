@@ -1103,6 +1103,56 @@ class AppLocalizations {
       ? 'Add your family details first to generate a shareable Family Profile QR card.'
       : (isUrdu ? 'QR کارڈ بنانے کے لیے پہلے اپنے خاندان کی تفصیلات شامل کریں۔' : 'शेयर करने योग्य पारिवारिक QR कार्ड बनाने के लिए पहले परिवार का नाम व विवरण जोड़ें।');
   String get activePalettesValueLabel => isEnglish ? 'Palettes' : (isUrdu ? 'پیلیٹس' : 'पैलेट्स');
+
+  // Event Budget, Payees & Returnable Fund Planner
+  String get budgetPlannerTitle => isEnglish ? 'Budget & Kharch' : (isUrdu ? 'بجٹ اور اخراجات' : 'बजट व खर्च प्लानर');
+  String get budgetPlannerSubtitle => isEnglish
+      ? 'Event budget, vendor payments & returnable help'
+      : (isUrdu ? 'تقریب کا بجٹ، دکاندار ادائیگیاں اور واپسی حساب' : 'कार्यक्रम बजट, भुगतान व हथउधार वापसी खाता');
+  String get budgetIsolatedNote => isEnglish
+      ? 'Tracked separately from Shagun (Mila/Diya) ledger.'
+      : (isUrdu ? 'شگون کھاتے سے مکمل طور پر الگ محفوظ۔' : 'शगुन (मिला/दिया) बही-खाता से पूर्णतः अलग व सुरक्षित।');
+  String get budgetTabOverview => isEnglish ? 'Overview' : (isUrdu ? 'جائزہ' : 'सारांश');
+  String get budgetTabCategories => isEnglish ? 'Categories' : (isUrdu ? 'मद व खर्च' : 'मद व खर्च');
+  String get budgetTabPayees => isEnglish ? 'Payees' : (isUrdu ? 'کس کو دیا' : 'किसको दिया');
+  String get budgetTabBorrowed => isEnglish ? 'Borrowed' : (isUrdu ? 'لی گئی مدد' : 'हथउधार व वापसी');
+  String get plannedBudgetLabel => isEnglish ? 'Planned Budget' : (isUrdu ? 'تخمینہ بجٹ' : 'तय कुल बजट');
+  String get totalPaidOutLabel => isEnglish ? 'Total Paid' : (isUrdu ? 'کل ادا شدہ' : 'कुल भुगतान');
+  String get vendorPendingLabel => isEnglish ? 'Vendor Balance' : (isUrdu ? 'دکاندار باقی' : 'दुकानदार बकाया');
+  String get returnRemainingLabel => isEnglish ? 'Return Balance' : (isUrdu ? 'واپسی باقی' : 'वापसी शेष');
+  String get addExpenseBtn => isEnglish ? 'Add Expense' : (isUrdu ? 'خرچ لکھیں' : 'खर्च / किस्त लिखें');
+  String get addBorrowBtn => isEnglish ? 'Add Borrowed Help' : (isUrdu ? 'عارضی رقم لیں' : 'हथउधार / मदद लें');
+  String get addCategoryPresetsBtn => isEnglish ? 'Add Wedding Presets' : (isUrdu ? 'تیار مد شامل کریں' : 'तैयार मद जोड़ें');
+  String get addNewCategoryBtn => isEnglish ? 'New Category' : (isUrdu ? 'نیا مد' : 'नया मद जोड़ें');
+  String get payeeVendorLabel => isEnglish ? 'Vendor / Person Paid *' : (isUrdu ? 'دکاندار / شخص کا نام *' : 'दुकानदार / व्यक्ति का नाम *');
+  String get expenseItemLabel => isEnglish ? 'Work / Item Title *' : (isUrdu ? 'کام یا سامان کی تفصیل *' : 'काम / सामान विवरण *');
+  String get agreedDealLabel => isEnglish ? 'Total Deal (₹ Optional)' : (isUrdu ? 'طے شدہ کل رقم (اختیاری)' : 'कुल तय सौदा (₹ ऐच्छिक)');
+  String get paidNowLabel => isEnglish ? 'Paid Now (₹)' : (isUrdu ? 'ابھی ادا کیا (₹)' : 'अभी दिया (₹)');
+  String get balanceRemainingLabel => isEnglish ? 'Remaining' : (isUrdu ? 'باقی' : 'बाकी शेष');
+  String get settledBadgeLabel => isEnglish ? 'Settled ✓' : (isUrdu ? 'چکتا ✓' : 'चुकता ✓');
+  String get addInstallmentLabel => isEnglish ? 'Add Payment' : (isUrdu ? 'قسط ادا کریں' : 'किस्त दें');
+  String get attachReceiptPhotoLabel => isEnglish ? 'Attach Bill / Receipt Photo' : (isUrdu ? 'بل / رسید تصویر لگائیں' : 'बिल / रसीद फ़ोटो लगाएं');
+  String get lenderNameLabel => isEnglish ? 'Received From (Name) *' : (isUrdu ? 'کس سے لیا (نام) *' : 'किससे लिया (नाम) *');
+  String get takenAmountLabel => isEnglish ? 'Amount Taken (₹) *' : (isUrdu ? 'لی گئی رقم (₹) *' : 'ली गई राशि (₹) *');
+  String get extraReturnLabel => isEnglish ? 'Extra / Appreciation (₹ Opt.)' : (isUrdu ? 'اضافی رقم (اختیاری)' : 'अतिरिक्त राशि / ब्याज (ऐच्छिक)');
+  String get returnedAmountLabel => isEnglish ? 'Returned' : (isUrdu ? 'واپس کیا' : 'लौटाया गया');
+  String get takenDateLabel => isEnglish ? 'Date Taken' : (isUrdu ? 'لینے کی تاریخ' : 'लेने की तिथि');
+  String get returnTargetDateLabel => isEnglish ? 'Target Return Date' : (isUrdu ? 'واپسی کی تاریخ' : 'वापसी की संभावित तिथि');
+  String get recordReturnBtn => isEnglish ? 'Record Return' : (isUrdu ? 'واپسی لکھیں' : 'वापसी लिखें');
+  String get autoReminderReturnToggle => isEnglish ? 'Add Reminder for return date' : (isUrdu ? 'واپسی کی یاد دہانی شامل کریں' : 'वापसी तिथि का अनुस्मारक जोड़ें');
+  String get autoReminderBalanceToggle => isEnglish ? 'Add Reminder for balance payment' : (isUrdu ? 'باقی ادائیگی کی یاد دہانی جوڑیں' : 'बकाया भुगतान का अनुस्मारक जोड़ें');
+  String get filterActiveOnly => isEnglish ? 'Pending Only' : (isUrdu ? 'صرف باقی' : 'केवल बाकी');
+  String get filterSettledOnly => isEnglish ? 'Settled' : (isUrdu ? 'مکمل شدہ' : 'चुकता');
+  String get paymentHistoryLabel => isEnglish ? 'Payment History' : (isUrdu ? 'ادائیگی کی تاریخ' : 'भुगतान व किस्त इतिहास');
+  String get returnHistoryLabel => isEnglish ? 'Return History' : (isUrdu ? 'واپسی کی تاریخ' : 'वापसी इतिहास');
+  String get openFullBudgetPlannerBtn => isEnglish ? 'Open Full Budget & Borrowed Hub' : (isUrdu ? 'مکمل بجٹ اور واپسی پلانر کھولیں' : 'पूरा बजट, भुगतान व वापसी प्लानर खोलें');
+  String get noExpensesYet => isEnglish ? 'No budget expenses logged yet.' : (isUrdu ? 'ابھی کوئی بجٹ خرچ درج نہیں۔' : 'अभी इस फ़िल्टर में कोई खर्च दर्ज नहीं है।');
+  String get noArrangementsYet => isEnglish ? 'No temporary arranged funds recorded yet.' : (isUrdu ? 'ابھی کوئی عارضی امداد درج نہیں۔' : 'अभी कोई अस्थायी ली गई राशि दर्ज नहीं है।');
+  String get pickFromRelativesHint => isEnglish ? 'Link from Relatives (Optional)' : (isUrdu ? 'رشتہ داروں سے منتخب کریں (اختیاری)' : 'रिश्तेदार / व्यक्ति चुनें (ऐच्छिक)');
+  String get unlinkedGeneralLabel => isEnglish ? 'General / Unlinked' : (isUrdu ? 'عمومی / بغیر تقریب' : 'सामान्य / अन्य');
+  String get createEventBeforeExpenseHint => isEnglish ? 'Create an Event first to track event expenses, or record a temporary borrowed fund.' : (isUrdu ? 'تقریب کے اخراجات کے لیے پہلے ایک تقریب بنائیں۔' : 'इवेंट खर्च लिखने हेतु पहले एक कार्यक्रम चुनें या बनाएं।');
+  String get budgetAllEventsFilter => isEnglish ? 'All Events' : (isUrdu ? 'تمام تقریبات' : 'सभी कार्यक्रम');
+  String get editBudgetCategoryLabel => isEnglish ? 'Edit Category Budget' : (isUrdu ? 'مد کا بجٹ بدلیں' : 'मद का तय बजट बदलें');
 }
 
 class _AppLocalizationsDelegate

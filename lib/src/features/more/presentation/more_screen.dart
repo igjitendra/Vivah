@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../app/app_providers.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
@@ -19,6 +20,7 @@ class MoreScreen extends ConsumerWidget {
   final VoidCallback onOpenThemeGallery;
   final ValueChanged<bool> onOpenFamilyProfile;
   final VoidCallback onOpenOnboarding;
+  final VoidCallback? onOpenBudgetPlanner;
 
   const MoreScreen({
     super.key,
@@ -29,6 +31,7 @@ class MoreScreen extends ConsumerWidget {
     required this.onOpenThemeGallery,
     required this.onOpenFamilyProfile,
     required this.onOpenOnboarding,
+    this.onOpenBudgetPlanner,
   });
 
   @override
@@ -153,6 +156,36 @@ class MoreScreen extends ConsumerWidget {
                     ),
                   ),
                 ],
+              ),
+
+              const SizedBox(height: AppSpacing.md),
+
+                            // Featured Budget, Payees & Returnable Funds Planner Card
+              Container(
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: semantic.cardBg,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: semantic.primary.withValues(alpha: 0.35),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: semantic.shadow,
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: _MoreListTile(
+                  icon: Icons.account_balance_wallet_rounded,
+                  iconColor: semantic.primary,
+                  iconBg: semantic.heroCardBg,
+                  title: l10n.budgetPlannerTitle,
+                  subtitle: l10n.budgetPlannerSubtitle,
+                  semantic: semantic,
+                  onTap: onOpenBudgetPlanner ?? () => context.push('/budget'),
+                ),
               ),
 
               const SizedBox(height: AppSpacing.md),

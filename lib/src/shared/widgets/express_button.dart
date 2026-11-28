@@ -149,13 +149,17 @@ class _ExpressButtonState extends State<ExpressButton> {
                     ),
                     const SizedBox(width: 8),
                   ],
-                  Text(
-                    widget.label,
-                    style: ExpressType.labelLarge(
-                      color: enabled ? foreground : const Color(0xFF94A3B8),
-                      weight: FontWeight.w700,
-                    ).copyWith(
-                      fontSize: widget.compact ? 13.5 : 15.0,
+                  Flexible(
+                    child: Text(
+                      widget.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: ExpressType.labelLarge(
+                        color: enabled ? foreground : const Color(0xFF94A3B8),
+                        weight: FontWeight.w700,
+                      ).copyWith(
+                        fontSize: widget.compact ? 13.5 : 15.0,
+                      ),
                     ),
                   ),
                 ],

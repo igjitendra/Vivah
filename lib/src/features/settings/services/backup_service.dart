@@ -143,6 +143,10 @@ class BackupService {
     'event_tasks',
     'event_schedule_items',
     'event_budget_categories',
+    'event_budget_expenses',
+    'event_expense_payments',
+    'event_fund_arrangements',
+    'event_fund_repayments',
     'event_notes',
     'event_attachments',
     'event_activity_logs',
@@ -197,6 +201,7 @@ class BackupService {
         'people_photos',
         'event_attachments',
         'family_profile',
+        'budget_receipts',
       ];
       final seenPaths = <String>{};
       for (final subdir in imageDirs) {
@@ -300,6 +305,8 @@ class BackupService {
     rewriteRowPath(tableDump['entry_items']!, 'photo_path', 'attachments');
     rewriteRowPath(tableDump['people']!, 'photo_path', 'people_photos');
     rewriteRowPath(tableDump['event_attachments']!, 'file_path', 'event_attachments');
+    rewriteRowPath(tableDump['event_budget_expenses']!, 'bill_photo_path', 'budget_receipts');
+    rewriteRowPath(tableDump['event_expense_payments']!, 'receipt_photo_path', 'budget_receipts');
 
     // Rewrite family_profile_data.photo_path inside app_settings if present
     for (final setting in tableDump['app_settings']!) {
@@ -742,6 +749,8 @@ class BackupService {
     remapTableColumn('entry_items', 'photo_path', 'attachments');
     remapTableColumn('people', 'photo_path', 'people_photos');
     remapTableColumn('event_attachments', 'file_path', 'event_attachments');
+    remapTableColumn('event_budget_expenses', 'bill_photo_path', 'budget_receipts');
+    remapTableColumn('event_expense_payments', 'receipt_photo_path', 'budget_receipts');
 
     final settingsRows = payloadMap['app_settings'];
     if (settingsRows is List) {
@@ -839,6 +848,9 @@ class BackupService {
       'person_id',
       'function_id',
       'host_person_id',
+      'category_id',
+      'expense_id',
+      'arrangement_id',
     ];
     for (final col in nullableFkCols) {
       if (row[col] == '') row[col] = null;

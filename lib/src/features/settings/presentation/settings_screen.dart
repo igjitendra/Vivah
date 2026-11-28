@@ -20,6 +20,7 @@ import '../../../shared/widgets/express_settings_kit.dart';
 import '../../../shared/widgets/express_shapes.dart';
 import '../../../shared/widgets/express_squish.dart';
 import '../../../shared/widgets/profile_share_actions.dart';
+import '../../budget/presentation/budget_providers.dart';
 import '../services/backup_service.dart';
 import 'settings_subpages.dart';
 import 'widgets/app_style_picker.dart';
@@ -342,6 +343,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     ref.invalidate(themeProvider);
     ref.invalidate(uiPreferencesProvider);
     ref.invalidate(localeProvider);
+    ref.invalidate(budgetDashboardProvider);
   }
 
   Future<T> _withProgressOverlay<T>(
